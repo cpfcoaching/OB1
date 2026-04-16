@@ -14,3 +14,6 @@ sync-log.json
 
 # Build artifacts
 deno.lock
+
+# Local agent worktrees (contain nested git repositories)
+.claude/worktrees/
