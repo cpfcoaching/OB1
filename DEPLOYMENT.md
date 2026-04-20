@@ -384,6 +384,8 @@ Every push to `main` triggers `.github/workflows/deploy.yml`, which:
 | `VITE_DOMAIN` | `cpfcoaching.us` |
 | `VITE_API_BASE_URL` | `https://api.cpfcoaching.us` |
 
+> **Note:** `VITE_ENV` is automatically set to `production` by the workflow and does not need to be added as a secret.
+
 ### Manual CLI deployment (when Actions is unavailable)
 
 ```bash
@@ -433,7 +435,7 @@ Cloudflare Pages manages TLS automatically. In **SSL/TLS** settings for `cpfcoac
 Add a WAF custom rule in Cloudflare if geo-blocking is required:
 
 ```
-(cf.country in {"CN" "RU"}) -> Block
+(ip.geoip.country in {"CN" "RU"}) -> Block
 ```
 
 ---
