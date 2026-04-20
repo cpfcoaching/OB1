@@ -10,12 +10,21 @@
             <h1 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-2xl font-bold mb-1">📝 Resume Builder</h1>
             <p :class="isDark ? 'text-gray-400' : 'text-gray-600'" class="text-sm">Create, evaluate & optimize your professional resume</p>
           </div>
-          <button
-            @click="downloadPDF"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition font-medium"
-          >
-            ⬇️ Download PDF
-          </button>
+          <div class="flex gap-3">
+            <button
+              @click="autoPopulateFromWeb"
+              :disabled="isAutoPopulating"
+              class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition font-medium disabled:opacity-50"
+            >
+              {{ isAutoPopulating ? '⏳ Loading...' : '🌐 Auto-populate from Web' }}
+            </button>
+            <button
+              @click="downloadPDF"
+              class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition font-medium"
+            >
+              ⬇️ Download PDF
+            </button>
+          </div>
         </div>
         
         <!-- Tabs -->
@@ -595,6 +604,7 @@ import { useAuth } from '@/composables/useAuth'
 import TopBanner from '@/components/TopBanner.vue'
 import { useResume } from '@/composables/useResume'
 import { useResumeImport, type ExtractedResumeData } from '@/composables/useResumeImport'
+import { christopheResumeData } from '@/data/christopheResume'
 
 const router = useRouter()
 const { user, initializeAuth, isDark } = useAuth()
@@ -633,6 +643,7 @@ const roleType = ref('general')
 const resumenNameInput = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const importedData = ref<ExtractedResumeData | null>(null)
+const isAutoPopulating = ref(false)
 
 const handleSaveResume = async () => {
   const name = resumenNameInput.value || `Resume - ${new Date().toLocaleDateString()}`
@@ -642,6 +653,35 @@ const handleSaveResume = async () => {
     alert('✅ Resume saved successfully!')
   } catch (err) {
     alert('❌ Error saving resume: ' + error.value)
+  }
+}
+
+const autoPopulateFromWeb = async () => {
+  isAutoPopulating.value = true
+  try {
+    // Populate all fields from scraped web data
+    Object.assign(resume.value.personalInfo, christopheResumeData.personalInfo)
+    resume.value.summary = christopheResumeData.summary
+    resume.value.experience = christopheResumeData.experience.map(exp => ({
+      position: exp.position,
+      company: exp.company,
+      startDate: exp.startDate,
+      endDate: exp.endDate,
+      description: exp.description
+    }))
+    resume.value.education = christopheResumeData.education.map(edu => ({
+      degree: edu.degree,
+      school: edu.school,
+      graduationDate: edu.graduationDate
+    }))
+    resume.value.skills = christopheResumeData.skills
+    
+    alert('✅ Resume auto-populated from your web profiles!')
+    activeTab.value = 'editor'
+  } catch (err) {
+    alert('❌ Error auto-populating resume')
+  } finally {
+    isAutoPopulating.value = false
   }
 }
 
