@@ -1,7 +1,2 @@
 name = "job-hunt-app"
 pages_build_output_dir = "dist"
-
-[env.production]
-routes = [
-  { pattern = "app.cpfcoaching.us", zone_name = "cpfcoaching.us" }
-]
