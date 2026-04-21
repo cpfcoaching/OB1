@@ -24,9 +24,19 @@ const mcpClient = axios.create({
   },
 })
 
+// Separate client for Open Brain with SSE streaming support
+const openBrainClient = axios.create({
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json, text/event-stream',
+  },
+})
+
 export const useMCP = () => {
   const jobHuntMcpUrl = import.meta.env.VITE_JOB_HUNT_MCP_URL
   const openBrainMcpUrl = import.meta.env.VITE_OPEN_BRAIN_MCP_URL
+  const openBrainJwt = import.meta.env.VITE_OPEN_BRAIN_MCP_JWT
+  const openBrainAccessKey = import.meta.env.VITE_OPEN_BRAIN_MCP_ACCESS_KEY
 
   const callJobHuntTool = async (method: string, params: Record<string, any>) => {
     try {
@@ -50,11 +60,16 @@ export const useMCP = () => {
 
   const callOpenBrainTool = async (method: string, params: Record<string, any>) => {
     try {
-      const response = await mcpClient.post<MCPResponse>(openBrainMcpUrl, {
+      const response = await openBrainClient.post<MCPResponse>(openBrainMcpUrl, {
         jsonrpc: '2.0',
         id: `${Date.now()}-${Math.random()}`,
         method,
         params,
+      }, {
+        headers: {
+          'Authorization': openBrainJwt ? `Bearer ${openBrainJwt}` : undefined,
+          'x-brain-key': openBrainAccessKey || undefined,
+        },
       })
 
       if (response.data.error) {
