@@ -610,7 +610,7 @@
             <input
               v-model="crawlUrl"
               type="url"
-              placeholder="https://christophefoulon.com"
+              placeholder="https://yourwebsite.com or https://christophefoulon.com"
               :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
               class="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-green-500"
             />
@@ -736,7 +736,7 @@ const isAutoPopulating = ref(false)
 
 // Web crawl state
 const showCrawlPanel = ref(false)
-const crawlUrl = ref('https://christophefoulon.com')
+const crawlUrl = ref('')
 
 const handleSaveResume = async () => {
   const name = resumenNameInput.value || `Resume - ${new Date().toLocaleDateString()}`

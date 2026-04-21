@@ -4,7 +4,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 import { parseScrapedProfile } from '@/lib/openrouter'
-import { db } from '@/config/firebase'
+import { auth, db } from '@/config/firebase'
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore'
 
 export interface CrawledResumeData {
@@ -65,14 +65,16 @@ export function useWebCrawl() {
     }
   }
 
-  /**Save crawled data to Firestore and return the data.*/
+  /**Save crawled data to Firestore under the authenticated user's document.*/
   const crawlAndSave = async (url: string): Promise<CrawledResumeData> => {
     const data = await crawlProfile(url)
 
     try {
       crawlStatus.value = '💾 Saving to database...'
+      const uid = auth.currentUser?.uid
+      const docPath = uid ? `resumes/${uid}` : 'resumes/personal'
       await setDoc(
-        doc(db, 'resumes/personal'),
+        doc(db, docPath),
         {
           latest_data: data,
           crawled_from: url,
