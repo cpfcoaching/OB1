@@ -21,6 +21,127 @@
 
     <!-- Content -->
     <div class="max-w-7xl mx-auto p-6">
+      <!-- Import Section -->
+      <div :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'" class="border rounded-lg shadow-sm p-6 mb-6">
+        <h2 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-lg font-bold mb-6">💼 Import Resume Data</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- LinkedIn Profile Import -->
+          <div :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'" class="border rounded-lg p-6">
+            <h3 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-md font-semibold mb-4">🔗 LinkedIn Profile</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-2">Profile Data (JSON)</label>
+                <textarea
+                  v-model="linkedinJsonData"
+                  placeholder="Paste your LinkedIn profile data as JSON here..."
+                  :class="isDark ? 'bg-gray-600 text-white border-gray-500' : 'bg-white text-gray-900 border-gray-300'"
+                  class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs"
+                  rows="8"
+                ></textarea>
+              </div>
+              
+              <div :class="isDark ? 'bg-gray-600 border-gray-500' : 'bg-blue-50 border-blue-200'" class="border rounded p-4 text-xs space-y-2">
+                <p :class="isDark ? 'text-gray-200' : 'text-gray-700'" class="font-semibold mb-2">📋 How to Export LinkedIn Data:</p>
+                <ol :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="list-decimal list-inside space-y-1">
+                  <li>Go to your LinkedIn profile: linkedin.com/in/yourprofile/</li>
+                  <li>Click <strong>"More"</strong> (three dots) and select <strong>"Download your data"</strong></li>
+                  <li>Or, open Developer Tools <code class="bg-gray-900 text-green-400 px-1">F12 → Console</code></li>
+                  <li>Copy the profile data as JSON and paste it here</li>
+                </ol>
+                <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="mt-3 text-xs">
+                  <strong>Example format:</strong>
+                  <code class="block bg-gray-900 text-green-400 px-2 py-1 rounded mt-1 overflow-x-auto">
+{{ '{' }}"firstName":"John","lastName":"Doe","email":"john@example.com","skills":["JavaScript","React"]{{ '}' }}
+                  </code>
+                </p>
+              </div>
+              
+              <button
+                @click="importFromLinkedIn"
+                :disabled="!linkedinJsonData || isLoadingLinkedin"
+                :class="linkedinJsonData && !isLoadingLinkedin 
+                  ? 'bg-blue-600 hover:bg-blue-700' 
+                  : 'bg-gray-400 cursor-not-allowed'"
+                class="w-full text-white px-4 py-3 rounded-lg transition font-medium"
+              >
+                {{ isLoadingLinkedin ? '⏳ Importing...' : '📥 Import from LinkedIn' }}
+              </button>
+              
+              <div v-if="linkedinError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+                ❌ {{ linkedinError }}
+              </div>
+              
+              <div v-if="linkedinSuccess" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded text-sm">
+                ✅ {{ linkedinSuccess }}
+              </div>
+            </div>
+          </div>
+          
+          <!-- Document Upload -->
+          <div :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'" class="border rounded-lg p-6">
+            <h3 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-md font-semibold mb-4">📄 Resume Document</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-2">Paste Resume Content</label>
+                <textarea
+                  v-model="resumeText"
+                  placeholder="Copy your resume text and paste it here. The app will automatically extract sections like experience, education, and skills..."
+                  :class="isDark ? 'bg-gray-600 text-white border-gray-500' : 'bg-white text-gray-900 border-gray-300'"
+                  class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs"
+                  rows="8"
+                ></textarea>
+              </div>
+              
+              <div :class="isDark ? 'bg-gray-600 border-gray-500' : 'bg-amber-50 border-amber-200'" class="border rounded p-4 text-xs space-y-2">
+                <p :class="isDark ? 'text-gray-200' : 'text-gray-700'" class="font-semibold mb-2">📋 How to Export Your Resume:</p>
+                <div :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="space-y-2">
+                  <div>
+                    <p class="font-semibold">From PDF:</p>
+                    <p>1. Open in Adobe Reader or browser PDF viewer</p>
+                    <p>2. Select all text (Cmd+A or Ctrl+A)</p>
+                    <p>3. Copy (Cmd+C or Ctrl+C) and paste above</p>
+                  </div>
+                  <div>
+                    <p class="font-semibold">From Word (.docx):</p>
+                    <p>1. Open in Microsoft Word</p>
+                    <p>2. Select all (Cmd+A or Ctrl+A)</p>
+                    <p>3. Copy (Cmd+C or Ctrl+C) and paste above</p>
+                  </div>
+                  <div>
+                    <p class="font-semibold">From Google Docs:</p>
+                    <p>1. Open your document</p>
+                    <p>2. Select all text (Cmd+A or Ctrl+A)</p>
+                    <p>3. Copy (Cmd+C or Ctrl+C) and paste above</p>
+                  </div>
+                </div>
+              </div>
+              
+              <button
+                @click="parseResumeDocument"
+                :disabled="!resumeText || isLoadingDocument"
+                :class="resumeText && !isLoadingDocument 
+                  ? 'bg-indigo-600 hover:bg-indigo-700' 
+                  : 'bg-gray-400 cursor-not-allowed'"
+                class="w-full text-white px-4 py-3 rounded-lg transition font-medium"
+              >
+                {{ isLoadingDocument ? '⏳ Parsing...' : '📥 Parse & Import Resume' }}
+              </button>
+              
+              <div v-if="documentError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+                ❌ {{ documentError }}
+              </div>
+              
+              <div v-if="documentSuccess" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded text-sm">
+                ✅ {{ documentSuccess }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Editor Panel -->
         <div class="space-y-6">
@@ -320,10 +441,25 @@ import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useAnalytics } from '@/composables/useAnalytics'
 import TopBanner from '@/components/TopBanner.vue'
+import { parseLinkedInData, mergeWithResume } from '@/utils/linkedinParser'
+import { extractResumeSections } from '@/utils/documentParser'
 
 const router = useRouter()
 const { user, initializeAuth, isDark } = useAuth()
 const { trackResumeBuilt, trackResumeSaved, trackFeatureView } = useAnalytics()
+
+// LinkedIn import state
+const linkedinUrl = ref('')
+const linkedinJsonData = ref('')
+const isLoadingLinkedin = ref(false)
+const linkedinError = ref('')
+const linkedinSuccess = ref('')
+
+// Document import state
+const resumeText = ref('')
+const isLoadingDocument = ref(false)
+const documentError = ref('')
+const documentSuccess = ref('')
 
 const resume = ref({
   personalInfo: {
@@ -393,6 +529,101 @@ const saveResume = () => {
 
 const downloadPDF = () => {
   alert('📥 PDF download feature coming soon! For now, use your browser\'s Print to PDF feature (Cmd+P)')
+}
+
+// LinkedIn import handler
+const importFromLinkedIn = () => {
+  linkedinError.value = ''
+  linkedinSuccess.value = ''
+  isLoadingLinkedin.value = true
+  
+  try {
+    const parsedData = parseLinkedInData(linkedinJsonData.value)
+    
+    if (!parsedData) {
+      linkedinError.value = 'Failed to parse LinkedIn data. Please check the JSON format and try again.'
+      return
+    }
+    
+    // Merge the parsed data with current resume
+    resume.value = mergeWithResume(resume.value, parsedData)
+    
+    const skillCount = parsedData.skills?.length || 0
+    const expCount = parsedData.experience?.length || 0
+    linkedinSuccess.value = `✅ Successfully imported! Added ${skillCount} skills and ${expCount} experiences.`
+    
+    // Clear inputs after successful import
+    setTimeout(() => {
+      linkedinJsonData.value = ''
+      linkedinSuccess.value = ''
+    }, 3000)
+  } catch (error) {
+    linkedinError.value = error instanceof Error ? error.message : 'Error importing LinkedIn data'
+  } finally {
+    isLoadingLinkedin.value = false
+  }
+}
+
+// Parse resume document handler
+const parseResumeDocument = async () => {
+  documentError.value = ''
+  documentSuccess.value = ''
+  isLoadingDocument.value = true
+  
+  try {
+    const textContent = resumeText.value.trim()
+    
+    if (!textContent) {
+      documentError.value = 'No content to parse. Please paste your resume text.'
+      return
+    }
+    
+    // Extract resume sections from the text
+    const sections = extractResumeSections(textContent)
+    
+    // Update resume with extracted data
+    if (sections.summary) {
+      resume.value.summary = sections.summary
+    }
+    
+    if (sections.experience && sections.experience.length > 0) {
+      resume.value.experience = sections.experience.map(exp => ({
+        position: exp.split('-')[0]?.trim() || exp,
+        company: exp.split('-')[1]?.trim() || '',
+        startDate: '',
+        endDate: '',
+        description: exp
+      }))
+    }
+    
+    if (sections.education && sections.education.length > 0) {
+      resume.value.education = sections.education.map(edu => ({
+        degree: edu.split(',')[0]?.trim() || edu,
+        school: edu.split(',')[1]?.trim() || '',
+        graduationDate: ''
+      }))
+    }
+    
+    if (sections.skills && sections.skills.length > 0) {
+      resume.value.skills = sections.skills
+    }
+    
+    const skillCount = sections.skills?.length || 0
+    const expCount = sections.experience?.length || 0
+    const eduCount = sections.education?.length || 0
+    
+    documentSuccess.value = `✅ Successfully parsed! Found ${skillCount} skills, ${expCount} experiences, ${eduCount} education entries.`
+    
+    // Clear input after successful parse
+    setTimeout(() => {
+      resumeText.value = ''
+      documentSuccess.value = ''
+    }, 3000)
+  } catch (error) {
+    documentError.value = error instanceof Error ? error.message : 'Error parsing resume document'
+  } finally {
+    isLoadingDocument.value = false
+  }
 }
 
 onMounted(async () => {
