@@ -1,8 +1,1 @@
-# Cloudflare Pages deployment configuration
-# This file configures redirects and rewrites for the Vue.js SPA
-
-# Route all requests to index.html for Vue Router to handle
-[[redirects]]
-from = "/*"
-to = "/index.html"
-status = 200
+/* /index.html 200
