@@ -67,6 +67,11 @@ Only extract what's explicitly there.`,
   }
 }
 
+function normalizeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string" && v.trim().length > 0);
+}
+
 // --- MCP Server Setup ---
 
 const server = new McpServer({
@@ -352,6 +357,229 @@ server.registerTool(
 
       return {
         content: [{ type: "text" as const, text: confirmation }],
+      };
+    } catch (err: unknown) {
+      return {
+        content: [{ type: "text" as const, text: `Error: ${(err as Error).message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 5: Upsert Skill
+server.registerTool(
+  "upsert_skill",
+  {
+    title: "Upsert Skill",
+    description:
+      "Create or update a reusable skill/SOP. Use this when a session produces a repeatable workflow that should be retained.",
+    inputSchema: {
+      title: z.string().describe("Short, specific skill title"),
+      summary: z.string().describe("What this skill solves and when to use it"),
+      sop_steps: z.array(z.string()).optional().default([]),
+      tags: z.array(z.string()).optional().default([]),
+      source_session_key: z.string().optional(),
+      metadata: z.record(z.string(), z.unknown()).optional().default({}),
+    },
+  },
+  async ({ title, summary, sop_steps, tags, source_session_key, metadata }) => {
+    try {
+      const steps = normalizeStringArray(sop_steps);
+      const skillTags = normalizeStringArray(tags);
+      const embeddingInput = [title, summary, ...steps].join("\n");
+      const embedding = await getEmbedding(embeddingInput);
+
+      const { data: skillId, error: upsertError } = await supabase.rpc("upsert_brain_skill", {
+        p_title: title,
+        p_summary: summary,
+        p_sop_steps: steps,
+        p_tags: skillTags,
+        p_metadata: metadata || {},
+        p_source_session_key: source_session_key || null,
+      });
+
+      if (upsertError || !skillId) {
+        return {
+          content: [{ type: "text" as const, text: `Failed to save skill: ${upsertError?.message || "unknown error"}` }],
+          isError: true,
+        };
+      }
+
+      const { error: embError } = await supabase
+        .from("brain_skills")
+        .update({ embedding })
+        .eq("id", skillId);
+
+      if (embError) {
+        return {
+          content: [{ type: "text" as const, text: `Skill saved, but embedding update failed: ${embError.message}` }],
+          isError: true,
+        };
+      }
+
+      return {
+        content: [
+          {
+            type: "text" as const,
+            text: `Skill saved: ${title}${skillTags.length ? ` | tags: ${skillTags.join(", ")}` : ""}`,
+          },
+        ],
+      };
+    } catch (err: unknown) {
+      return {
+        content: [{ type: "text" as const, text: `Error: ${(err as Error).message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 6: Search Skills
+server.registerTool(
+  "search_skills",
+  {
+    title: "Search Skills",
+    description:
+      "Search reusable skills/SOPs by meaning. Use this before solving a task from scratch.",
+    inputSchema: {
+      query: z.string().describe("What capability or workflow to find"),
+      limit: z.number().optional().default(10),
+      threshold: z.number().optional().default(0.5),
+      tag: z.string().optional().describe("Optional tag filter"),
+    },
+  },
+  async ({ query, limit, threshold, tag }) => {
+    try {
+      const qEmb = await getEmbedding(query);
+      const tagFilter = tag ? [tag] : null;
+      const { data, error } = await supabase.rpc("match_brain_skills", {
+        query_embedding: qEmb,
+        match_threshold: threshold,
+        match_count: limit,
+        tag_filter: tagFilter,
+      });
+
+      if (error) {
+        return {
+          content: [{ type: "text" as const, text: `Search error: ${error.message}` }],
+          isError: true,
+        };
+      }
+
+      if (!data || data.length === 0) {
+        return {
+          content: [{ type: "text" as const, text: `No skills found matching "${query}".` }],
+        };
+      }
+
+      const results = data.map(
+        (
+          s: {
+            title: string;
+            summary: string;
+            sop_steps: unknown;
+            tags: string[];
+            similarity: number;
+            created_at: string;
+          },
+          i: number
+        ) => {
+          const steps = normalizeStringArray(s.sop_steps);
+          const lines = [
+            `--- Skill ${i + 1} (${(s.similarity * 100).toFixed(1)}% match) ---`,
+            `Title: ${s.title}`,
+            `Captured: ${new Date(s.created_at).toLocaleDateString()}`,
+            `Summary: ${s.summary}`,
+          ];
+
+          if (Array.isArray(s.tags) && s.tags.length) {
+            lines.push(`Tags: ${s.tags.join(", ")}`);
+          }
+
+          if (steps.length) {
+            lines.push("Steps:");
+            steps.forEach((step, idx) => lines.push(`  ${idx + 1}. ${step}`));
+          }
+
+          return lines.join("\n");
+        }
+      );
+
+      return {
+        content: [{ type: "text" as const, text: `Found ${data.length} skill(s):\n\n${results.join("\n\n")}` }],
+      };
+    } catch (err: unknown) {
+      return {
+        content: [{ type: "text" as const, text: `Error: ${(err as Error).message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Tool 7: Archive Session
+server.registerTool(
+  "archive_session",
+  {
+    title: "Archive Session",
+    description:
+      "Archive a completed session with wins, failures, and next actions for long-term consolidation.",
+    inputSchema: {
+      session_key: z.string().describe("Stable ID for the session, conversation, or run"),
+      summary: z.string().describe("Short summary of the session outcome"),
+      wins: z.array(z.string()).optional().default([]),
+      failures: z.array(z.string()).optional().default([]),
+      next_actions: z.array(z.string()).optional().default([]),
+      source: z.string().optional().default("manual"),
+      metadata: z.record(z.string(), z.unknown()).optional().default({}),
+    },
+  },
+  async ({ session_key, summary, wins, failures, next_actions, source, metadata }) => {
+    try {
+      const normalizedWins = normalizeStringArray(wins);
+      const normalizedFailures = normalizeStringArray(failures);
+      const normalizedNextActions = normalizeStringArray(next_actions);
+
+      const embeddingInput = [
+        summary,
+        ...normalizedWins,
+        ...normalizedFailures,
+        ...normalizedNextActions,
+      ].join("\n");
+      const embedding = await getEmbedding(embeddingInput);
+
+      const { data: archiveId, error: upsertError } = await supabase.rpc("upsert_session_archive", {
+        p_session_key: session_key,
+        p_summary: summary,
+        p_wins: normalizedWins,
+        p_failures: normalizedFailures,
+        p_next_actions: normalizedNextActions,
+        p_source: source || "manual",
+        p_metadata: metadata || {},
+      });
+
+      if (upsertError || !archiveId) {
+        return {
+          content: [{ type: "text" as const, text: `Failed to archive session: ${upsertError?.message || "unknown error"}` }],
+          isError: true,
+        };
+      }
+
+      const { error: embError } = await supabase
+        .from("session_archives")
+        .update({ embedding })
+        .eq("id", archiveId);
+
+      if (embError) {
+        return {
+          content: [{ type: "text" as const, text: `Session archived, but embedding update failed: ${embError.message}` }],
+          isError: true,
+        };
+      }
+
+      return {
+        content: [{ type: "text" as const, text: `Session archived: ${session_key}` }],
       };
     } catch (err: unknown) {
       return {

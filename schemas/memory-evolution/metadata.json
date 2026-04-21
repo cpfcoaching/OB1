@@ -1,0 +1,19 @@
+{
+  "name": "Memory Evolution",
+  "description": "Adds skill and session-archive tables plus SQL functions for skill upsert, session archiving, and semantic skill search.",
+  "category": "schemas",
+  "author": {
+    "name": "OpenBrain Local Implementation"
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": true,
+    "services": [],
+    "tools": []
+  },
+  "tags": ["skills", "session-archive", "memory", "semantic-search"],
+  "difficulty": "intermediate",
+  "estimated_time": "15 minutes",
+  "created": "2026-04-20",
+  "updated": "2026-04-20"
+}
