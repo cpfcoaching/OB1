@@ -344,115 +344,98 @@ If user loses access to authenticator:
 
 ## Cloudflare Pages Deployment
 
-### Option 1: GitHub Actions (Recommended)
+The project uses **GitHub Actions + Wrangler** as the single CI/CD pipeline. Do **not** enable Cloudflare's built-in Git integration for this repository — it would create a duplicate pipeline and double-bill build minutes.
 
-#### Step 1: Connect Repository
+### Cloudflare Pages project details
 
-1. Push code to GitHub
-2. In Cloudflare Pages, click "Create a project"
-3. Connect your GitHub account
-4. Select the job-hunt-frontend repository
-5. Click "Begin setup"
+| Setting | Value |
+|---------|-------|
+| Project name | `job-hunt-app` |
+| Build output directory | `dist` |
+| Production URL | `https://app.cpfcoaching.us` |
+| Pages default URL | `https://job-hunt-app.pages.dev` |
 
-#### Step 2: Configure Build
+### GitHub Actions auto-deploy (recommended)
 
-- **Framework preset:** None (Vue.js)
-- **Build command:** `npm run build`
-- **Build output directory:** `dist`
-- **Root directory:** `/`
+Every push to `main` triggers `.github/workflows/deploy.yml`, which:
 
-#### Step 3: Set Environment Variables
+1. Checks out code
+2. Installs dependencies (`npm ci`)
+3. Builds the app (`npm run build`) with all `VITE_*` env vars baked in
+4. Deploys `dist/` to Cloudflare Pages via Wrangler
 
-In Cloudflare Pages project settings:
-1. Go to Settings > Environment variables
-2. Add all variables from `.env.local`:
+**Required GitHub repository secrets** (Settings → Secrets → Actions):
 
-```
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-# ... etc
-```
+| Secret | Where to get it |
+|--------|----------------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare → My Profile → API Tokens (Pages: Edit permission) |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare Dashboard → right-hand sidebar |
+| `VITE_FIREBASE_API_KEY` | Firebase Console → Project Settings → Your apps |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase Console → Project Settings → Your apps |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase Console → Project Settings → Your apps |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase Console → Project Settings → Your apps |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase Console → Project Settings → Your apps |
+| `VITE_FIREBASE_APP_ID` | Firebase Console → Project Settings → Your apps |
+| `VITE_FIREBASE_MEASUREMENT_ID` | Firebase Console → Project Settings → Your apps |
+| `VITE_JOB_HUNT_MCP_URL` | Supabase project → Functions → job-hunt-mcp |
+| `VITE_OPEN_BRAIN_MCP_URL` | Supabase project → Functions → open-brain-mcp |
+| `VITE_GOOGLE_ANALYTICS_ID` | Google Analytics → Admin → Data Streams |
+| `VITE_LINKEDIN_PARTNER_ID` | LinkedIn Campaign Manager → Insight Tag |
+| `VITE_DOMAIN` | `cpfcoaching.us` |
+| `VITE_API_BASE_URL` | `https://api.cpfcoaching.us` |
 
-#### Step 4: Deploy
+> **Note:** `VITE_ENV` is automatically set to `production` by the workflow and does not need to be added as a secret.
 
-Click "Save and deploy" - Cloudflare will automatically build and deploy on every push to main.
-
-### Option 2: Manual CLI Deployment
+### Manual CLI deployment (when Actions is unavailable)
 
 ```bash
 # Install Wrangler
 npm install -g wrangler
 
-# Login
+# Authenticate
 wrangler login
 
-# Deploy
+# Build and deploy
 npm run build
-wrangler pages deploy dist --project-name job-hunt-frontend
-```
-
-### Option 3: Docker Deployment
-
-Create `Dockerfile`:
-
-```dockerfile
-FROM node:18-alpine
-WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "run", "preview"]
-```
-
-Build and deploy:
-```bash
-docker build -t job-hunt-frontend .
-docker run -p 3000:3000 job-hunt-frontend
+wrangler pages deploy dist --project-name=job-hunt-app
 ```
 
 ---
 
 ## Domain Configuration
 
-### Using cisoadvisor.us Domain
+### Using app.cpfcoaching.us
 
-#### Step 1: Update DNS Records
+#### Step 1: Add CNAME in Cloudflare DNS
 
-If DNS is hosted elsewhere (not Cloudflare):
+In **Cloudflare Dashboard → cpfcoaching.us → DNS**:
 
-1. Add CNAME record:
-   - **Name:** job-hunt
-   - **Type:** CNAME
-   - **Value:** job-hunt-frontend.pages.dev
+| Type | Name | Target | Proxy |
+|------|------|--------|-------|
+| CNAME | `app` | `job-hunt-app.pages.dev` | Proxied (orange cloud) |
 
-2. Or use A records if required:
-   - **Type:** A
-   - **Value:** 192.0.2.1 (Cloudflare's edge IP)
+#### Step 2: Add Custom Domain in Cloudflare Pages
 
-#### Step 2: Add Custom Domain in Cloudflare
-
-1. In Cloudflare Pages project
-2. Go to "Custom domains"
-3. Click "Set up custom domain"
-4. Enter `job-hunt.cisoadvisor.us`
-5. Verify DNS configuration
-6. Activate
+1. Open Cloudflare Pages → `job-hunt-app` project
+2. Go to **Custom domains**
+3. Click **Set up a custom domain**
+4. Enter `app.cpfcoaching.us`
+5. Confirm — Cloudflare will auto-issue and renew the SSL certificate
 
 #### Step 3: SSL/TLS
 
-1. In Cloudflare, go to SSL/TLS
-2. Ensure "Flexible" or "Full" mode (Pages auto-manages)
-3. Enable "Auto HTTPS Rewrites"
-4. Enable "Always Use HTTPS"
+Cloudflare Pages manages TLS automatically. In **SSL/TLS** settings for `cpfcoaching.us`:
+
+1. Set encryption mode to **Full (strict)**
+2. Enable **Always Use HTTPS**
+3. Enable **Automatic HTTPS Rewrites**
 
 #### Step 4: Firewall Rules (Optional)
 
-Add security rules in Cloudflare:
+Add a WAF custom rule in Cloudflare if geo-blocking is required:
 
 ```
-(cf.country eq "CN" or cf.country eq "RU") -> Block
+(ip.geoip.country in {"CN" "RU"}) -> Block
 ```
 
 ---
@@ -462,16 +445,18 @@ Add security rules in Cloudflare:
 Before going live:
 
 - [ ] Firebase project created and configured
-- [ ] Firestore collections created with security rules
-- [ ] Google Sign-In enabled
-- [ ] Environment variables set in Cloudflare
-- [ ] Build tested locally: `npm run build`
-- [ ] Preview tested: `npm run preview`
-- [ ] Deployed to Cloudflare Pages
-- [ ] Custom domain configured
-- [ ] SSL certificate active
-- [ ] MFA tested with user account
-- [ ] Firestore data persistence verified
+- [ ] Firestore collections created with security rules deployed (`firebase deploy --only firestore:rules`)
+- [ ] Google Sign-In enabled in Firebase Authentication
+- [ ] All GitHub repository secrets added (see table above)
+- [ ] Build passes locally: `npm run build`
+- [ ] Preview works locally: `npm run preview`
+- [ ] GitHub Actions workflow succeeds on push to `main`
+- [ ] `app.cpfcoaching.us` CNAME set to `job-hunt-app.pages.dev` (proxied)
+- [ ] Custom domain `app.cpfcoaching.us` added in Cloudflare Pages and SSL active
+- [ ] Login flow verified at https://app.cpfcoaching.us
+- [ ] Firestore reads/writes verified (create a test job entry)
+- [ ] Deep-link refresh works (navigate to a route, refresh — should not 404)
+- [ ] Google Analytics events firing (check GA4 Realtime report)
 - [ ] OpenBrain MCP integration tested
 
 ---
@@ -597,4 +582,4 @@ npm run type-check
 
 ---
 
-**Last Updated:** April 18, 2026
+**Last Updated:** April 20, 2026

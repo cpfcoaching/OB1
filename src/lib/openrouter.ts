@@ -168,6 +168,77 @@ Extract realistic data from the profile and provide constructive feedback.`
   }
 }
 
+/**Parse raw markdown/text scraped from a web profile into structured resume data.*/
+export async function parseScrapedProfile(markdown: string): Promise<{
+  personalInfo: { fullName: string; email: string; phone: string; location: string }
+  summary: string
+  experience: Array<{ position: string; company: string; startDate: string; endDate: string; description: string }>
+  education: Array<{ degree: string; school: string; graduationDate: string }>
+  skills: string[]
+}> {
+  const prompt = `Extract professional resume data from the following web page content.
+
+Web page content:
+${markdown.substring(0, 8000)}
+
+Respond with ONLY valid JSON (no markdown, no code blocks) in this exact structure:
+{
+  "personalInfo": {
+    "fullName": "full name",
+    "email": "email or empty string",
+    "phone": "phone or empty string",
+    "location": "city, state/country or empty string"
+  },
+  "summary": "professional summary or bio in one paragraph",
+  "experience": [
+    {
+      "position": "job title",
+      "company": "company name",
+      "startDate": "YYYY-MM format or empty string",
+      "endDate": "YYYY-MM format or empty string (empty if current role)",
+      "description": "role description and key achievements"
+    }
+  ],
+  "education": [
+    {
+      "degree": "degree name and field",
+      "school": "institution name",
+      "graduationDate": "YYYY-MM format or year only"
+    }
+  ],
+  "skills": ["skill1", "skill2"]
+}
+
+Rules:
+- List experience most recent first
+- For current roles leave endDate as an empty string
+- Include certifications in the skills array
+- Only include data that is explicitly present in the content`
+
+  try {
+    const result = await client.callModel({
+      model: 'openai/gpt-4-mini',
+      instructions: 'You are a resume data extraction expert. Extract structured data from web content. Always respond with valid JSON only, no markdown.',
+      input: prompt
+    })
+
+    const responseText = await result.getText()
+
+    try {
+      return JSON.parse(responseText)
+    } catch {
+      const jsonMatch = responseText.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0])
+      }
+      throw new Error('Failed to parse profile extraction response')
+    }
+  } catch (error) {
+    console.error('Profile parsing error:', error)
+    throw error
+  }
+}
+
 /**Compare two resumes and identify differences.*/
 export async function compareResumes(resume1: any, resume2: any): Promise<any> {
   const prompt = `Compare these two resumes and identify key differences and improvements.

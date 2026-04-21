@@ -13,10 +13,10 @@
           <div class="flex gap-3">
             <button
               @click="autoPopulateFromWeb"
-              :disabled="isAutoPopulating"
+              :disabled="isCrawling"
               class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition font-medium disabled:opacity-50"
             >
-              {{ isAutoPopulating ? '⏳ Loading...' : '🌐 Auto-populate from Web' }}
+              {{ isCrawling ? crawlStatus || '⏳ Crawling...' : '🌐 Update from Web' }}
             </button>
             <button
               @click="downloadPDF"
@@ -594,6 +594,94 @@
         </div>
       </div>
     </div>
+
+    <!-- Web Crawl Panel (modal overlay) -->
+    <div v-if="showCrawlPanel" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'" class="border rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+          <div class="flex justify-between items-center mb-4">
+            <h2 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-xl font-bold">🌐 Update Resume from Web</h2>
+            <button @click="closeCrawlPanel" :class="isDark ? 'text-gray-400 hover:text-white' : 'text-gray-500 hover:text-gray-900'" class="text-2xl leading-none">×</button>
+          </div>
+
+          <!-- URL Input -->
+          <div class="mb-4">
+            <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-1">Profile URL</label>
+            <input
+              v-model="crawlUrl"
+              type="url"
+              placeholder="https://yourwebsite.com or https://christophefoulon.com"
+              :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+              class="w-full border rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-green-500"
+            />
+            <p :class="isDark ? 'text-gray-400' : 'text-gray-500'" class="text-xs mt-1">
+              Enter your personal website or any public profile URL. LinkedIn may require authentication.
+            </p>
+          </div>
+
+          <!-- Crawl Button -->
+          <button
+            @click="runWebCrawl"
+            :disabled="isCrawling || !crawlUrl"
+            class="w-full bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white py-2 rounded-lg font-medium transition mb-4"
+          >
+            {{ isCrawling ? crawlStatus || '⏳ Crawling...' : '🔍 Crawl & Extract' }}
+          </button>
+
+          <!-- Error -->
+          <div v-if="crawlError" class="bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4 text-sm">
+            ❌ {{ crawlError }}
+          </div>
+
+          <!-- Extracted Data Preview -->
+          <div v-if="crawledData" class="space-y-4">
+            <h3 :class="isDark ? 'text-white' : 'text-gray-900'" class="font-semibold">✅ Extracted Data Preview</h3>
+
+            <!-- Personal Info -->
+            <div :class="isDark ? 'bg-gray-700' : 'bg-gray-50'" class="rounded-lg p-4">
+              <p class="text-xs font-semibold text-green-600 mb-2 uppercase tracking-wide">Personal Info</p>
+              <p :class="isDark ? 'text-white' : 'text-gray-900'" class="font-medium">{{ crawledData.personalInfo?.fullName }}</p>
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="text-sm">{{ crawledData.personalInfo?.email }} · {{ crawledData.personalInfo?.phone }}</p>
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="text-sm">{{ crawledData.personalInfo?.location }}</p>
+            </div>
+
+            <!-- Experience count -->
+            <div :class="isDark ? 'bg-gray-700' : 'bg-gray-50'" class="rounded-lg p-4">
+              <p class="text-xs font-semibold text-green-600 mb-2 uppercase tracking-wide">Experience</p>
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="text-sm">{{ crawledData.experience?.length || 0 }} role(s) found</p>
+              <ul v-if="crawledData.experience?.length" class="mt-2 space-y-1">
+                <li v-for="exp in crawledData.experience" :key="exp.company + exp.position" :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="text-sm">
+                  • {{ exp.position }} @ {{ exp.company }} ({{ exp.startDate || '?' }} – {{ exp.endDate || 'present' }})
+                </li>
+              </ul>
+            </div>
+
+            <!-- Skills -->
+            <div :class="isDark ? 'bg-gray-700' : 'bg-gray-50'" class="rounded-lg p-4">
+              <p class="text-xs font-semibold text-green-600 mb-2 uppercase tracking-wide">Skills ({{ crawledData.skills?.length || 0 }})</p>
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="text-sm">{{ crawledData.skills?.slice(0, 10).join(', ') }}{{ (crawledData.skills?.length || 0) > 10 ? ` +${(crawledData.skills?.length || 0) - 10} more` : '' }}</p>
+            </div>
+
+            <!-- Apply Button -->
+            <div class="flex gap-3 pt-2">
+              <button
+                @click="applyWebCrawlData"
+                class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg font-medium transition"
+              >
+                ✅ Apply to Resume
+              </button>
+              <button
+                @click="closeCrawlPanel"
+                :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'"
+                class="flex-1 py-2 rounded-lg font-medium transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -604,7 +692,7 @@ import { useAuth } from '@/composables/useAuth'
 import TopBanner from '@/components/TopBanner.vue'
 import { useResume } from '@/composables/useResume'
 import { useResumeImport, type ExtractedResumeData } from '@/composables/useResumeImport'
-import { christopheResumeData } from '@/data/christopheResume'
+import { useWebCrawl, type CrawledResumeData } from '@/composables/useWebCrawl'
 
 const router = useRouter()
 const { user, initializeAuth, isDark } = useAuth()
@@ -634,6 +722,7 @@ const {
 } = useResume()
 
 const { isImporting, importError, extractedData, parseLinkedInData, parseDocumentText, importFromFile } = useResumeImport()
+const { isCrawling, crawlError, crawlStatus, crawledData, crawlAndSave } = useWebCrawl()
 
 const activeTab = ref('editor')
 const linkedinUrl = ref('')
@@ -644,6 +733,10 @@ const resumenNameInput = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const importedData = ref<ExtractedResumeData | null>(null)
 const isAutoPopulating = ref(false)
+
+// Web crawl state
+const showCrawlPanel = ref(false)
+const crawlUrl = ref('')
 
 const handleSaveResume = async () => {
   const name = resumenNameInput.value || `Resume - ${new Date().toLocaleDateString()}`
@@ -656,33 +749,52 @@ const handleSaveResume = async () => {
   }
 }
 
-const autoPopulateFromWeb = async () => {
-  isAutoPopulating.value = true
+const autoPopulateFromWeb = () => {
+  showCrawlPanel.value = true
+}
+
+const runWebCrawl = async () => {
   try {
-    // Populate all fields from scraped web data
-    Object.assign(resume.value.personalInfo, christopheResumeData.personalInfo)
-    resume.value.summary = christopheResumeData.summary
-    resume.value.experience = christopheResumeData.experience.map(exp => ({
+    await crawlAndSave(crawlUrl.value)
+  } catch (err: any) {
+    // error shown via crawlError ref
+  }
+}
+
+const applyWebCrawlData = () => {
+  if (!crawledData.value) return
+  const data: CrawledResumeData = crawledData.value
+  if (data.personalInfo) {
+    Object.assign(resume.value.personalInfo, data.personalInfo)
+  }
+  if (data.summary) {
+    resume.value.summary = data.summary
+  }
+  if (data.experience?.length) {
+    resume.value.experience = data.experience.map(exp => ({
       position: exp.position,
       company: exp.company,
       startDate: exp.startDate,
       endDate: exp.endDate,
       description: exp.description
     }))
-    resume.value.education = christopheResumeData.education.map(edu => ({
+  }
+  if (data.education?.length) {
+    resume.value.education = data.education.map(edu => ({
       degree: edu.degree,
       school: edu.school,
       graduationDate: edu.graduationDate
     }))
-    resume.value.skills = christopheResumeData.skills
-    
-    alert('✅ Resume auto-populated from your web profiles!')
-    activeTab.value = 'editor'
-  } catch (err) {
-    alert('❌ Error auto-populating resume')
-  } finally {
-    isAutoPopulating.value = false
   }
+  if (data.skills?.length) {
+    resume.value.skills = data.skills
+  }
+  showCrawlPanel.value = false
+  activeTab.value = 'editor'
+}
+
+const closeCrawlPanel = () => {
+  showCrawlPanel.value = false
 }
 
 const handleLinkedInImport = async () => {
