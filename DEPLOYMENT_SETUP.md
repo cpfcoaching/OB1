@@ -57,7 +57,7 @@
 
 **1. Add GitHub Secret (5 min)**
    - Go: https://github.com/cpfcoaching/job-hunt-frontend/settings/secrets/actions
-   - New secret: `CLOUDFLARE_API_TOKEN` = `[REDACTED_CLOUDFLARE_TOKEN]`
+   - New secret: `CLOUDFLARE_API_TOKEN` = `[REDACTED - See .env.local]` *(Token rotated on April 20, 2026)*
 
 **2. Update DNS Record (5 min)**
    - Go: Cloudflare Dashboard → cpfcoaching.us → DNS
