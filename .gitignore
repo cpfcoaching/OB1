@@ -2,3 +2,7 @@ node_modules
 
 # Added by ggshield
 .cache_ggshield
+
+# Added by GitGuard
+dist/
+.env.local
