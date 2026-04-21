@@ -6,3 +6,6 @@ node_modules
 # Added by GitGuard
 dist/
 .env.local
+
+# Added by GitGuard
+*.log
