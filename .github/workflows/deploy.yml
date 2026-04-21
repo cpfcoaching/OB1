@@ -63,6 +63,8 @@ jobs:
           VITE_LINKEDIN_PARTNER_ID: ${{ secrets.VITE_LINKEDIN_PARTNER_ID }}
           VITE_DOMAIN: ${{ secrets.VITE_DOMAIN }}
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_FIRECRAWL_API_KEY: ${{ secrets.VITE_FIRECRAWL_API_KEY }}
+          VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
           VITE_ENV: production
 
       - name: Install wrangler
