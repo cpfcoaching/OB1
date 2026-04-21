@@ -9,14 +9,49 @@ export const christopheResumeData = {
     phone: '+1-202-838-6187',
     location: 'Haymarket, VA / Washington D.C. Area'
   },
-  summary: `Business-aligned and results-driven CISO with over 20 years of experience treating cybersecurity as a fundamental business issue, not just a technical problem. Proven track record of partnering with Boards of Directors and C-suite executives to demystify the complex risk landscape and build resilient, business-aligned security programs. Expertise in building and maturing security capabilities from the ground up, leading complex digital transformations, and orchestrating security operations for critical government cloud infrastructure. A recognized thought leader, multi-book author, and podcast host dedicated to developing and mentoring the next generation of cyber leaders. Deep subject matter expertise in Microsoft Cloud, Data, AI, and GRC.`,
+  summary: `Business-aligned and results-driven CISO with over 20 years of experience treating cybersecurity as a fundamental business issue, not just a technical problem. Proven track record of partnering with Boards of Directors and C-suite executives to demystify the complex risk landscape and build resilient, business-aligned security programs. Expertise in building and maturing security capabilities from the ground up, leading complex digital transformations, and orchestrating security operations for critical government cloud infrastructure. A recognized thought leader, multi-book author, and podcast host dedicated to developing and mentoring the next generation of cyber leaders. Deep subject matter expertise in Microsoft Cloud, Data, AI, and GRC. Certifications include CISSP, GSLC, CRISC, CDPSE, AWS Security, and CompTIA Security+.`,
   experience: [
+    {
+      position: 'Adjunct Professor',
+      company: 'Bellevue University',
+      startDate: '2024-07',
+      endDate: '',
+      description: `Teaching cybersecurity curriculum to the next generation of security professionals. Applying real-world vCISO and enterprise security leadership experience to academic instruction, helping students bridge the gap between theory and industry practice.`
+    },
+    {
+      position: 'Fractional CISO',
+      company: 'Nexigen',
+      startDate: '2024-01',
+      endDate: '',
+      description: `Serving as Fractional CISO providing strategic cybersecurity leadership. Developing and overseeing security programs, risk management frameworks, and compliance initiatives aligned with business objectives.`
+    },
+    {
+      position: 'Fractional Cybersecurity Engineer',
+      company: 'SideChannel',
+      startDate: '2024-01',
+      endDate: '',
+      description: `Providing fractional cybersecurity engineering expertise to clients. Delivering hands-on technical security guidance alongside strategic advisory services to help organizations build robust security capabilities.`
+    },
+    {
+      position: 'President',
+      company: 'InfraGard National Capital Region',
+      startDate: '2023-01',
+      endDate: '2026-12',
+      description: `Leading the InfraGard National Capital Region chapter, the FBI's public-private partnership for critical infrastructure protection. Facilitating collaboration between private sector and government to protect critical U.S. infrastructure through information sharing and education.`
+    },
+    {
+      position: 'CISO & Board Member',
+      company: 'Whole Cyber Human Initiative',
+      startDate: '2021-01',
+      endDate: '',
+      description: `Serving as CISO and Board Member for nonprofit organization focused on holistic cybersecurity workforce development. Overseeing security program strategy and governance while contributing to the mission of expanding diversity and inclusion in the cybersecurity field.`
+    },
     {
       position: 'Founder & Executive Cyber Advisor',
       company: 'CPF Coaching LLC',
-      startDate: '2015-01',
+      startDate: '2007-01',
       endDate: '',
-      description: `Led cybersecurity advisory and consulting services for SMBs and startups. Services include Virtual CISO Services, Risk Assessments, Retained Advisory Services, and Leadership Coaching. 15+ years of demonstrated expertise in transforming and overseeing information security strategies across financial services, healthcare, banking, IT consulting, higher education, and nonprofits. Hosted award-winning "Breaking into Cybersecurity" podcast focused on helping aspiring professionals transition into the industry. Authored and published multiple cybersecurity career and strategy books. Deep focus on helping businesses address cybersecurity risks while minimizing friction, resulting in increased resilience.`
+      description: `Founded and led cybersecurity advisory and coaching practice serving SMBs, startups, and aspiring cyber leaders. Services include Virtual CISO, Risk Assessments, Retained Advisory, and Leadership Coaching. 20+ years of demonstrated expertise transforming information security strategies across financial services, healthcare, banking, IT consulting, higher education, and nonprofits. Host of the award-winning "Breaking into Cybersecurity" podcast. Author and co-author of multiple cybersecurity career books including "Hack the Cybersecurity Interview," "Develop Your Cybersecurity Career Path," and "Cybersecurity Career Advice from a Cyborg."`
     },
     {
       position: 'Cyber Security Advisor & Strategic Consultant',
@@ -26,17 +61,10 @@ export const christopheResumeData = {
       description: `Provided strategic cybersecurity consulting and vCISO advisory services to enterprise clients. Focused on cloud security, GRC program development, and digital transformation initiatives. Leveraged deep expertise in Microsoft Azure and enterprise security architecture to deliver business-aligned security solutions.`
     },
     {
-      position: 'Cyber Risk & Security Consultant',
-      company: 'Belleve',
-      startDate: '2018-01',
-      endDate: '',
-      description: `Delivered enterprise-grade cybersecurity consulting services with focus on risk management and compliance. Specialized in helping organizations establish mature security programs aligned with industry frameworks and regulatory requirements.`
-    },
-    {
       position: 'Security Strategy Advisor',
       company: 'GRIMM',
       startDate: '2017-01',
-      endDate: '',
+      endDate: '2019-12',
       description: `Collaborated on advanced cybersecurity strategy and threat intelligence initiatives. Contributed expertise in security program development and organizational security maturity enhancement across diverse client portfolios.`
     },
     {
@@ -99,6 +127,7 @@ export const christopheResumeData = {
     'HIPAA Compliance',
     'HITRUST Certification',
     'FISMA & FEDRAMP',
+    'SOC 2',
     'Incident Response',
     'Vendor Risk Management',
     'Vulnerability Management',
@@ -114,7 +143,17 @@ export const christopheResumeData = {
     'Thought Leadership',
     'Technical Writing',
     'Podcast Production',
-    'Community Leadership'
+    'Community Leadership',
+    'CISSP',
+    'GSLC',
+    'CRISC',
+    'CDPSE',
+    'AWS Security Specialty',
+    'CompTIA Security+',
+    'CompTIA Network+',
+    'CompTIA A+',
+    'MCSE',
+    'Academic Instruction'
   ]
 }
 
