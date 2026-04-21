@@ -61,6 +61,20 @@ export const christopheResumeData = {
       description: `Provided strategic cybersecurity consulting and vCISO advisory services to enterprise clients. Focused on cloud security, GRC program development, and digital transformation initiatives. Leveraged deep expertise in Microsoft Azure and enterprise security architecture to deliver business-aligned security solutions.`
     },
     {
+      position: 'Security Strategy Advisor',
+      company: 'GRIMM',
+      startDate: '2017-01',
+      endDate: '2019-12',
+      description: `Collaborated on advanced cybersecurity strategy and threat intelligence initiatives. Contributed expertise in security program development and organizational security maturity enhancement across diverse client portfolios.`
+    },
+    {
+      position: 'Cybersecurity Leadership Consultant',
+      company: 'CTCA (Cancer Treatment Centers of America)',
+      startDate: '2014-06',
+      endDate: '2016-12',
+      description: `Led cybersecurity initiatives for healthcare organization with focus on HIPAA compliance and patient data protection. Established security governance frameworks and incident response procedures for healthcare environment. Enhanced security maturity while maintaining operational efficiency in patient care delivery.`
+    },
+    {
       position: 'Senior Manager, Cybersecurity & Technology Risk Oversight',
       company: 'Capital One',
       startDate: '2012-06',
