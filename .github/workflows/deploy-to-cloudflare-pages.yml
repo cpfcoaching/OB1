@@ -1,0 +1,99 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate required secrets
+        run: |
+          missing=()
+          [[ -z "${{ secrets.VITE_FIREBASE_API_KEY }}" ]] && missing+=("VITE_FIREBASE_API_KEY")
+          [[ -z "${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" ]] && missing+=("VITE_FIREBASE_AUTH_DOMAIN")
+          [[ -z "${{ secrets.VITE_FIREBASE_PROJECT_ID }}" ]] && missing+=("VITE_FIREBASE_PROJECT_ID")
+          [[ -z "${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}" ]] && missing+=("VITE_FIREBASE_STORAGE_BUCKET")
+          [[ -z "${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" ]] && missing+=("VITE_FIREBASE_MESSAGING_SENDER_ID")
+          [[ -z "${{ secrets.VITE_FIREBASE_APP_ID }}" ]] && missing+=("VITE_FIREBASE_APP_ID")
+          [[ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]] && missing+=("CLOUDFLARE_API_TOKEN")
+          [[ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]] && missing+=("CLOUDFLARE_ACCOUNT_ID")
+
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${missing[*]}"
+            exit 1
+          fi
+
+  build:
+    name: Build Application
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_JOB_HUNT_MCP_URL: ${{ secrets.VITE_JOB_HUNT_MCP_URL }}
+          VITE_OPEN_BRAIN_MCP_URL: ${{ secrets.VITE_OPEN_BRAIN_MCP_URL }}
+          VITE_GOOGLE_ANALYTICS_ID: ${{ secrets.VITE_GOOGLE_ANALYTICS_ID }}
+          VITE_LINKEDIN_PARTNER_ID: ${{ secrets.VITE_LINKEDIN_PARTNER_ID }}
+          VITE_DOMAIN: ${{ secrets.VITE_DOMAIN }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_FIRECRAWL_API_KEY: ${{ secrets.VITE_FIRECRAWL_API_KEY }}
+          VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+          VITE_ENV: production
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+
+  deploy:
+    name: Deploy to Cloudflare
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-dist
+          path: dist/
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: job-hunt-app
+          directory: dist
