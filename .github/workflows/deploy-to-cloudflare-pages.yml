@@ -16,7 +16,7 @@ concurrency:
 jobs:
   validate:
     name: Validate Environment
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Validate required secrets
         run: |
@@ -38,7 +38,7 @@ jobs:
   build:
     name: Build Application
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
@@ -82,7 +82,7 @@ jobs:
   deploy:
     name: Deploy to Cloudflare
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
