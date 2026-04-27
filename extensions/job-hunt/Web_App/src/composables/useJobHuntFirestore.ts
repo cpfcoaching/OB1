@@ -9,6 +9,7 @@ import {
   where,
   getDocs,
   getDoc,
+  setDoc,
   Timestamp,
 } from 'firebase/firestore'
 
@@ -208,7 +209,74 @@ export const useJobHuntFirestore = (userId: string) => {
     return stats
   }
 
+  // ── Recommendation filter preferences ────────────────────────────────────
+  type OutcomeType = 'saved' | 'ignored' | 'applied' | 'interview'
+
+  const saveFilterPreferences = async (filters: Record<string, unknown>) => {
+    const ref = doc(db, 'recommendation_filters', userId)
+    await setDoc(ref, { overrides: filters, updatedAt: Timestamp.now() }, { merge: true })
+  }
+
+  const loadFilterPreferences = async (): Promise<Record<string, unknown> | null> => {
+    const ref = doc(db, 'recommendation_filters', userId)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) return null
+    return (snap.data()?.overrides as Record<string, unknown>) ?? null
+  }
+
+  // ── Recommendation outcomes ───────────────────────────────────────────────
+  const saveRecommendationOutcome = async (listingId: string, outcome: OutcomeType) => {
+    await addDoc(collection(db, 'recommendation_outcomes'), {
+      userId,
+      listingId,
+      outcome,
+      recordedAt: Timestamp.now(),
+    })
+  }
+
+  const loadRecommendationOutcomes = async () => {
+    const q = query(collection(db, 'recommendation_outcomes'), where('userId', '==', userId))
+    const snap = await getDocs(q)
+    return snap.docs.map(d => ({ id: d.id, ...d.data() })) as Array<{
+      id: string; userId: string; listingId: string; outcome: OutcomeType; recordedAt: Timestamp
+    }>
+  }
+
+  // ── Ranking weights ───────────────────────────────────────────────────────
+  const saveRankingWeights = async (weights: Record<string, unknown>) => {
+    const ref = doc(db, 'ranking_weights', userId)
+    await setDoc(ref, { ...weights, updatedAt: Timestamp.now() }, { merge: true })
+  }
+
+  const loadRankingWeights = async (): Promise<Record<string, unknown> | null> => {
+    const ref = doc(db, 'ranking_weights', userId)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) return null
+    return snap.data() as Record<string, unknown>
+  }
+
+  // ── Resume storage ────────────────────────────────────────────────────────
+  const saveResume = async (resumeData: Record<string, unknown>) => {
+    const ref = doc(db, 'resumes', userId)
+    await setDoc(ref, { ...resumeData, updatedAt: Timestamp.now() }, { merge: true })
+  }
+
+  const loadResume = async (): Promise<Record<string, unknown> | null> => {
+    const ref = doc(db, 'resumes', userId)
+    const snap = await getDoc(ref)
+    if (!snap.exists()) return null
+    return snap.data() as Record<string, unknown>
+  }
+
   return {
+    saveFilterPreferences,
+    loadFilterPreferences,
+    saveRecommendationOutcome,
+    loadRecommendationOutcomes,
+    saveRankingWeights,
+    loadRankingWeights,
+    saveResume,
+    loadResume,
     addCompany,
     updateCompany,
     getCompanies,
