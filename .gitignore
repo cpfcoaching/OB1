@@ -26,3 +26,6 @@ deno.lock
 
 # Local agent worktrees (contain nested git repositories)
 .claude/worktrees/
+
+# Added by ggshield
+.cache_ggshield

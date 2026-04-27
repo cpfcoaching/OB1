@@ -1,0 +1,36 @@
+[debug] [2026-04-24T12:39:19.027Z] [Firebase Plugin] Activating Firebase extension.
+[info] [Firebase Plugin] Checked firebase-tools, is up to date!
+[debug] [2026-04-24T12:39:23.243Z] [Firebase Plugin] requireAuthWrapper
+[debug] [2026-04-24T12:39:23.248Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-24T12:39:23.249Z] > authorizing via signed-in user (christophefoulon@gmail.com)
+[debug] [2026-04-24T12:39:23.250Z] Checked if tokens are valid: true, expires at: 1777037720050
+[debug] [2026-04-24T12:39:23.250Z] Checked if tokens are valid: true, expires at: 1777037720050
+[debug] [2026-04-24T12:39:23.250Z] [Firebase Plugin] User found:  christophefoulon@gmail.com
+[info] [Firebase Plugin] (Core:Project) New user detected, fetching projects
+[debug] [2026-04-24T12:39:23.250Z] Checked if tokens are valid: true, expires at: 1777037720050
+[debug] [2026-04-24T12:39:23.251Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=1000
+[debug] [2026-04-24T12:39:23.254Z] [Firebase Plugin] VSCode notification server listening on port 40001
+[info] [Firebase Plugin] Starting SQL Connect toolkit (version 3.4.5) on port 50001
+[debug] [2026-04-24T12:39:23.511Z] 'fdc build' failed with error: Unable to build your SQL Connect schema and connectors (exit code 1): E0424 08:39:23.510144   74006 cmd.go:43] Error loading data connect config: could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"'fdc build' failed with error: Unable to build your SQL Connect schema and connectors (exit code 1): E0424 08:39:23.510144   74006 cmd.go:43] Error loading data connect config: could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`\n"}}
+[debug] [2026-04-24T12:39:23.512Z] Ignoring unsupported arg: auto_download {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: auto_download"}}
+[debug] [2026-04-24T12:39:23.512Z] Ignoring unsupported arg: port {"metadata":{"emulator":{"name":"dataconnect"},"message":"Ignoring unsupported arg: port"}}
+[debug] [2026-04-24T12:39:23.512Z] Starting SQL Connect Emulator with command {"binary":"/Users/MacAttack/.cache/firebase/emulators/dataconnect-emulator-3.4.5","args":["--logtostderr","-v=2","dev","--listen=localhost:50001","--config_dir=/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect","--enable_output_schema_extensions=true","--enable_output_generated_sdk=true"],"optionalArgs":["listen","config_dir","enable_output_schema_extensions","enable_output_generated_sdk"],"joinArgs":true,"shell":false,"port":9399} {"metadata":{"emulator":{"name":"dataconnect"},"message":"Starting SQL Connect Emulator with command {\"binary\":\"/Users/MacAttack/.cache/firebase/emulators/dataconnect-emulator-3.4.5\",\"args\":[\"--logtostderr\",\"-v=2\",\"dev\",\"--listen=localhost:50001\",\"--config_dir=/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect\",\"--enable_output_schema_extensions=true\",\"--enable_output_generated_sdk=true\"],\"optionalArgs\":[\"listen\",\"config_dir\",\"enable_output_schema_extensions\",\"enable_output_generated_sdk\"],\"joinArgs\":true,\"shell\":false,\"port\":9399}"}}
+[info] i  dataconnect: SQL Connect Emulator logging to dataconnect-debug.log {"metadata":{"emulator":{"name":"dataconnect"},"message":"SQL Connect Emulator logging to dataconnect-debug.log"}}
+[debug] [2026-04-24T12:39:23.541Z] E0424 08:39:23.540967   74007 dev.go:83] Failed to load initial config from "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0424 08:39:23.540967   74007 dev.go:83] Failed to load initial config from \"/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect\": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`\n"}}
+[debug] [2026-04-24T12:39:23.542Z] E0424 08:39:23.541633   74007 watch.go:116] watchAllDir unable to walk dir `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`: lstat /Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect: no such file or directory
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0424 08:39:23.541633   74007 watch.go:116] watchAllDir unable to walk dir `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`: lstat /Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect: no such file or directory\n"}}
+[debug] [2026-04-24T12:39:23.546Z] I0424 08:39:23.546873   74007 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:50001
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"I0424 08:39:23.546873   74007 dev.go:104] Listening on address (HTTP + gRPC): 127.0.0.1:50001\n"}}
+[debug] [2026-04-24T12:39:23.611Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects 200
+[debug] [2026-04-24T12:39:23.611Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects [omitted]
+[error] [Firebase Plugin] error:  {}
+[debug] [2026-04-24T12:39:33.543Z] E0424 08:39:33.543026   74007 watch.go:40] Failed to load config from "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0424 08:39:33.543026   74007 watch.go:40] Failed to load config from \"/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect\": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`\n"}}
+[debug] [2026-04-24T12:39:43.543Z] E0424 08:39:43.543128   74007 watch.go:40] Failed to load config from "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0424 08:39:43.543128   74007 watch.go:40] Failed to load config from \"/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect\": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`\n"}}
+[debug] [2026-04-24T12:39:53.543Z] E0424 08:39:53.543424   74007 watch.go:40] Failed to load config from "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`
+ {"metadata":{"emulator":{"name":"dataconnect"},"message":"E0424 08:39:53.543424   74007 watch.go:40] Failed to load config from \"/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect\": could not find dataconnect.yaml in `/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/dataconnect`\n"}}
+[info] [Firebase Plugin] Stopping SQL Connect toolkit
+[warn] ⚠  SQL Connect Emulator has exited upon receiving signal: SIGINT 
