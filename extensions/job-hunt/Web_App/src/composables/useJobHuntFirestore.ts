@@ -10,8 +10,10 @@ import {
   getDocs,
   getDoc,
   setDoc,
+  orderBy,
   Timestamp,
 } from 'firebase/firestore'
+import { compressToUTF16, decompressFromUTF16 } from 'lz-string'
 
 export interface Company {
   id?: string
@@ -80,6 +82,41 @@ export interface JobContact {
   createdAt: Timestamp
   updatedAt: Timestamp
 }
+
+export interface UserContextProfile {
+  id?: string
+  userId: string
+  backgroundSummary: string
+  experienceSummary: string
+  educationSummary: string
+  skills: string[]
+  competencies: string[]
+  targetRolesInclude: string[]
+  targetRolesExclude: string[]
+  locationRequirements: string[]
+  salaryRequirements: string
+  additionalContext: string
+  updatedAt: Timestamp
+}
+
+export type ResumeSnapshotSource =
+  | 'manual-save'
+  | 'doc-parse'
+  | 'linkedin-import'
+  | 'optimization'
+
+export interface ResumeSnapshotRecord {
+  id?: string
+  userId: string
+  source: ResumeSnapshotSource
+  compressedResume: string
+  compression: 'lz-string-utf16'
+  sizeBytes: number
+  createdAt: Timestamp
+  expiresAt: Timestamp
+}
+
+const RESUME_SNAPSHOT_RETENTION_DAYS = 90
 
 export const useJobHuntFirestore = (userId: string) => {
   // Companies
@@ -268,6 +305,158 @@ export const useJobHuntFirestore = (userId: string) => {
     return snap.data() as Record<string, unknown>
   }
 
+  // ── Resume snapshots (compressed, 90-day retention) ──────────────────────
+  const saveResumeSnapshot = async (
+    resumeData: Record<string, unknown>,
+    source: ResumeSnapshotSource,
+  ) => {
+    const serialized = JSON.stringify(resumeData)
+    const compressedResume = compressToUTF16(serialized)
+    const nowMs = Date.now()
+    const expiresAtMs = nowMs + RESUME_SNAPSHOT_RETENTION_DAYS * 24 * 60 * 60 * 1000
+
+    const docRef = await addDoc(collection(db, 'resume_snapshots'), {
+      userId,
+      source,
+      compressedResume,
+      compression: 'lz-string-utf16',
+      sizeBytes: serialized.length,
+      createdAt: Timestamp.fromMillis(nowMs),
+      expiresAt: Timestamp.fromMillis(expiresAtMs),
+    })
+
+    return docRef.id
+  }
+
+  const loadResumeSnapshots = async (maxItems = 30): Promise<Array<ResumeSnapshotRecord & { id: string }>> => {
+    const q = query(
+      collection(db, 'resume_snapshots'),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+    )
+
+    const snap = await getDocs(q)
+    const nowMs = Date.now()
+
+    return snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() as ResumeSnapshotRecord) }))
+      .filter((item) => {
+        const expires = item.expiresAt?.toMillis?.() ?? 0
+        return expires > nowMs
+      })
+      .slice(0, maxItems) as Array<ResumeSnapshotRecord & { id: string }>
+  }
+
+  const loadDecompressedResumeSnapshots = async (maxItems = 10) => {
+    const snapshots = await loadResumeSnapshots(maxItems)
+
+    return snapshots.map((snapshot) => {
+      const decompressed = decompressFromUTF16(snapshot.compressedResume) || '{}'
+      let parsed: Record<string, unknown> = {}
+
+      try {
+        parsed = JSON.parse(decompressed) as Record<string, unknown>
+      } catch {
+        parsed = {}
+      }
+
+      return {
+        ...snapshot,
+        resume: parsed,
+      }
+    })
+  }
+
+  const pruneExpiredResumeSnapshots = async () => {
+    const q = query(collection(db, 'resume_snapshots'), where('userId', '==', userId))
+    const snap = await getDocs(q)
+    const nowMs = Date.now()
+    let deleted = 0
+
+    for (const snapshotDoc of snap.docs) {
+      const data = snapshotDoc.data() as { expiresAt?: Timestamp }
+      const expires = data.expiresAt?.toMillis?.() ?? 0
+
+      if (expires > 0 && expires <= nowMs) {
+        await deleteDoc(doc(db, 'resume_snapshots', snapshotDoc.id))
+        deleted += 1
+      }
+    }
+
+    return deleted
+  }
+
+  // ── User context profile ──────────────────────────────────────────────────
+  const saveUserContextProfile = async (context: Partial<UserContextProfile>) => {
+    const ref = doc(db, 'user_context_profiles', userId)
+    await setDoc(
+      ref,
+      {
+        userId,
+        ...context,
+        updatedAt: Timestamp.now(),
+      },
+      { merge: true },
+    )
+  }
+
+  const loadUserContextProfile = async (): Promise<UserContextProfile | null> => {
+    const ref = doc(db, 'user_context_profiles', userId)
+    const snap = await getDoc(ref)
+
+    if (!snap.exists()) {
+      return null
+    }
+
+    return snap.data() as UserContextProfile
+  }
+
+  const deriveAndSaveUserContextFromResume = async (
+    resumeData: Record<string, unknown>,
+    overrides: Partial<UserContextProfile> = {},
+  ) => {
+    const summary = String(resumeData.summary || '')
+    const skills = Array.isArray(resumeData.skills)
+      ? (resumeData.skills as unknown[]).map((s) => String(s).trim()).filter(Boolean)
+      : []
+
+    const experienceLines = Array.isArray(resumeData.experience)
+      ? (resumeData.experience as Array<Record<string, unknown>>)
+          .map((exp) => {
+            const role = String(exp.position || '').trim()
+            const company = String(exp.company || '').trim()
+            if (!role && !company) return ''
+            return `${role}${role && company ? ' at ' : ''}${company}`
+          })
+          .filter(Boolean)
+      : []
+
+    const educationLines = Array.isArray(resumeData.education)
+      ? (resumeData.education as Array<Record<string, unknown>>)
+          .map((edu) => {
+            const degree = String(edu.degree || '').trim()
+            const school = String(edu.school || '').trim()
+            if (!degree && !school) return ''
+            return `${degree}${degree && school ? ' - ' : ''}${school}`
+          })
+          .filter(Boolean)
+      : []
+
+    await saveUserContextProfile({
+      backgroundSummary: summary,
+      experienceSummary: experienceLines.slice(0, 8).join(' | '),
+      educationSummary: educationLines.slice(0, 6).join(' | '),
+      skills,
+      competencies: skills.slice(0, 20),
+      targetRolesInclude: [],
+      targetRolesExclude: [],
+      locationRequirements: [],
+      salaryRequirements: '',
+      additionalContext: '',
+      ...overrides,
+    })
+  }
+
   return {
     saveFilterPreferences,
     loadFilterPreferences,
@@ -277,6 +466,13 @@ export const useJobHuntFirestore = (userId: string) => {
     loadRankingWeights,
     saveResume,
     loadResume,
+    saveResumeSnapshot,
+    loadResumeSnapshots,
+    loadDecompressedResumeSnapshots,
+    pruneExpiredResumeSnapshots,
+    saveUserContextProfile,
+    loadUserContextProfile,
+    deriveAndSaveUserContextFromResume,
     addCompany,
     updateCompany,
     getCompanies,

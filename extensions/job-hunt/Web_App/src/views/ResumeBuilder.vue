@@ -143,6 +143,14 @@
               >
                 {{ isLoadingDocument ? '⏳ Parsing...' : '📥 Parse & Import Resume' }}
               </button>
+
+              <div
+                v-if="hasLinkedInContext(linkedInContext)"
+                :class="isDark ? 'bg-emerald-900/30 border-emerald-500/40 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
+                class="border rounded px-4 py-3 text-sm"
+              >
+                LinkedIn context is active and will enrich parsed resume data.
+              </div>
               
               <div v-if="documentError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
                 ❌ {{ documentError }}
@@ -354,6 +362,83 @@
             </div>
           </div>
 
+          <!-- User Context Profile -->
+          <div :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'" class="border rounded-lg shadow-sm p-6">
+            <div class="flex justify-between items-center mb-4">
+              <h2 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-lg font-bold">🧠 Resume Context Profile</h2>
+              <button
+                @click="saveUserContextProfileOnly"
+                :disabled="isSavingContext"
+                :class="isSavingContext ? 'bg-gray-500 cursor-not-allowed' : 'bg-emerald-600 hover:bg-emerald-700'"
+                class="text-white px-3 py-1 rounded text-sm transition"
+              >
+                {{ isSavingContext ? 'Saving...' : 'Save Context' }}
+              </button>
+            </div>
+
+            <p :class="isDark ? 'text-gray-400' : 'text-gray-600'" class="text-xs mb-4">
+              This context is stored with your profile and used when generating or optimizing future resumes.
+            </p>
+
+            <div class="space-y-3">
+              <textarea
+                v-model="userContextDraft.targetRolesInclude"
+                :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                rows="2"
+                placeholder="Target roles (comma or newline separated): e.g. Director of Security, vCISO"
+              ></textarea>
+
+              <textarea
+                v-model="userContextDraft.targetRolesExclude"
+                :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                rows="2"
+                placeholder="Roles to avoid: e.g. Individual contributor SOC analyst"
+              ></textarea>
+
+              <textarea
+                v-model="userContextDraft.locationRequirements"
+                :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                rows="2"
+                placeholder="Location requirements: remote only, NYC hybrid, travel limits"
+              ></textarea>
+
+              <input
+                v-model="userContextDraft.salaryRequirements"
+                type="text"
+                :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Salary requirements (optional): e.g. $230k+ base"
+              />
+
+              <textarea
+                v-model="userContextDraft.competencies"
+                :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                rows="2"
+                placeholder="Core competencies: zero trust, HIPAA, risk governance, board communication"
+              ></textarea>
+
+              <textarea
+                v-model="userContextDraft.additionalContext"
+                :class="isDark ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'"
+                class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                rows="3"
+                placeholder="Additional context: role strategy, career direction, industries to prioritize"
+              ></textarea>
+
+              <div v-if="contextError" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded text-sm">
+                ❌ {{ contextError }}
+              </div>
+
+              <div v-if="contextSuccess" class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded text-sm">
+                ✅ {{ contextSuccess }}
+              </div>
+            </div>
+          </div>
+
           <!-- Save Button -->
           <button
             @click="saveResume"
@@ -454,8 +539,16 @@ import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useAnalytics } from '@/composables/useAnalytics'
+import { useJobHuntFirestore, type ResumeSnapshotSource, type UserContextProfile } from '@/composables/useJobHuntFirestore'
 import TopBanner from '@/components/TopBanner.vue'
-import { parseLinkedInData, mergeWithResume } from '@/utils/linkedinParser'
+import {
+  enrichResumeWithLinkedInContext,
+  hasLinkedInContext,
+  linkedInContextStats,
+  parseLinkedInData,
+  summarizeMergeDelta,
+  type ResumeData,
+} from '@/utils/linkedinParser'
 import { extractResumeSections, extractTextFromResumeFile } from '@/utils/documentParser'
 
 const router = useRouter()
@@ -468,6 +561,7 @@ const linkedinJsonData = ref('')
 const isLoadingLinkedin = ref(false)
 const linkedinError = ref('')
 const linkedinSuccess = ref('')
+const linkedInContext = ref<Partial<ResumeData> | null>(null)
 
 // Document import state
 const resumeText = ref('')
@@ -475,6 +569,18 @@ const selectedResumeFileName = ref('')
 const isLoadingDocument = ref(false)
 const documentError = ref('')
 const documentSuccess = ref('')
+const isSavingContext = ref(false)
+const contextError = ref('')
+const contextSuccess = ref('')
+
+const userContextDraft = ref({
+  targetRolesInclude: '',
+  targetRolesExclude: '',
+  locationRequirements: '',
+  salaryRequirements: '',
+  competencies: '',
+  additionalContext: '',
+})
 
 const resume = ref({
   personalInfo: {
@@ -527,8 +633,81 @@ const removeSkill = (idx: number) => {
   resume.value.skills.splice(idx, 1)
 }
 
-const saveResume = () => {
+const splitListInput = (value: string) =>
+  value
+    .split(/[\n,;|]/g)
+    .map((item) => item.trim())
+    .filter(Boolean)
+
+const getFirestoreClient = () => {
+  if (!user.value?.uid) {
+    return null
+  }
+
+  return useJobHuntFirestore(user.value.uid)
+}
+
+const persistResumeMemory = async (source: ResumeSnapshotSource) => {
+  const client = getFirestoreClient()
+
+  if (!client) {
+    return
+  }
+
+  const resumePayload = JSON.parse(JSON.stringify(resume.value)) as Record<string, unknown>
+
+  await client.saveResume(resumePayload)
+  await client.saveResumeSnapshot(resumePayload, source)
+  await client.pruneExpiredResumeSnapshots()
+
+  await client.deriveAndSaveUserContextFromResume(resumePayload, {
+    targetRolesInclude: splitListInput(userContextDraft.value.targetRolesInclude),
+    targetRolesExclude: splitListInput(userContextDraft.value.targetRolesExclude),
+    locationRequirements: splitListInput(userContextDraft.value.locationRequirements),
+    salaryRequirements: userContextDraft.value.salaryRequirements.trim(),
+    competencies: splitListInput(userContextDraft.value.competencies),
+    additionalContext: userContextDraft.value.additionalContext.trim(),
+  })
+}
+
+const saveUserContextProfileOnly = async () => {
+  contextError.value = ''
+  contextSuccess.value = ''
+  isSavingContext.value = true
+
+  try {
+    const client = getFirestoreClient()
+
+    if (!client) {
+      contextError.value = 'Sign in to save your context profile to cloud storage.'
+      return
+    }
+
+    await client.saveUserContextProfile({
+      targetRolesInclude: splitListInput(userContextDraft.value.targetRolesInclude),
+      targetRolesExclude: splitListInput(userContextDraft.value.targetRolesExclude),
+      locationRequirements: splitListInput(userContextDraft.value.locationRequirements),
+      salaryRequirements: userContextDraft.value.salaryRequirements.trim(),
+      competencies: splitListInput(userContextDraft.value.competencies),
+      additionalContext: userContextDraft.value.additionalContext.trim(),
+    })
+
+    contextSuccess.value = 'Saved context profile preferences.'
+  } catch (error) {
+    contextError.value = error instanceof Error ? error.message : 'Unable to save context profile.'
+  } finally {
+    isSavingContext.value = false
+  }
+}
+
+const saveResume = async () => {
   localStorage.setItem('resume', JSON.stringify(resume.value))
+
+  try {
+    await persistResumeMemory('manual-save')
+  } catch (error) {
+    console.warn('Unable to persist resume memory to Firestore:', error)
+  }
   
   // Track resume save
   trackResumeSaved()
@@ -547,7 +726,7 @@ const downloadPDF = () => {
 }
 
 // LinkedIn import handler
-const importFromLinkedIn = () => {
+const importFromLinkedIn = async () => {
   linkedinError.value = ''
   linkedinSuccess.value = ''
   isLoadingLinkedin.value = true
@@ -559,13 +738,23 @@ const importFromLinkedIn = () => {
       linkedinError.value = 'Failed to parse LinkedIn data. Please check the JSON format and try again.'
       return
     }
+
+    linkedInContext.value = parsedData
+    const beforeMerge = JSON.parse(JSON.stringify(resume.value)) as ResumeData
+    const mergedResume = enrichResumeWithLinkedInContext(resume.value as ResumeData, parsedData)
+    const delta = summarizeMergeDelta(beforeMerge, mergedResume)
     
     // Merge the parsed data with current resume
-    resume.value = mergeWithResume(resume.value, parsedData)
+    resume.value = mergedResume
     
-    const skillCount = parsedData.skills?.length || 0
-    const expCount = parsedData.experience?.length || 0
-    linkedinSuccess.value = `✅ Successfully imported! Added ${skillCount} skills and ${expCount} experiences.`
+    const stats = linkedInContextStats(parsedData)
+    linkedinSuccess.value = `✅ LinkedIn context loaded (${stats.skillCount} skills, ${stats.experienceCount} experiences, ${stats.educationCount} education). Merge added ${delta.skillsAdded} skills, ${delta.experienceAdded} experiences, and ${delta.educationAdded} education entries.`
+
+    try {
+      await persistResumeMemory('linkedin-import')
+    } catch (persistError) {
+      console.warn('Unable to persist LinkedIn context snapshot:', persistError)
+    }
     
     // Clear inputs after successful import
     setTimeout(() => {
@@ -628,14 +817,15 @@ const parseResumeDocument = async () => {
     
     // Extract resume sections from the text
     const sections = extractResumeSections(textContent)
+    const parsedResume = JSON.parse(JSON.stringify(resume.value)) as ResumeData
     
     // Update resume with extracted data
     if (sections.summary) {
-      resume.value.summary = sections.summary
+      parsedResume.summary = sections.summary
     }
     
     if (sections.experience && sections.experience.length > 0) {
-      resume.value.experience = sections.experience.map((exp) => ({
+      parsedResume.experience = sections.experience.map((exp) => ({
         position: exp.position || '',
         company: exp.company || '',
         startDate: exp.startDate || '',
@@ -645,7 +835,7 @@ const parseResumeDocument = async () => {
     }
     
     if (sections.education && sections.education.length > 0) {
-      resume.value.education = sections.education.map((edu) => ({
+      parsedResume.education = sections.education.map((edu) => ({
         degree: edu.degree || '',
         school: edu.school || '',
         graduationDate: edu.graduationDate || ''
@@ -653,14 +843,29 @@ const parseResumeDocument = async () => {
     }
     
     if (sections.skills && sections.skills.length > 0) {
-      resume.value.skills = sections.skills
+      parsedResume.skills = sections.skills
     }
+
+    const finalResume = hasLinkedInContext(linkedInContext.value)
+      ? enrichResumeWithLinkedInContext(parsedResume, linkedInContext.value || {})
+      : parsedResume
+
+    const delta = summarizeMergeDelta(parsedResume, finalResume)
+    resume.value = finalResume
     
     const skillCount = sections.skills?.length || 0
     const expCount = sections.experience?.length || 0
     const eduCount = sections.education?.length || 0
     
-    documentSuccess.value = `✅ Successfully parsed! Found ${skillCount} skills, ${expCount} experiences, ${eduCount} education entries.`
+    documentSuccess.value = hasLinkedInContext(linkedInContext.value)
+      ? `✅ Parsed base resume and applied LinkedIn context. Found ${skillCount} skills, ${expCount} experiences, ${eduCount} education entries. Context added ${delta.skillsAdded} skills, ${delta.experienceAdded} experiences, and ${delta.educationAdded} education entries.`
+      : `✅ Successfully parsed! Found ${skillCount} skills, ${expCount} experiences, ${eduCount} education entries.`
+
+    try {
+      await persistResumeMemory('doc-parse')
+    } catch (persistError) {
+      console.warn('Unable to persist parsed resume snapshot:', persistError)
+    }
     
     // Clear input after successful parse
     setTimeout(() => {
