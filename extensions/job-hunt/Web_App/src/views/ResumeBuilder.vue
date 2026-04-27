@@ -890,6 +890,33 @@ onMounted(async () => {
   if (saved) {
     resume.value = JSON.parse(saved)
   }
+
+  const client = getFirestoreClient()
+  if (client) {
+    try {
+      const cloudResume = await client.loadResume()
+      if (cloudResume) {
+        resume.value = {
+          ...resume.value,
+          ...cloudResume,
+        } as typeof resume.value
+      }
+
+      const contextProfile = await client.loadUserContextProfile()
+      if (contextProfile) {
+        userContextDraft.value = {
+          targetRolesInclude: (contextProfile.targetRolesInclude || []).join('\n'),
+          targetRolesExclude: (contextProfile.targetRolesExclude || []).join('\n'),
+          locationRequirements: (contextProfile.locationRequirements || []).join('\n'),
+          salaryRequirements: contextProfile.salaryRequirements || '',
+          competencies: (contextProfile.competencies || []).join('\n'),
+          additionalContext: contextProfile.additionalContext || '',
+        }
+      }
+    } catch (error) {
+      console.warn('Unable to load cloud resume/context profile:', error)
+    }
+  }
   
   // Track feature view
   trackFeatureView('resume_builder')
