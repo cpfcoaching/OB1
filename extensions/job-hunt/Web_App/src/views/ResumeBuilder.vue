@@ -635,20 +635,20 @@ const parseResumeDocument = async () => {
     }
     
     if (sections.experience && sections.experience.length > 0) {
-      resume.value.experience = sections.experience.map((exp: string) => ({
-        position: exp.split('-')[0]?.trim() || exp,
-        company: exp.split('-')[1]?.trim() || '',
-        startDate: '',
-        endDate: '',
-        description: exp
+      resume.value.experience = sections.experience.map((exp) => ({
+        position: exp.position || '',
+        company: exp.company || '',
+        startDate: exp.startDate || '',
+        endDate: exp.endDate || '',
+        description: exp.description || ''
       }))
     }
     
     if (sections.education && sections.education.length > 0) {
-      resume.value.education = sections.education.map((edu: string) => ({
-        degree: edu.split(',')[0]?.trim() || edu,
-        school: edu.split(',')[1]?.trim() || '',
-        graduationDate: ''
+      resume.value.education = sections.education.map((edu) => ({
+        degree: edu.degree || '',
+        school: edu.school || '',
+        graduationDate: edu.graduationDate || ''
       }))
     }
     
