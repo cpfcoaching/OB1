@@ -208,7 +208,7 @@ export function useRecommendations(userId: string) {
         error.value = 'No resume found. Please build your resume first.'
         return
       }
-      const resume = raw as StoredResume
+      const resume = raw as unknown as StoredResume
 
       // 2. Extract signals
       const signals = extractSignals(resume)
