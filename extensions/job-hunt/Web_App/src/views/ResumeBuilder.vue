@@ -85,10 +85,28 @@
             
             <div class="space-y-4">
               <div>
+                <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-2">Upload PDF or DOCX</label>
+                <input
+                  type="file"
+                  accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  :disabled="isLoadingDocument"
+                  :class="isDark ? 'bg-gray-600 text-white border-gray-500 file:bg-indigo-500 file:text-white' : 'bg-white text-gray-900 border-gray-300 file:bg-indigo-600 file:text-white'"
+                  class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 file:border-0 file:rounded file:px-3 file:py-2 file:mr-3 file:cursor-pointer"
+                  @change="handleResumeFileSelection"
+                />
+                <p :class="isDark ? 'text-gray-400' : 'text-gray-600'" class="mt-2 text-xs">
+                  Select a resume file and the app will extract text automatically before filling the form.
+                </p>
+                <p v-if="selectedResumeFileName" :class="isDark ? 'text-indigo-300' : 'text-indigo-700'" class="mt-1 text-xs font-medium">
+                  Selected file: {{ selectedResumeFileName }}
+                </p>
+              </div>
+
+              <div>
                 <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-2">Paste Resume Content</label>
                 <textarea
                   v-model="resumeText"
-                  placeholder="Copy your resume text and paste it here. The app will automatically extract sections like experience, education, and skills..."
+                  placeholder="Upload a PDF/DOCX above or paste your resume text here. The app will automatically extract sections like experience, education, and skills..."
                   :class="isDark ? 'bg-gray-600 text-white border-gray-500' : 'bg-white text-gray-900 border-gray-300'"
                   class="w-full border rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 font-mono text-xs"
                   rows="8"
@@ -100,21 +118,17 @@
                 <div :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="space-y-2">
                   <div>
                     <p class="font-semibold">From PDF:</p>
-                    <p>1. Open in Adobe Reader or browser PDF viewer</p>
-                    <p>2. Select all text (Cmd+A or Ctrl+A)</p>
-                    <p>3. Copy (Cmd+C or Ctrl+C) and paste above</p>
+                    <p>1. Select the PDF above, or paste the text manually if needed</p>
+                    <p>2. The app extracts the text and maps it into resume fields automatically</p>
                   </div>
                   <div>
                     <p class="font-semibold">From Word (.docx):</p>
-                    <p>1. Open in Microsoft Word</p>
-                    <p>2. Select all (Cmd+A or Ctrl+A)</p>
-                    <p>3. Copy (Cmd+C or Ctrl+C) and paste above</p>
+                    <p>1. Select the DOCX above, or paste the text manually if needed</p>
+                    <p>2. The app extracts the text and maps it into resume fields automatically</p>
                   </div>
                   <div>
-                    <p class="font-semibold">From Google Docs:</p>
-                    <p>1. Open your document</p>
-                    <p>2. Select all text (Cmd+A or Ctrl+A)</p>
-                    <p>3. Copy (Cmd+C or Ctrl+C) and paste above</p>
+                    <p class="font-semibold">Fallback:</p>
+                    <p>If a file is image-only or heavily formatted, paste the text manually and parse it below.</p>
                   </div>
                 </div>
               </div>
@@ -442,7 +456,7 @@ import { useAuth } from '@/composables/useAuth'
 import { useAnalytics } from '@/composables/useAnalytics'
 import TopBanner from '@/components/TopBanner.vue'
 import { parseLinkedInData, mergeWithResume } from '@/utils/linkedinParser'
-import { extractResumeSections } from '@/utils/documentParser'
+import { extractResumeSections, extractTextFromResumeFile } from '@/utils/documentParser'
 
 const router = useRouter()
 const { user, initializeAuth, isDark } = useAuth()
@@ -457,6 +471,7 @@ const linkedinSuccess = ref('')
 
 // Document import state
 const resumeText = ref('')
+const selectedResumeFileName = ref('')
 const isLoadingDocument = ref(false)
 const documentError = ref('')
 const documentSuccess = ref('')
@@ -564,6 +579,39 @@ const importFromLinkedIn = () => {
   }
 }
 
+const handleResumeFileSelection = async (event: Event) => {
+  documentError.value = ''
+  documentSuccess.value = ''
+
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+
+  if (!file) {
+    selectedResumeFileName.value = ''
+    return
+  }
+
+  selectedResumeFileName.value = file.name
+  isLoadingDocument.value = true
+
+  try {
+    const extractedText = await extractTextFromResumeFile(file)
+
+    if (!extractedText) {
+      throw new Error('No readable text was found in that file.')
+    }
+
+    resumeText.value = extractedText
+    documentSuccess.value = `Extracted text from ${file.name}. Review or parse it below.`
+  } catch (error) {
+    documentError.value = error instanceof Error ? error.message : 'Error extracting resume file'
+    selectedResumeFileName.value = ''
+  } finally {
+    input.value = ''
+    isLoadingDocument.value = false
+  }
+}
+
 // Parse resume document handler
 const parseResumeDocument = async () => {
   documentError.value = ''
@@ -587,7 +635,7 @@ const parseResumeDocument = async () => {
     }
     
     if (sections.experience && sections.experience.length > 0) {
-      resume.value.experience = sections.experience.map(exp => ({
+      resume.value.experience = sections.experience.map((exp: string) => ({
         position: exp.split('-')[0]?.trim() || exp,
         company: exp.split('-')[1]?.trim() || '',
         startDate: '',
@@ -597,7 +645,7 @@ const parseResumeDocument = async () => {
     }
     
     if (sections.education && sections.education.length > 0) {
-      resume.value.education = sections.education.map(edu => ({
+      resume.value.education = sections.education.map((edu: string) => ({
         degree: edu.split(',')[0]?.trim() || edu,
         school: edu.split(',')[1]?.trim() || '',
         graduationDate: ''

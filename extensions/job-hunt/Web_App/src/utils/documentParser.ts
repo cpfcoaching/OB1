@@ -1,19 +1,95 @@
 /**
  * Document Parser for Resume Text
- * Extracts resume sections from plain text
+ * Extracts resume sections from plain text and uploaded files.
  */
+
+import mammoth from 'mammoth'
+import * as pdfjsLib from 'pdfjs-dist'
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
+
+export interface ResumeSections {
+  summary?: string
+  experience?: string[]
+  education?: string[]
+  skills?: string[]
+}
+
+const SUPPORTED_RESUME_FILE_TYPES = new Set([
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+])
+
+const SUPPORTED_RESUME_EXTENSIONS = ['.pdf', '.docx']
+
+export function isSupportedResumeFile(file: File): boolean {
+  return (
+    SUPPORTED_RESUME_FILE_TYPES.has(file.type) ||
+    SUPPORTED_RESUME_EXTENSIONS.some((extension) => file.name.toLowerCase().endsWith(extension))
+  )
+}
+
+export async function extractTextFromResumeFile(file: File): Promise<string> {
+  if (!isSupportedResumeFile(file)) {
+    throw new Error('Unsupported file type. Please choose a PDF or DOCX resume.')
+  }
+
+  const fileName = file.name.toLowerCase()
+
+  if (file.type === 'application/pdf' || fileName.endsWith('.pdf')) {
+    return extractTextFromPdf(file)
+  }
+
+  if (
+    file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+    fileName.endsWith('.docx')
+  ) {
+    return extractTextFromDocx(file)
+  }
+
+  throw new Error('Unsupported file type. Please choose a PDF or DOCX resume.')
+}
+
+async function extractTextFromPdf(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+  const pageTexts: string[] = []
+
+  for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
+    const page = await pdf.getPage(pageNumber)
+    const textContent = await page.getTextContent()
+    const pageText = textContent.items
+      .map((item) => ('str' in item ? item.str : ''))
+      .join(' ')
+    pageTexts.push(pageText)
+  }
+
+  return normalizeExtractedText(pageTexts.join('\n\n'))
+}
+
+async function extractTextFromDocx(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer()
+  const result = await mammoth.extractRawText({ arrayBuffer: buffer })
+
+  return normalizeExtractedText(result.value)
+}
+
+function normalizeExtractedText(text: string): string {
+  return text
+    .replace(/\r/g, '')
+    .replace(/\u0000/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
 
 /**
  * Extract resume sections from parsed text
  * Uses simple heuristics to identify sections
  */
-export function extractResumeSections(text: string): {
-  summary?: string
-  experience?: string[]
-  education?: string[]
-  skills?: string[]
-} {
-  const sections: any = {}
+export function extractResumeSections(text: string): ResumeSections {
+  const sections: ResumeSections = {}
   
   // Extract summary (typically first paragraph or after contact info)
   const summaryMatch = text.match(
