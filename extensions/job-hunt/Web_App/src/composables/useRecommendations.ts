@@ -26,6 +26,7 @@ import {
 } from '@/composables/useRankingEngine'
 import type { ResumeSignals, ScoredListing, FeatureWeights } from '@/composables/useRankingEngine'
 import { useJobHuntFirestore } from '@/composables/useJobHuntFirestore'
+import type { UserContextProfile } from '@/composables/useJobHuntFirestore'
 
 // ─── Resume shape (mirrors ResumeBuilder.vue) ─────────────────────────────────
 
@@ -52,18 +53,54 @@ interface StoredResume {
   skills: string[]
 }
 
+export interface PersonalizedRecommendation extends ScoredListing {
+  roleFamily: string
+  matchReasons: string[]
+  resumeTweaks: string[]
+  relatedRoleSuggestions: string[]
+}
+
+const ROLE_RELATED_KEYWORDS: Array<{ family: string; test: RegExp; related: string[] }> = [
+  { family: 'software-engineering', test: /(software|full\s*stack|backend|frontend)\s+engineer/i, related: ['application engineer', 'platform engineer', 'product engineer'] },
+  { family: 'security', test: /(security|cyber|ciso)/i, related: ['security architect', 'governance risk and compliance', 'application security engineer'] },
+  { family: 'data-ai', test: /(data\s+scientist|ml|ai\s+engineer)/i, related: ['machine learning engineer', 'analytics engineer', 'data engineer'] },
+  { family: 'devops-sre', test: /(devops|sre|site reliability)/i, related: ['cloud engineer', 'platform reliability engineer', 'infrastructure engineer'] },
+  { family: 'product', test: /(product\s+manager|pm)/i, related: ['technical product manager', 'program manager', 'product operations manager'] },
+]
+
+export interface OptimizerRunResult {
+  applied: boolean
+  reason: string
+  interactionCount: number
+  previousVersion: number
+  nextVersion: number
+  updatedWeightKeys: string[]
+}
+
 // ─── Signal extraction ────────────────────────────────────────────────────────
 
 /**
  * Derive JobSpy search signals from the stored resume structure.
  * All extractions are additive — absence of a signal uses a safe default.
  */
-function extractSignals(resume: StoredResume): ResumeSignals {
-  const roles = resume.experience
+function extractSignals(resume: StoredResume, context: UserContextProfile | null): ResumeSignals {
+  const rolesFromResume = resume.experience
     .map(e => e.position)
     .filter(Boolean)
 
-  const skills = resume.skills.filter(s => s.trim().length > 1)
+  const rolesFromContext = Array.isArray(context?.targetRolesInclude)
+    ? context!.targetRolesInclude.filter(Boolean)
+    : []
+
+  const roles = Array.from(new Set([...rolesFromResume, ...rolesFromContext]))
+
+  const skills = Array.from(
+    new Set([
+      ...resume.skills.filter(s => s.trim().length > 1),
+      ...(Array.isArray(context?.skills) ? context!.skills : []),
+      ...(Array.isArray(context?.competencies) ? context!.competencies : []),
+    ]),
+  )
 
   // Estimate seniority from total years of experience
   const totalYears = resume.experience.reduce((sum, exp) => {
@@ -79,11 +116,16 @@ function extractSignals(resume: StoredResume): ResumeSignals {
     totalYears >= 0.5 ? 'entry' :
     'unknown'
 
-  const preferredLocations = resume.personalInfo.location
-    ? [resume.personalInfo.location]
-    : []
+  const preferredLocations = Array.from(
+    new Set([
+      ...(resume.personalInfo.location ? [resume.personalInfo.location] : []),
+      ...(Array.isArray(context?.locationRequirements) ? context!.locationRequirements.filter(Boolean) : []),
+    ]),
+  )
 
-  return { roles, skills, seniority, preferredLocations, payMin: null, payMax: null }
+  const { payMin, payMax } = parseSalaryRange(context?.salaryRequirements || '')
+
+  return { roles, skills, seniority, preferredLocations, payMin, payMax }
 }
 
 /**
@@ -94,7 +136,10 @@ function deriveFilterDefaults(signals: ResumeSignals): Partial<RecommendationFil
   const derived: Partial<RecommendationFilter> = {}
 
   if (signals.roles.length) {
-    derived.titleKeywords = signals.roles.slice(0, 3).map(r => r.split(' ')[0])
+    const roleKeywords = signals.roles
+      .slice(0, 4)
+      .flatMap((r) => roleKeywordCandidates(r))
+    derived.titleKeywords = Array.from(new Set(roleKeywords)).slice(0, 8)
   }
 
   if (signals.preferredLocations.length) {
@@ -105,6 +150,95 @@ function deriveFilterDefaults(signals: ResumeSignals): Partial<RecommendationFil
   if (signals.payMax !== null) derived.payMax = signals.payMax
 
   return derived
+}
+
+function roleKeywordCandidates(role: string): string[] {
+  const base = role
+    .toLowerCase()
+    .split(/\s+/)
+    .filter((t) => t.length > 2)
+    .slice(0, 3)
+
+  const related = ROLE_RELATED_KEYWORDS
+    .filter((entry) => entry.test.test(role))
+    .flatMap((entry) => entry.related)
+    .flatMap((relatedRole) => relatedRole.split(/\s+/).filter((t) => t.length > 2).slice(0, 2))
+
+  return [...base, ...related]
+}
+
+function deriveRoleFamily(title: string): string {
+  const hit = ROLE_RELATED_KEYWORDS.find((entry) => entry.test.test(title))
+  return hit?.family ?? 'general'
+}
+
+function parseSalaryRange(input: string): { payMin: number | null; payMax: number | null } {
+  if (!input.trim()) return { payMin: null, payMax: null }
+
+  const nums = Array.from(input.matchAll(/\$?\s*(\d{2,3})(?:\s*[kK])?/g)).map((m) => Number(m[1]) * 1000)
+  if (nums.length === 0) return { payMin: null, payMax: null }
+  if (nums.length === 1) return { payMin: nums[0], payMax: null }
+
+  const sorted = nums.sort((a, b) => a - b)
+  return { payMin: sorted[0], payMax: sorted[sorted.length - 1] }
+}
+
+function excludedByRole(title: string, context: UserContextProfile | null): boolean {
+  const excludes = Array.isArray(context?.targetRolesExclude) ? context!.targetRolesExclude : []
+  if (excludes.length === 0) return false
+  const lowerTitle = title.toLowerCase()
+  return excludes.some((role) => lowerTitle.includes(role.toLowerCase()))
+}
+
+function buildMatchReasons(listing: ScoredListing, signals: ResumeSignals): string[] {
+  const reasons: string[] = []
+  const text = `${listing.listing.title} ${listing.listing.description}`.toLowerCase()
+  const matchedSkills = signals.skills.filter((s) => text.includes(s.toLowerCase())).slice(0, 3)
+
+  if (matchedSkills.length > 0) {
+    reasons.push(`Your profile overlaps with ${matchedSkills.join(', ')}.`)
+  }
+
+  if (signals.preferredLocations.length > 0 && listing.listing.location) {
+    const locationHit = signals.preferredLocations.some((loc) => listing.listing.location.toLowerCase().includes(loc.toLowerCase()))
+    if (locationHit || listing.listing.remoteType === 'remote') {
+      reasons.push('Location preference is aligned with this role.')
+    }
+  }
+
+  if (listing.score >= 0.85) {
+    reasons.push('High overall fit score based on your resume and preferences.')
+  }
+
+  return reasons.slice(0, 3)
+}
+
+function buildResumeTweaks(listing: ScoredListing, signals: ResumeSignals, savedTemplates: string[] = []): string[] {
+  const tweaks: string[] = []
+  const postingText = `${listing.listing.title} ${listing.listing.description}`.toLowerCase()
+  const profileSkills = signals.skills.map((s) => s.toLowerCase())
+  const missing = ['leadership', 'mentoring', 'architecture', 'automation', 'stakeholder']
+    .filter((token) => postingText.includes(token) && !profileSkills.some((skill) => skill.includes(token)))
+
+  tweaks.push(`Tailor your summary headline to include "${listing.listing.title}" language.`)
+
+  for (const template of savedTemplates.slice(0, 2)) {
+    tweaks.push(template)
+  }
+
+  if (missing.length > 0) {
+    tweaks.push(`Add one bullet proving ${missing.slice(0, 2).join(' and ')} impact with measurable outcomes.`)
+  }
+
+  tweaks.push('Mirror 3-5 exact keywords from the posting in your top experience bullets for ATS alignment.')
+  return tweaks.slice(0, 3)
+}
+
+function buildRelatedRoleSuggestions(signals: ResumeSignals): string[] {
+  const related = signals.roles
+    .flatMap((role) => ROLE_RELATED_KEYWORDS.filter((entry) => entry.test.test(role)).flatMap((entry) => entry.related))
+
+  return Array.from(new Set(related)).slice(0, 5)
 }
 
 // ─── Filter merge (user overrides > resume defaults > global defaults) ─────────
@@ -184,13 +318,38 @@ function estimateGradients(
 // ─── Composable ───────────────────────────────────────────────────────────────
 
 export function useRecommendations(userId: string) {
-  const recommendations = ref<ScoredListing[]>([])
+  const recommendations = ref<PersonalizedRecommendation[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const resolvedFilters = ref<RecommendationFilter | null>(null)
   const resumeNotice = ref<string | null>(null)  // surfaces default-resume change notifications
+  const personalizationSummary = ref<string | null>(null)
+  const optimizationNotice = ref<string | null>(null)
+  const isOptimizing = ref(false)
 
   const firestore = useJobHuntFirestore(userId)
+
+  const logRecommendationError = async (
+    source: string,
+    summary: string,
+    err: unknown,
+    patternKey?: string,
+  ) => {
+    const details = (err instanceof Error ? err.message : String(err ?? '')).slice(0, 300)
+    try {
+      await firestore.saveSelfImprovementEvent({
+        bucket: 'errors',
+        area: 'frontend',
+        source,
+        summary,
+        details,
+        patternKey,
+        severity: 'medium',
+      })
+    } catch (logErr) {
+      console.warn('Unable to write self-improvement event:', logErr)
+    }
+  }
 
   /**
    * Fetch and rank recommendations for this user.
@@ -200,6 +359,8 @@ export function useRecommendations(userId: string) {
     isLoading.value = true
     error.value = null
     resumeNotice.value = null
+    personalizationSummary.value = null
+    optimizationNotice.value = null
 
     try {
       // 1. Load resume
@@ -211,7 +372,8 @@ export function useRecommendations(userId: string) {
       const resume = raw as unknown as StoredResume
 
       // 2. Extract signals
-      const signals = extractSignals(resume)
+      const context = await firestore.loadUserContextProfile()
+      const signals = extractSignals(resume, context)
 
       // 3. Load user filter overrides
       const savedOverrides = await firestore.loadFilterPreferences()
@@ -222,16 +384,42 @@ export function useRecommendations(userId: string) {
       const filters = mergeFilters(GLOBAL_FILTER_DEFAULTS, resumeDerived, userOverrides)
       resolvedFilters.value = filters
 
+      if (context?.targetRolesInclude?.length || context?.skills?.length || context?.locationRequirements?.length) {
+        personalizationSummary.value = 'Recommendations are personalized using your saved role, skills, and location preferences.'
+      }
+
       // 5. Fetch listings (throws on total fetch failure — preserves last good batch)
       const listings = await fetchListings(filters, userId)
 
       // 6. Load ranking weights
       const weights = await loadWeights(userId)
+      const templates = await firestore.loadResumeTweakTemplates()
+      const templatesByRole = templates.reduce<Record<string, string[]>>((acc, tpl) => {
+        if (!acc[tpl.roleFamily]) acc[tpl.roleFamily] = []
+        acc[tpl.roleFamily].push(tpl.tweakText)
+        return acc
+      }, {})
 
       // 7. Score and rank
-      recommendations.value = scoreListings(listings, signals, filters, weights)
+      const scored = scoreListings(listings, signals, filters, weights)
+        .filter((item) => !excludedByRole(item.listing.title, context))
+
+      const relatedRoleSuggestions = buildRelatedRoleSuggestions(signals)
+      recommendations.value = scored.map((item) => ({
+        roleFamily: deriveRoleFamily(item.listing.title),
+        ...item,
+        matchReasons: buildMatchReasons(item, signals),
+        resumeTweaks: buildResumeTweaks(item, signals, templatesByRole[deriveRoleFamily(item.listing.title)] || []),
+        relatedRoleSuggestions,
+      }))
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to fetch recommendations'
+      await logRecommendationError(
+        'recommendations-refresh',
+        'Failed to refresh recommendation feed.',
+        err,
+        'resilience.fetch_fallback',
+      )
     } finally {
       isLoading.value = false
     }
@@ -243,6 +431,19 @@ export function useRecommendations(userId: string) {
    */
   async function recordOutcome(listingId: string, outcome: OutcomeType): Promise<void> {
     await firestore.saveRecommendationOutcome(listingId, outcome)
+  }
+
+  async function recordTweakFeedback(
+    listingId: string,
+    roleFamily: string,
+    tweakText: string,
+    helpful: boolean,
+  ): Promise<void> {
+    await firestore.saveRecommendationTweakFeedback(listingId, tweakText, helpful, roleFamily)
+
+    if (helpful) {
+      await firestore.saveResumeTweakTemplate(roleFamily, tweakText)
+    }
   }
 
   /**
@@ -261,14 +462,69 @@ export function useRecommendations(userId: string) {
    * Call this from a scheduled job or manual trigger — not on every page load.
    * Skips the update and alerts if apply@10 has dropped sharply.
    */
-  async function runWeeklyWeightUpdate(): Promise<void> {
-    const outcomes = await firestore.loadRecommendationOutcomes()
-    if (outcomes.length < 10) return  // not enough signal
+  async function runWeeklyWeightUpdate(): Promise<OptimizerRunResult> {
+    isOptimizing.value = true
+    optimizationNotice.value = null
 
-    const weights = await loadWeights(userId)
-    const gradients = estimateGradients(outcomes, recommendations.value)
-    const updated = applyWeightUpdate(weights, gradients, outcomes.length)
-    await saveWeights(userId, updated)
+    try {
+      const outcomes = await firestore.loadRecommendationOutcomes()
+      const weights = await loadWeights(userId)
+
+      if (outcomes.length < 10) {
+        const result: OptimizerRunResult = {
+          applied: false,
+          reason: 'Not enough interactions yet (minimum 10 required).',
+          interactionCount: outcomes.length,
+          previousVersion: weights.version,
+          nextVersion: weights.version,
+          updatedWeightKeys: [],
+        }
+        await firestore.saveRecommendationOptimizerRun(result)
+        optimizationNotice.value = result.reason
+        return result
+      }
+
+      const gradients = estimateGradients(outcomes, recommendations.value)
+      const updated = applyWeightUpdate(weights, gradients, outcomes.length)
+      await saveWeights(userId, updated)
+
+      const updatedWeightKeys = Object.entries(gradients)
+        .filter(([, value]) => Math.abs(value || 0) > 0)
+        .map(([key]) => key)
+
+      const result: OptimizerRunResult = {
+        applied: true,
+        reason: `Optimization applied using ${outcomes.length} interactions.`,
+        interactionCount: outcomes.length,
+        previousVersion: weights.version,
+        nextVersion: updated.version,
+        updatedWeightKeys,
+      }
+
+      await firestore.saveRecommendationOptimizerRun(result)
+      optimizationNotice.value = `Updated ranking model v${weights.version} -> v${updated.version}.`
+      return result
+    } catch (err) {
+      await logRecommendationError(
+        'recommendations-optimizer',
+        'Failed to run recommendation optimizer update.',
+        err,
+        'resilience.optimizer_failure',
+      )
+
+      const fallback: OptimizerRunResult = {
+        applied: false,
+        reason: 'Optimizer failed. Try again after refreshing recommendations.',
+        interactionCount: 0,
+        previousVersion: 0,
+        nextVersion: 0,
+        updatedWeightKeys: [],
+      }
+      optimizationNotice.value = fallback.reason
+      return fallback
+    } finally {
+      isOptimizing.value = false
+    }
   }
 
   return {
@@ -277,8 +533,12 @@ export function useRecommendations(userId: string) {
     error,
     resolvedFilters,
     resumeNotice,
+    personalizationSummary,
+    optimizationNotice,
+    isOptimizing,
     refresh,
     recordOutcome,
+    recordTweakFeedback,
     updateFilters,
     runWeeklyWeightUpdate,
   }

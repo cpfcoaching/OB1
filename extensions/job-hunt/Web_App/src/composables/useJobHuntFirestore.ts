@@ -12,6 +12,8 @@ import {
   setDoc,
   orderBy,
   Timestamp,
+  increment,
+  limit,
 } from 'firebase/firestore'
 import { compressToUTF16, decompressFromUTF16 } from 'lz-string'
 
@@ -116,9 +118,66 @@ export interface ResumeSnapshotRecord {
   expiresAt: Timestamp
 }
 
+export interface RecommendationTweakFeedback {
+  id?: string
+  userId: string
+  listingId: string
+  tweakText: string
+  helpful: boolean
+  roleFamily: string
+  recordedAt: Timestamp
+}
+
+export interface ResumeTweakTemplate {
+  id?: string
+  userId: string
+  roleFamily: string
+  tweakText: string
+  acceptedCount: number
+  createdAt: Timestamp
+  updatedAt: Timestamp
+}
+
+export interface RecommendationOptimizerRun {
+  id?: string
+  userId: string
+  interactionCount: number
+  applied: boolean
+  reason: string
+  previousVersion: number
+  nextVersion: number
+  updatedWeightKeys: string[]
+  runAt: Timestamp
+}
+
+export type SelfImprovementBucket = 'errors' | 'learnings' | 'feature-requests'
+
+export interface SelfImprovementEvent {
+  id?: string
+  userId: string
+  bucket: SelfImprovementBucket
+  area: 'frontend' | 'backend' | 'infra' | 'tests' | 'docs' | 'config'
+  source: string
+  summary: string
+  details?: string
+  patternKey?: string
+  severity: 'low' | 'medium' | 'high' | 'critical'
+  createdAt: Timestamp
+}
+
 const RESUME_SNAPSHOT_RETENTION_DAYS = 90
 
 export const useJobHuntFirestore = (userId: string) => {
+  const buildTemplateDocId = (roleFamily: string, tweakText: string) => {
+    const normalize = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    const base = `${normalize(roleFamily)}::${normalize(tweakText)}`
+    let hash = 0
+    for (let i = 0; i < base.length; i++) {
+      hash = (hash * 31 + base.charCodeAt(i)) >>> 0
+    }
+    return `${userId}_${normalize(roleFamily)}_${hash.toString(16)}`
+  }
+
   // Companies
   const addCompany = async (data: Omit<Company, 'id' | 'userId' | 'createdAt' | 'updatedAt'>) => {
     const docRef = await addDoc(collection(db, 'companies'), {
@@ -277,6 +336,131 @@ export const useJobHuntFirestore = (userId: string) => {
     return snap.docs.map(d => ({ id: d.id, ...d.data() })) as Array<{
       id: string; userId: string; listingId: string; outcome: OutcomeType; recordedAt: Timestamp
     }>
+  }
+
+  // ── Recommendation tweak feedback and templates ─────────────────────────
+  const saveRecommendationTweakFeedback = async (
+    listingId: string,
+    tweakText: string,
+    helpful: boolean,
+    roleFamily: string,
+  ) => {
+    await addDoc(collection(db, 'recommendation_tweak_feedback'), {
+      userId,
+      listingId,
+      tweakText,
+      helpful,
+      roleFamily,
+      recordedAt: Timestamp.now(),
+    })
+  }
+
+  const saveResumeTweakTemplate = async (roleFamily: string, tweakText: string) => {
+    const docId = buildTemplateDocId(roleFamily, tweakText)
+    const ref = doc(db, 'resume_tweak_templates', docId)
+    const snap = await getDoc(ref)
+
+    if (snap.exists()) {
+      await setDoc(
+        ref,
+        {
+          acceptedCount: increment(1),
+          updatedAt: Timestamp.now(),
+        },
+        { merge: true },
+      )
+      return docId
+    }
+
+    await setDoc(ref, {
+      userId,
+      roleFamily,
+      tweakText,
+      acceptedCount: 1,
+      createdAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    })
+
+    return docId
+  }
+
+  const loadResumeTweakTemplates = async (roleFamily?: string): Promise<Array<ResumeTweakTemplate & { id: string }>> => {
+    const q = query(collection(db, 'resume_tweak_templates'), where('userId', '==', userId))
+    const snap = await getDocs(q)
+
+    const all = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() as ResumeTweakTemplate) }))
+      .filter((entry) => (roleFamily ? entry.roleFamily === roleFamily : true))
+      .sort((a, b) => {
+        const aScore = (a.acceptedCount || 0)
+        const bScore = (b.acceptedCount || 0)
+        return bScore - aScore
+      })
+
+    return all
+  }
+
+  // ── Optimizer run telemetry ──────────────────────────────────────────────
+  const saveRecommendationOptimizerRun = async (
+    run: Omit<RecommendationOptimizerRun, 'id' | 'userId' | 'runAt'>,
+  ) => {
+    await addDoc(collection(db, 'recommendation_optimizer_runs'), {
+      userId,
+      ...run,
+      runAt: Timestamp.now(),
+    })
+  }
+
+  const loadLatestRecommendationOptimizerRun = async (): Promise<(RecommendationOptimizerRun & { id: string }) | null> => {
+    const q = query(collection(db, 'recommendation_optimizer_runs'), where('userId', '==', userId))
+    const snap = await getDocs(q)
+
+    if (snap.empty) {
+      return null
+    }
+
+    const rows = snap.docs
+      .map((d) => ({ id: d.id, ...(d.data() as RecommendationOptimizerRun) }))
+      .sort((a, b) => {
+        const aMs = a.runAt?.toMillis?.() ?? 0
+        const bMs = b.runAt?.toMillis?.() ?? 0
+        return bMs - aMs
+      })
+
+    return rows[0]
+  }
+
+  // ── Self-improvement events (structured runtime logging) ────────────────
+  const saveSelfImprovementEvent = async (
+    event: Omit<SelfImprovementEvent, 'id' | 'userId' | 'createdAt'>,
+  ) => {
+    await addDoc(collection(db, 'self_improvement_events'), {
+      userId,
+      ...event,
+      createdAt: Timestamp.now(),
+    })
+  }
+
+  const loadSelfImprovementEvents = async (
+    bucket?: SelfImprovementBucket,
+    maxResults = 100,
+  ): Promise<(SelfImprovementEvent & { id: string })[]> => {
+    const constraints = [
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc'),
+      limit(maxResults),
+    ] as const
+    const q = bucket
+      ? query(
+          collection(db, 'self_improvement_events'),
+          where('userId', '==', userId),
+          where('bucket', '==', bucket),
+          orderBy('createdAt', 'desc'),
+          limit(maxResults),
+        )
+      : query(collection(db, 'self_improvement_events'), ...constraints)
+    const snap = await getDocs(q)
+    return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<SelfImprovementEvent, 'id'>) }))
   }
 
   // ── Ranking weights ───────────────────────────────────────────────────────
@@ -462,6 +646,13 @@ export const useJobHuntFirestore = (userId: string) => {
     loadFilterPreferences,
     saveRecommendationOutcome,
     loadRecommendationOutcomes,
+    saveRecommendationTweakFeedback,
+    saveResumeTweakTemplate,
+    loadResumeTweakTemplates,
+    saveRecommendationOptimizerRun,
+    loadLatestRecommendationOptimizerRun,
+    saveSelfImprovementEvent,
+    loadSelfImprovementEvents,
     saveRankingWeights,
     loadRankingWeights,
     saveResume,

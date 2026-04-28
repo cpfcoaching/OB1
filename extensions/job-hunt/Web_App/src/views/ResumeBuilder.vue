@@ -702,6 +702,33 @@ const getFirestoreClient = () => {
   return useJobHuntFirestore(user.value.uid)
 }
 
+const logRuntimeIssue = async (
+  source: string,
+  summary: string,
+  error?: unknown,
+  patternKey?: string,
+) => {
+  const client = getFirestoreClient()
+  if (!client) return
+
+  const raw = error instanceof Error ? error.message : String(error ?? '')
+  const details = raw.slice(0, 300)
+
+  try {
+    await client.saveSelfImprovementEvent({
+      bucket: 'errors',
+      area: 'frontend',
+      source,
+      summary,
+      details,
+      patternKey,
+      severity: 'high',
+    })
+  } catch (logError) {
+    console.warn('Unable to log self-improvement event:', logError)
+  }
+}
+
 const persistResumeMemory = async (source: ResumeSnapshotSource) => {
   const client = getFirestoreClient()
 
@@ -791,6 +818,12 @@ const importFromLinkedIn = async () => {
     
     if (!parsedData) {
       linkedinError.value = 'Unable to parse LinkedIn input. Use the sample template button below, fill in your details, and try again.'
+      await logRuntimeIssue(
+        'linkedin-import',
+        'LinkedIn import parse returned no structured profile.',
+        'parseLinkedInData returned null',
+        'harden.input_shape_validation',
+      )
       return
     }
 
@@ -818,6 +851,12 @@ const importFromLinkedIn = async () => {
     }, 3000)
   } catch (error) {
     linkedinError.value = error instanceof Error ? error.message : 'Error importing LinkedIn data'
+    await logRuntimeIssue(
+      'linkedin-import',
+      'Unhandled error while importing LinkedIn profile data.',
+      error,
+      'harden.input_shape_validation',
+    )
   } finally {
     isLoadingLinkedin.value = false
   }

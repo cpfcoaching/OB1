@@ -159,6 +159,14 @@
           <p class="text-sm">💡 {{ resumeNotice }}</p>
         </div>
 
+        <div v-if="personalizationSummary" :class="isDark ? 'bg-indigo-900 border-indigo-700 text-indigo-200' : 'bg-indigo-50 border-indigo-200 text-indigo-800'" class="border rounded-lg p-4 mb-6">
+          <p class="text-sm">🧠 {{ personalizationSummary }}</p>
+        </div>
+
+        <div v-if="optimizationNotice" :class="isDark ? 'bg-emerald-900 border-emerald-700 text-emerald-200' : 'bg-emerald-50 border-emerald-200 text-emerald-800'" class="border rounded-lg p-4 mb-6">
+          <p class="text-sm">📈 {{ optimizationNotice }}</p>
+        </div>
+
         <!-- Stats bar -->
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'" class="border rounded-lg p-4 text-center">
@@ -177,6 +185,15 @@
             <button @click="refresh" :disabled="recLoading" class="text-indigo-600 hover:text-indigo-700 font-medium text-sm hover:underline disabled:opacity-50">
               {{ recLoading ? '⏳ Loading...' : '🔄 Refresh' }}
             </button>
+            <div class="mt-2">
+              <button
+                @click="runOptimizer"
+                :disabled="recLoading || isOptimizing"
+                class="text-emerald-600 hover:text-emerald-700 font-medium text-sm hover:underline disabled:opacity-50"
+              >
+                {{ isOptimizing ? '⏳ Optimizing...' : '🧪 Optimize Ranking' }}
+              </button>
+            </div>
             <p :class="isDark ? 'text-gray-400' : 'text-gray-600'" class="text-sm mt-3">Update Results</p>
           </div>
         </div>
@@ -326,6 +343,69 @@
                 ✕ Not interested
               </button>
             </div>
+
+            <div v-if="item.matchReasons?.length" class="mt-4">
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="text-xs font-semibold uppercase tracking-wide mb-2">Why this is a fit</p>
+              <ul class="space-y-1">
+                <li
+                  v-for="(reason, idx) in item.matchReasons"
+                  :key="`reason-${item.listing.id}-${idx}`"
+                  :class="isDark ? 'text-gray-300' : 'text-gray-700'"
+                  class="text-sm"
+                >
+                  • {{ reason }}
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="item.resumeTweaks?.length" class="mt-4">
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="text-xs font-semibold uppercase tracking-wide mb-2">Resume tweaks for this role</p>
+              <ul class="space-y-2">
+                <li
+                  v-for="(tip, idx) in item.resumeTweaks"
+                  :key="`tip-${item.listing.id}-${idx}`"
+                  class="text-sm"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <span :class="isDark ? 'text-gray-300' : 'text-gray-700'">• {{ tip }}</span>
+                    <div class="flex items-center gap-1 shrink-0">
+                      <button
+                        @click="rateTweak(item.listing.id, item.roleFamily, tip, true)"
+                        :class="tweakFeedbackState[`${item.listing.id}::${tip}`] === 'helpful'
+                          ? 'bg-emerald-600 text-white'
+                          : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')"
+                        class="px-2 py-1 rounded text-xs transition"
+                      >
+                        👍 Helpful
+                      </button>
+                      <button
+                        @click="rateTweak(item.listing.id, item.roleFamily, tip, false)"
+                        :class="tweakFeedbackState[`${item.listing.id}::${tip}`] === 'not-helpful'
+                          ? 'bg-rose-600 text-white'
+                          : (isDark ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200')"
+                        class="px-2 py-1 rounded text-xs transition"
+                      >
+                        👎
+                      </button>
+                    </div>
+                  </div>
+                </li>
+              </ul>
+            </div>
+
+            <div v-if="item.relatedRoleSuggestions?.length" class="mt-4">
+              <p :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="text-xs font-semibold uppercase tracking-wide mb-2">Related roles to search</p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="role in item.relatedRoleSuggestions"
+                  :key="`${item.listing.id}-${role}`"
+                  :class="isDark ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-700'"
+                  class="px-2 py-1 rounded-full text-xs"
+                >
+                  {{ role }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -406,10 +486,17 @@ const {
   isLoading: recLoading,
   error: recError,
   resumeNotice,
+  personalizationSummary,
+  optimizationNotice,
+  isOptimizing,
   refresh,
   recordOutcome,
+  recordTweakFeedback,
   updateFilters,
+  runWeeklyWeightUpdate,
 } = useRecommendations(user.value?.uid ?? '')
+
+const tweakFeedbackState = ref<Record<string, 'helpful' | 'not-helpful'>>({})
 
 const minScore = ref(0)
 const showFilters = ref(false)
@@ -435,6 +522,21 @@ const activateRecommendations = async () => {
     recInit = true
     await refresh()
   }
+}
+
+const runOptimizer = async () => {
+  await runWeeklyWeightUpdate()
+}
+
+const rateTweak = async (
+  listingId: string,
+  roleFamily: string,
+  tweakText: string,
+  helpful: boolean,
+) => {
+  const key = `${listingId}::${tweakText}`
+  tweakFeedbackState.value[key] = helpful ? 'helpful' : 'not-helpful'
+  await recordTweakFeedback(listingId, roleFamily, tweakText, helpful)
 }
 
 const applyFilters = async () => {

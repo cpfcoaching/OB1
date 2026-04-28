@@ -50,6 +50,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/self-improvement',
+    name: 'SelfImprovement',
+    component: () => import('@/views/SelfImprovementAdmin.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/',
     redirect: '/dashboard',
   },

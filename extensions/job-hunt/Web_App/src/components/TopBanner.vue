@@ -122,6 +122,15 @@
         >
           <span>📧</span> <span class="hidden sm:inline">Emails</span>
         </router-link>
+        <router-link 
+          to="/self-improvement"
+          :class="isActive('self-improvement') 
+            ? (isDark ? 'bg-indigo-600 text-white' : 'bg-indigo-100 text-indigo-700')
+            : (isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-white')"
+          class="flex items-center gap-2 px-4 py-3 rounded-t-lg transition font-medium text-sm whitespace-nowrap"
+        >
+          <span>🔬</span> <span class="hidden sm:inline">Dev Log</span>
+        </router-link>
       </div>
     </nav>
   </div>

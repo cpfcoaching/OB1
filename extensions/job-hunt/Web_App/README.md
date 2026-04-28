@@ -48,3 +48,18 @@ Configure `job-hunt.cisoadvisor.us` in Cloudflare Pages custom domains settings.
 ## 📚 Full Documentation
 
 See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed setup, MFA configuration, and troubleshooting.
+
+## 🧠 Self-Improvement Logs
+
+This repo includes structured learning logs under [.learnings/](./.learnings/):
+
+- [.learnings/ERRORS.md](./.learnings/ERRORS.md): runtime and command failures
+- [.learnings/LEARNINGS.md](./.learnings/LEARNINGS.md): corrected assumptions and hardened patterns
+- [.learnings/FEATURE_REQUESTS.md](./.learnings/FEATURE_REQUESTS.md): requested capabilities and backlog-ready ideas
+
+Guidelines:
+
+- Keep entries concise and structured (ID, timestamp, priority, status, area, summary, suggested action).
+- Use recurrence metadata for repeated failures (Pattern-Key, Recurrence-Count).
+- Log redacted summaries only; do not store secrets or full personal data.
+- Promote repeated learnings into permanent instructions/workflows.
