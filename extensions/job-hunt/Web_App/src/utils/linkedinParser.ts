@@ -323,9 +323,9 @@ export function enrichResumeWithLinkedInContext(
   baseResume: ResumeData,
   linkedInData: Partial<ResumeData>
 ): ResumeData {
-  const linkedInExperience = linkedInData.experience || []
-  const linkedInEducation = linkedInData.education || []
-  const linkedInSkills = linkedInData.skills || []
+  const linkedInExperience = coerceExperienceArray(linkedInData.experience)
+  const linkedInEducation = coerceEducationArray(linkedInData.education)
+  const linkedInSkills = coerceStringArray(linkedInData.skills)
 
   return {
     personalInfo: {
@@ -353,7 +353,7 @@ function mergeExperience(
   base: ResumeData['experience'],
   linkedIn: ResumeData['experience']
 ): ResumeData['experience'] {
-  const merged = [...base]
+  const merged = [...coerceExperienceArray(base)]
 
   for (const entry of linkedIn) {
     const key = normalizeKey(`${entry.position}|${entry.company}|${entry.startDate}|${entry.endDate}`)
@@ -370,9 +370,13 @@ function mergeExperience(
     }
 
     const existing = merged[existingIndex]
-    const existingSummaryLen = (existing.summary || '').trim().length + existing.bullets.join(' ').length
-    const entrySummaryLen = (entry.summary || '').trim().length + entry.bullets.join(' ').length
-    const mergedTags = Array.from(new Set([...(existing.tags || []), ...(entry.tags || [])]))
+    const existingBullets = coerceStringArray(existing.bullets)
+    const entryBullets = coerceStringArray(entry.bullets)
+    const existingTags = coerceStringArray(existing.tags)
+    const entryTags = coerceStringArray(entry.tags)
+    const existingSummaryLen = (existing.summary || '').trim().length + existingBullets.join(' ').length
+    const entrySummaryLen = (entry.summary || '').trim().length + entryBullets.join(' ').length
+    const mergedTags = Array.from(new Set([...existingTags, ...entryTags]))
     merged[existingIndex] = {
       position: existing.position || entry.position,
       company: existing.company || entry.company,
@@ -380,8 +384,8 @@ function mergeExperience(
       endDate: existing.endDate || entry.endDate,
       summary: existingSummaryLen >= entrySummaryLen ? existing.summary : entry.summary,
       bullets: existingSummaryLen >= entrySummaryLen
-        ? (existing.bullets.length > 0 ? existing.bullets : entry.bullets)
-        : (entry.bullets.length > 0 ? entry.bullets : existing.bullets),
+        ? (existingBullets.length > 0 ? existingBullets : entryBullets)
+        : (entryBullets.length > 0 ? entryBullets : existingBullets),
       tags: mergedTags,
     }
   }
@@ -393,7 +397,7 @@ function mergeEducation(
   base: ResumeData['education'],
   linkedIn: ResumeData['education']
 ): ResumeData['education'] {
-  const merged = [...base]
+  const merged = [...coerceEducationArray(base)]
 
   for (const entry of linkedIn) {
     const key = normalizeKey(`${entry.degree}|${entry.school}|${entry.graduationDate}`)
@@ -424,7 +428,10 @@ function mergeSkills(base: string[], linkedIn: string[]): string[] {
   const seen = new Set<string>()
   const merged: string[] = []
 
-  for (const skill of [...base, ...linkedIn]) {
+  const safeBase = coerceStringArray(base)
+  const safeLinkedIn = coerceStringArray(linkedIn)
+
+  for (const skill of [...safeBase, ...safeLinkedIn]) {
     const normalized = normalizeKey(skill)
     if (!normalized || seen.has(normalized)) {
       continue
@@ -465,10 +472,14 @@ export function linkedInContextStats(linkedInData: Partial<ResumeData> | null): 
   educationCount: number
   skillCount: number
 } {
+  const experience = coerceExperienceArray(linkedInData?.experience)
+  const education = coerceEducationArray(linkedInData?.education)
+  const skills = coerceStringArray(linkedInData?.skills)
+
   return {
-    experienceCount: linkedInData?.experience?.length || 0,
-    educationCount: linkedInData?.education?.length || 0,
-    skillCount: linkedInData?.skills?.length || 0
+    experienceCount: experience.length,
+    educationCount: education.length,
+    skillCount: skills.length
   }
 }
 
@@ -477,9 +488,47 @@ export function summarizeMergeDelta(previous: ResumeData, next: ResumeData): {
   educationAdded: number
   skillsAdded: number
 } {
+  const previousExperience = coerceExperienceArray(previous.experience)
+  const previousEducation = coerceEducationArray(previous.education)
+  const previousSkills = coerceStringArray(previous.skills)
+  const nextExperience = coerceExperienceArray(next.experience)
+  const nextEducation = coerceEducationArray(next.education)
+  const nextSkills = coerceStringArray(next.skills)
+
   return {
-    experienceAdded: Math.max(next.experience.length - previous.experience.length, 0),
-    educationAdded: Math.max(next.education.length - previous.education.length, 0),
-    skillsAdded: Math.max(next.skills.length - previous.skills.length, 0)
+    experienceAdded: Math.max(nextExperience.length - previousExperience.length, 0),
+    educationAdded: Math.max(nextEducation.length - previousEducation.length, 0),
+    skillsAdded: Math.max(nextSkills.length - previousSkills.length, 0)
   }
+}
+
+function coerceStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean)
+}
+
+function coerceExperienceArray(value: unknown): ResumeData['experience'] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.filter((entry): entry is ResumeData['experience'][number] => {
+    return Boolean(entry && typeof entry === 'object')
+  })
+}
+
+function coerceEducationArray(value: unknown): ResumeData['education'] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value.filter((entry): entry is ResumeData['education'][number] => {
+    return Boolean(entry && typeof entry === 'object')
+  })
 }

@@ -19,6 +19,7 @@
         "/^cd \"/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1\" && gh run view 25009778357 --repo cpfcoaching/OB1 --log-failed 2>&1 \\| tail -120$/": {
             "approve": true,
             "matchCommandLine": true
-        }
+        },
+        "git stash": true
     }
 }
