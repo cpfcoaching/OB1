@@ -202,11 +202,18 @@ function groupPdfTextIntoLines(items: Array<unknown>): string {
   let sidebarLines: LineData[]
 
   if (columnSplit !== null) {
+    // Determine which side is the main body by total text volume —
+    // the richer column is the resume body; the sparser one is the sidebar.
+    // LinkedIn PDFs use a LEFT sidebar, so we can't assume position alone.
+    const leftLen = allChunks.filter((c) => c.x <= columnSplit).reduce((s, c) => s + c.text.length, 0)
+    const rightLen = allChunks.filter((c) => c.x > columnSplit).reduce((s, c) => s + c.text.length, 0)
+    const leftIsMain = leftLen >= rightLen
+
     primaryLines = lines
-      .map((l) => ({ ...l, chunks: l.chunks.filter((c) => c.x <= columnSplit) }))
+      .map((l) => ({ ...l, chunks: l.chunks.filter((c) => (leftIsMain ? c.x <= columnSplit : c.x > columnSplit)) }))
       .filter((l) => l.chunks.length > 0)
     sidebarLines = lines
-      .map((l) => ({ ...l, chunks: l.chunks.filter((c) => c.x > columnSplit) }))
+      .map((l) => ({ ...l, chunks: l.chunks.filter((c) => (leftIsMain ? c.x > columnSplit : c.x <= columnSplit)) }))
       .filter((l) => l.chunks.length > 0)
   } else {
     primaryLines = lines
@@ -258,7 +265,10 @@ function groupPdfTextIntoLines(items: Array<unknown>): string {
 
   const mainText = renderColumn(primaryLines)
   const sidebarText = sidebarLines.length > 0 ? renderColumn(sidebarLines) : ''
-  return sidebarText ? mainText + '\n\n' + sidebarText : mainText
+    // Prefix the sidebar with "Contact" so section routing immediately switches
+    // to discard — prevents the person's name / contact info from flooding the
+    // skills section when the sidebar has no explicit Contact heading at the top.
+    return sidebarText ? mainText + '\n\nContact\n' + sidebarText : mainText
 }
 
 /**
@@ -286,7 +296,9 @@ function detectPdfColumnSplit(chunks: Array<{ x: number }>): number | null {
   for (let i = 0; i < xBuckets.length - 1; i++) {
     const gap = xBuckets[i + 1] - xBuckets[i]
     const relative = (xBuckets[i] - minX) / pageWidth
-    if (gap > maxGap && relative >= 0.35 && relative <= 0.82) {
+    // 0.10 lower bound (was 0.35) catches LinkedIn's left sidebar layout,
+    // where the gutter typically falls at ~12 % of the text-extent width.
+    if (gap > maxGap && relative >= 0.10 && relative <= 0.90) {
       maxGap = gap
       splitX = (xBuckets[i] + xBuckets[i + 1]) / 2
     }
@@ -306,7 +318,10 @@ function normalizeExtractedText(text: string): string {
   return text
     .replace(/\r/g, '')
     .replace(/\u0000/g, '')
-    .replace(/[ \t]+\n/g, '\n')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&[a-z]{2,6};/gi, ' ')
+      .replace(/[ \t]+\n/g, '\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
@@ -414,7 +429,9 @@ function identifySectionHeading(line: string): Exclude<SectionName, 'general'> |
 
 function parseSummary(summaryLines: string[], generalLines: string[]): string {
   if (summaryLines.length > 0) {
-    const merged = summaryLines.join(' ').replace(/\s{2,}/g, ' ').trim()
+    // Strip contact/URL lines that may leak into a LinkedIn "About" section
+    const cleanedSummary = summaryLines.filter((l) => !looksLikeContactLine(l))
+    const merged = (cleanedSummary.length > 0 ? cleanedSummary : summaryLines).join(' ').replace(/\s{2,}/g, ' ').trim()
     if (merged.length >= 30) return merged.slice(0, 600)
   }
 
@@ -473,7 +490,9 @@ function parseExperienceEntries(lines: string[]): ParsedExperienceEntry[] {
 }
 
 function startsNewExperienceChunk(line: string, currentChunk: string[]): boolean {
-  const hasCurrentContent = currentChunk.join(' ').length > 40
+  // 20-char threshold (was 40) so a short first line (name, short title) still
+  // triggers a split when the next role/date line arrives.
+  const hasCurrentContent = currentChunk.join(' ').length > 20
 
   if (!hasCurrentContent) {
     return false

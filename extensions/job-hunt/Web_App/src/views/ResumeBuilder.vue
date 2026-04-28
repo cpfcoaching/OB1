@@ -43,19 +43,22 @@
               </div>
               
               <div :class="isDark ? 'bg-gray-600 border-gray-500' : 'bg-blue-50 border-blue-200'" class="border rounded p-4 text-xs space-y-2">
-                <p :class="isDark ? 'text-gray-200' : 'text-gray-700'" class="font-semibold mb-2">📋 How to Export LinkedIn Data:</p>
-                <ol :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="list-decimal list-inside space-y-1">
-                  <li>Go to your LinkedIn profile: linkedin.com/in/yourprofile/</li>
-                  <li>Click <strong>"More"</strong> (three dots) and select <strong>"Download your data"</strong></li>
-                  <li>Or, open Developer Tools <code class="bg-gray-900 text-green-400 px-1">F12 → Console</code></li>
-                  <li>Copy the profile data as JSON and paste it here</li>
-                </ol>
-                <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="mt-3 text-xs">
-                  <strong>Example format:</strong>
-                  <code class="block bg-gray-900 text-green-400 px-2 py-1 rounded mt-1 overflow-x-auto">
-{{ '{' }}"firstName":"John","lastName":"Doe","email":"john@example.com","skills":["JavaScript","React"]{{ '}' }}
-                  </code>
+                <p :class="isDark ? 'text-gray-200' : 'text-gray-700'" class="font-semibold mb-2">📋 How to use LinkedIn import:</p>
+                <p :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                  LinkedIn does <strong>not</strong> export JSON directly. Manually fill in the JSON template below with your profile info, then paste it in the box above.
                 </p>
+                <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="mt-2">
+                  <strong>Full template (copy, fill in your info, paste above):</strong>
+                </p>
+                <pre :class="isDark ? 'text-green-400' : 'text-green-700'" class="bg-gray-900 px-2 py-2 rounded mt-1 overflow-x-auto whitespace-pre text-xs leading-relaxed"
+>{{ linkedinSampleJson }}</pre>
+                <button
+                  @click="fillLinkedInSample"
+                  :class="isDark ? 'bg-gray-500 hover:bg-gray-400 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
+                  class="mt-2 px-3 py-1 rounded text-xs font-medium transition"
+                >
+                  📋 Fill textarea with sample
+                </button>
               </div>
               
               <button
@@ -569,6 +572,45 @@ const { trackResumeBuilt, trackResumeSaved, trackFeatureView } = useAnalytics()
 // LinkedIn import state
 const linkedinUrl = ref('')
 const linkedinJsonData = ref('')
+
+const linkedinSampleJson = `{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "email": "jane.doe@email.com",
+  "phone": "+1-555-123-4567",
+  "location": "San Francisco, CA",
+  "headline": "Senior Software Engineer | Cloud & AI",
+  "summary": "Experienced engineer with 8+ years building scalable cloud-native systems.",
+  "experience": [
+    {
+      "title": "Senior Software Engineer",
+      "companyName": "Acme Corp",
+      "startDate": "2020-03",
+      "endDate": "",
+      "description": "Led migration of monolith to microservices on AWS. Reduced latency by 40%."
+    },
+    {
+      "title": "Software Engineer",
+      "companyName": "Beta Inc",
+      "startDate": "2017-06",
+      "endDate": "2020-02",
+      "description": "Built REST APIs with Node.js and PostgreSQL. Mentored 3 junior engineers."
+    }
+  ],
+  "education": [
+    {
+      "schoolName": "University of California, Berkeley",
+      "fieldOfStudy": "Computer Science",
+      "startDate": "2013",
+      "endDate": "2017"
+    }
+  ],
+  "skills": ["TypeScript", "React", "Node.js", "AWS", "Docker", "PostgreSQL"]
+}`
+
+const fillLinkedInSample = () => {
+  linkedinJsonData.value = linkedinSampleJson
+}
 const isLoadingLinkedin = ref(false)
 const linkedinError = ref('')
 const linkedinSuccess = ref('')
@@ -748,7 +790,7 @@ const importFromLinkedIn = async () => {
     const parsedData = parseLinkedInData(linkedinJsonData.value)
     
     if (!parsedData) {
-      linkedinError.value = 'Failed to parse LinkedIn data. Please check the JSON format and try again.'
+      linkedinError.value = 'Unable to parse LinkedIn input. Use the sample template button below, fill in your details, and try again.'
       return
     }
 

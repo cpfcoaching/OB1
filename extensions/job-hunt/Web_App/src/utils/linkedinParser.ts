@@ -27,6 +27,8 @@ interface LinkedInProfile {
   skills?: string[]
 }
 
+type UnknownRecord = Record<string, unknown>
+
 export interface ResumeData {
   personalInfo: {
     fullName: string
@@ -57,18 +59,37 @@ export interface ResumeData {
  */
 export function parseLinkedInData(jsonData: string): Partial<ResumeData> | null {
   try {
-    const profile: LinkedInProfile = JSON.parse(jsonData)
+    const profile = parseLinkedInProfileInput(jsonData)
+    if (!profile) {
+      return null
+    }
+
+    const profileRecord = profile as UnknownRecord
+
+    const firstName = pickString(profileRecord, ['firstName', 'first_name', 'givenName'])
+    const lastName = pickString(profileRecord, ['lastName', 'last_name', 'familyName'])
+    const email = pickString(profileRecord, ['email', 'emailAddress'])
+    const phone = pickString(profileRecord, ['phone', 'phoneNumber', 'mobile'])
+    const location = pickString(profileRecord, ['location'])
+    const headline = pickString(profileRecord, ['headline', 'title'])
+    const summary = pickString(profileRecord, ['summary', 'about', 'bio'])
+    const profileExperience = pickArray(profileRecord, ['experience', 'experiences', 'positions'])
+    const profileEducation = pickArray(profileRecord, ['education', 'educations'])
+    const profileSkills = pickArray(profileRecord, ['skills'])
     
     return {
       personalInfo: {
-        fullName: `${profile.firstName || ''} ${profile.lastName || ''}`.trim(),
-        email: profile.email || '',
-        phone: profile.phone || '',
-        location: profile.location || ''
+        fullName: `${firstName || ''} ${lastName || ''}`.trim(),
+        email: email || '',
+        phone: phone || '',
+        location: location || ''
       },
-      summary: profile.summary || profile.headline || '',
-      experience: (profile.experience || []).map(exp => {
-        const rawDesc = exp.description || ''
+      summary: summary || headline || '',
+      experience: profileExperience
+        .map((exp) => normalizeRecord(exp))
+        .filter(isUnknownRecord)
+        .map((exp) => {
+        const rawDesc = pickString(exp, ['description', 'summary']) || ''
         const bulletPrefixRe = /^[\u2022\-\*]\s+|^\d+\.\s+/
         const descLines = rawDesc.split(/\n/).map((l: string) => l.trim()).filter(Boolean)
         const bullets: string[] = []
@@ -81,26 +102,175 @@ export function parseLinkedInData(jsonData: string): Partial<ResumeData> | null 
           }
         }
         return {
-          position: exp.title || '',
-          company: exp.companyName || '',
-          startDate: formatDate(exp.startDate),
-          endDate: exp.endDate ? formatDate(exp.endDate) : '',
+          position: pickString(exp, ['title', 'position', 'role']) || '',
+          company: pickString(exp, ['companyName', 'company', 'organization']) || '',
+          startDate: formatDate(pickString(exp, ['startDate', 'start'])),
+          endDate: (pickString(exp, ['endDate', 'end']) ? formatDate(pickString(exp, ['endDate', 'end'])) : ''),
           summary: proseLines.join(' ').replace(/\s{2,}/g, ' ').trim(),
           bullets,
           tags: [],
         }
       }),
-      education: (profile.education || []).map(edu => ({
-        degree: edu.fieldOfStudy || '',
-        school: edu.schoolName || '',
-        graduationDate: formatDate(edu.endDate)
-      })),
-      skills: profile.skills || []
+      education: profileEducation
+        .map((edu) => normalizeRecord(edu))
+        .filter(isUnknownRecord)
+        .map((edu) => ({
+          degree: pickString(edu, ['fieldOfStudy', 'degree', 'program']) || '',
+          school: pickString(edu, ['schoolName', 'school', 'institution']) || '',
+          graduationDate: formatDate(pickString(edu, ['endDate', 'graduationDate', 'end']))
+        })),
+      skills: normalizeSkills(profileSkills)
     }
   } catch (error) {
     console.error('Error parsing LinkedIn data:', error)
     return null
   }
+}
+
+function parseLinkedInProfileInput(input: string): LinkedInProfile | null {
+  const trimmed = input.trim()
+  if (!trimmed) return null
+
+  const parsedJson = safeParseJson(trimmed)
+  if (parsedJson && typeof parsedJson === 'object') {
+    return parsedJson as LinkedInProfile
+  }
+
+  const looseJson = safeParseJson(toLooselyNormalizedJson(trimmed))
+  if (looseJson && typeof looseJson === 'object') {
+    return looseJson as LinkedInProfile
+  }
+
+  const fromKeyValue = parseKeyValueProfile(trimmed)
+  return fromKeyValue
+}
+
+function safeParseJson(value: string): unknown {
+  try {
+    return JSON.parse(value)
+  } catch {
+    return null
+  }
+}
+
+function toLooselyNormalizedJson(input: string): string {
+  return input
+    .replace(/[\u201C\u201D]/g, '"')
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/,\s*([}\]])/g, '$1')
+}
+
+function parseKeyValueProfile(input: string): LinkedInProfile | null {
+  const lines = input
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+
+  if (lines.length === 0) return null
+
+  const profile: LinkedInProfile = {}
+  for (const line of lines) {
+    const idx = line.indexOf(':')
+    if (idx <= 0) continue
+
+    const rawKey = line.slice(0, idx).trim().toLowerCase()
+    const rawValue = line.slice(idx + 1).trim()
+    if (!rawValue) continue
+
+    switch (rawKey) {
+      case 'first name':
+      case 'firstname':
+        profile.firstName = rawValue
+        break
+      case 'last name':
+      case 'lastname':
+        profile.lastName = rawValue
+        break
+      case 'email':
+        profile.email = rawValue
+        break
+      case 'phone':
+      case 'mobile':
+        profile.phone = rawValue
+        break
+      case 'location':
+        profile.location = rawValue
+        break
+      case 'headline':
+      case 'title':
+        profile.headline = rawValue
+        break
+      case 'summary':
+      case 'about':
+      case 'bio':
+        profile.summary = rawValue
+        break
+      case 'skills':
+        profile.skills = rawValue.split(/[;,]/g).map((s) => s.trim()).filter(Boolean)
+        break
+      default:
+        break
+    }
+  }
+
+  const hasAny = Boolean(
+    profile.firstName ||
+    profile.lastName ||
+    profile.email ||
+    profile.phone ||
+    profile.location ||
+    profile.headline ||
+    profile.summary ||
+    (profile.skills && profile.skills.length > 0)
+  )
+
+  return hasAny ? profile : null
+}
+
+function normalizeRecord(value: unknown): UnknownRecord | null {
+  if (!value || typeof value !== 'object') return null
+  return value as UnknownRecord
+}
+
+function isUnknownRecord(value: UnknownRecord | null): value is UnknownRecord {
+  return Boolean(value)
+}
+
+function pickString(record: UnknownRecord, keys: string[]): string {
+  for (const key of keys) {
+    const value = record[key]
+    if (typeof value === 'string' && value.trim()) {
+      return value.trim()
+    }
+  }
+  return ''
+}
+
+function pickArray(record: UnknownRecord, keys: string[]): unknown[] {
+  for (const key of keys) {
+    const value = record[key]
+    if (Array.isArray(value)) {
+      return value
+    }
+  }
+  return []
+}
+
+function normalizeSkills(rawSkills: unknown[]): string[] {
+  const values: string[] = []
+  for (const item of rawSkills) {
+    if (typeof item === 'string') {
+      values.push(item)
+      continue
+    }
+    if (item && typeof item === 'object') {
+      const record = item as UnknownRecord
+      const name = pickString(record, ['name', 'skill'])
+      if (name) values.push(name)
+    }
+  }
+
+  return Array.from(new Set(values.map((s) => s.trim()).filter(Boolean)))
 }
 
 /**
