@@ -42,24 +42,48 @@
                 ></textarea>
               </div>
               
-              <div :class="isDark ? 'bg-gray-600 border-gray-500' : 'bg-blue-50 border-blue-200'" class="border rounded p-4 text-xs space-y-2">
-                <p :class="isDark ? 'text-gray-200' : 'text-gray-700'" class="font-semibold mb-2">📋 How to use LinkedIn import:</p>
-                <p :class="isDark ? 'text-gray-300' : 'text-gray-600'">
-                  LinkedIn does <strong>not</strong> export JSON directly. Manually fill in the JSON template below with your profile info, then paste it in the box above.
+              <!-- Bookmarklet extractor -->
+              <div :class="isDark ? 'bg-indigo-900/40 border-indigo-600/50' : 'bg-indigo-50 border-indigo-200'" class="border rounded p-4 text-xs space-y-2">
+                <p :class="isDark ? 'text-indigo-200' : 'text-indigo-900'" class="font-semibold mb-1">🔖 1-Click LinkedIn Extractor (Bookmarklet)</p>
+                <p :class="isDark ? 'text-indigo-300' : 'text-indigo-700'">
+                  Add this bookmarklet to your browser, then click it while on any LinkedIn profile page to auto-extract the JSON.
                 </p>
-                <p :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="mt-2">
-                  <strong>Full template (copy, fill in your info, paste above):</strong>
-                </p>
-                <pre :class="isDark ? 'text-green-400' : 'text-green-700'" class="bg-gray-900 px-2 py-2 rounded mt-1 overflow-x-auto whitespace-pre text-xs leading-relaxed"
->{{ linkedinSampleJson }}</pre>
+                <ol :class="isDark ? 'text-gray-300' : 'text-gray-600'" class="list-decimal list-inside space-y-1 mt-1">
+                  <li>Click <strong>Copy Bookmarklet</strong> below</li>
+                  <li>Right-click your browser bookmarks bar → <strong>Add Bookmark / Add Page</strong></li>
+                  <li>Set the name to <em>LinkedIn Scraper</em> and paste the copied code as the <strong>URL</strong></li>
+                  <li>Navigate to a LinkedIn profile and click the bookmark — the JSON will be copied to your clipboard</li>
+                  <li>Paste it in the box above and click <strong>Import</strong></li>
+                </ol>
                 <button
-                  @click="fillLinkedInSample"
-                  :class="isDark ? 'bg-gray-500 hover:bg-gray-400 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
-                  class="mt-2 px-3 py-1 rounded text-xs font-medium transition"
+                  @click="copyBookmarklet"
+                  :class="isDark ? 'bg-indigo-600 hover:bg-indigo-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'"
+                  class="mt-2 px-3 py-1.5 rounded text-xs font-medium transition"
                 >
-                  📋 Fill textarea with sample
+                  {{ bookmarkletCopied ? '✅ Copied!' : '📋 Copy Bookmarklet' }}
                 </button>
               </div>
+
+              <!-- Manual JSON fallback -->
+              <details :class="isDark ? 'border-gray-600' : 'border-gray-200'" class="border rounded">
+                <summary :class="isDark ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'" class="px-4 py-2 cursor-pointer text-xs font-medium select-none">
+                  🗒️ Manual JSON template (fallback)
+                </summary>
+                <div :class="isDark ? 'bg-gray-600 border-gray-500' : 'bg-gray-50 border-gray-200'" class="border-t p-4 text-xs space-y-2">
+                  <p :class="isDark ? 'text-gray-300' : 'text-gray-600'">
+                    Copy, fill in your info, and paste in the box above.
+                  </p>
+                  <pre :class="isDark ? 'text-green-400' : 'text-green-700'" class="bg-gray-900 px-2 py-2 rounded mt-1 overflow-x-auto whitespace-pre text-xs leading-relaxed"
+>{{ linkedinSampleJson }}</pre>
+                  <button
+                    @click="fillLinkedInSample"
+                    :class="isDark ? 'bg-gray-500 hover:bg-gray-400 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'"
+                    class="mt-2 px-3 py-1 rounded text-xs font-medium transition"
+                  >
+                    📋 Fill textarea with sample
+                  </button>
+                </div>
+              </details>
               
               <button
                 @click="importFromLinkedIn"
@@ -611,6 +635,21 @@ const linkedinSampleJson = `{
 const fillLinkedInSample = () => {
   linkedinJsonData.value = linkedinSampleJson
 }
+
+const BOOKMARKLET = `javascript:(function(){'use strict';function q(s,c){return(c||document).querySelector(s)}function qa(s,c){return Array.from((c||document).querySelectorAll(s))}function tx(el){return el?el.innerText.trim():''}var nameEl=q('h1');var fullName=tx(nameEl);var parts=fullName.split(/\\s+/);var first=parts[0]||'';var last=parts.slice(1).join(' ')||'';var headline=tx(q('.text-body-medium.break-words'));var locEl=q('span.text-body-small.inline.t-black--light.break-words');var location=tx(locEl)||'';var email='';var emailEl=q('a[href^="mailto:"]');if(emailEl)email=emailEl.href.replace('mailto:','').trim();var summary='';var aboutAnchor=document.getElementById('about');if(aboutAnchor){var aboutSec=aboutAnchor.closest('section');if(aboutSec){var allSpans=qa('span[aria-hidden]',aboutSec);allSpans.forEach(function(sp){if(sp.textContent.trim().length>50&&!summary)summary=sp.textContent.trim();})}}var experience=[];var expAnchor=document.getElementById('experience');if(expAnchor){var expSec=expAnchor.closest('section');if(expSec){qa('li.artdeco-list__item',expSec).forEach(function(item){var bolds=qa('.t-bold span[aria-hidden]',item);var normals=qa('.t-normal:not(.t-black--light) span[aria-hidden]',item);var title=tx(bolds[0]);var company=tx(normals[0]);if(title)experience.push({title:title,companyName:company,startDate:'',endDate:'',description:''});})}}var education=[];var eduAnchor=document.getElementById('education');if(eduAnchor){var eduSec=eduAnchor.closest('section');if(eduSec){qa('li.artdeco-list__item',eduSec).forEach(function(item){var bolds=qa('.t-bold span[aria-hidden]',item);var normals=qa('.t-normal:not(.t-black--light) span[aria-hidden]',item);var school=tx(bolds[0]);var field=tx(normals[0]);if(school)education.push({schoolName:school,fieldOfStudy:field,startDate:'',endDate:''});})}}var skills=[];var skillsAnchor=document.getElementById('skills');if(skillsAnchor){var skillsSec=skillsAnchor.closest('section');if(skillsSec){qa('.t-bold span[aria-hidden]',skillsSec).forEach(function(el){var s=tx(el);if(s&&s.length<80&&skills.indexOf(s)<0)skills.push(s);})}}var result={firstName:first,lastName:last,email:email,headline:headline,location:location,summary:summary,experience:experience,education:education,skills:skills};var json=JSON.stringify(result,null,2);if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(json).then(function(){alert('\u2705 LinkedIn data copied!\nPaste into the Resume Builder \u2192 LinkedIn Profile section.');}).catch(function(){prompt('Copy this JSON:',json);})}else{prompt('Copy this JSON:',json);}})();`
+
+const bookmarkletCopied = ref(false)
+const copyBookmarklet = async () => {
+  try {
+    await navigator.clipboard.writeText(BOOKMARKLET)
+    bookmarkletCopied.value = true
+    setTimeout(() => { bookmarkletCopied.value = false }, 2500)
+  } catch {
+    // fallback: put code in a prompt so user can manually copy
+    window.prompt('Copy this bookmarklet URL:', BOOKMARKLET)
+  }
+}
+
 const isLoadingLinkedin = ref(false)
 const linkedinError = ref('')
 const linkedinSuccess = ref('')
