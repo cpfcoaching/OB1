@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
-        "/Users/MacAttack/.vscode/extensions/ms-security.ms-sentinel-2.0.2/python"
+        "/Users/MacAttack/.vscode/extensions/ms-security.ms-sentinel-2.0.2/python",
+        "/Users/MacAttack/.vscode/extensions/ms-security.ms-sentinel-2.1.0/python"
     ],
     "chat.tools.terminal.autoApprove": {
         "/^cd \"/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1\" && gh run watch --repo cpfcoaching/OB1 2>&1$/": {

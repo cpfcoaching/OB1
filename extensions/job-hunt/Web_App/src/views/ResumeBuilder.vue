@@ -270,8 +270,16 @@
                   />
                 </div>
                 <textarea
-                  v-model="exp.description"
-                  placeholder="Describe your responsibilities and achievements..."
+                  v-model="exp.summary"
+                  placeholder="Summary of responsibilities and achievements..."
+                  :class="isDark ? 'bg-gray-600 text-white border-gray-500' : 'bg-white text-gray-900 border-gray-300'"
+                  class="w-full border rounded px-3 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                  rows="2"
+                ></textarea>
+                <textarea
+                  :value="exp.bullets.join('\n')"
+                  @input="(e) => exp.bullets = (e.target as HTMLTextAreaElement).value.split('\n').map(l => l.replace(/^[\u2022\-\*]\s*/, '').trim()).filter(Boolean)"
+                  placeholder="Bullet points (one per line)..."
                   :class="isDark ? 'bg-gray-600 text-white border-gray-500' : 'bg-white text-gray-900 border-gray-300'"
                   class="w-full border rounded px-3 py-1 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                   rows="3"
@@ -479,7 +487,10 @@
                   <p class="text-xs">{{ exp.startDate }} - {{ exp.endDate || 'Present' }}</p>
                 </div>
                 <p class="text-xs opacity-75">{{ exp.company }}</p>
-                <p class="text-xs mt-1 leading-tight">{{ exp.description }}</p>
+                <p v-if="exp.summary" class="text-xs mt-1 leading-tight">{{ exp.summary }}</p>
+                <ul v-if="exp.bullets && exp.bullets.length > 0" class="list-disc list-inside mt-1 space-y-0.5">
+                  <li v-for="(bullet, bi) in exp.bullets" :key="bi" class="text-xs leading-tight">{{ bullet }}</li>
+                </ul>
               </div>
             </div>
 
@@ -591,7 +602,7 @@ const resume = ref({
   },
   summary: '',
   experience: [
-    { position: '', company: '', startDate: '', endDate: '', description: '' }
+    { position: '', company: '', startDate: '', endDate: '', summary: '', bullets: [] as string[], tags: [] as string[] }
   ],
   education: [
     { degree: '', school: '', graduationDate: '' }
@@ -605,7 +616,9 @@ const addExperience = () => {
     company: '',
     startDate: '',
     endDate: '',
-    description: ''
+    summary: '',
+    bullets: [] as string[],
+    tags: [] as string[],
   })
 }
 
@@ -830,7 +843,9 @@ const parseResumeDocument = async () => {
         company: exp.company || '',
         startDate: exp.startDate || '',
         endDate: exp.endDate || '',
-        description: exp.description || ''
+        summary: exp.summary || '',
+        bullets: exp.bullets || [],
+        tags: exp.tags || [],
       }))
     }
     
@@ -879,6 +894,21 @@ const parseResumeDocument = async () => {
   }
 }
 
+// Migrate experience entries that were saved with the old flat `description` field
+function migrateExperienceEntries(data: Record<string, unknown>): Record<string, unknown> {
+  if (!Array.isArray(data.experience)) return data
+  return {
+    ...data,
+    experience: (data.experience as Array<Record<string, unknown>>).map((exp) => {
+      if ('description' in exp && !('summary' in exp)) {
+        const { description, ...rest } = exp
+        return { ...rest, summary: String(description || ''), bullets: [], tags: [] }
+      }
+      return { summary: '', bullets: [], tags: [], ...exp }
+    }),
+  }
+}
+
 onMounted(async () => {
   await initializeAuth()
   if (!user.value) {
@@ -888,7 +918,7 @@ onMounted(async () => {
   // Load saved resume
   const saved = localStorage.getItem('resume')
   if (saved) {
-    resume.value = JSON.parse(saved)
+    resume.value = migrateExperienceEntries(JSON.parse(saved)) as typeof resume.value
   }
 
   const client = getFirestoreClient()
@@ -898,7 +928,7 @@ onMounted(async () => {
       if (cloudResume) {
         resume.value = {
           ...resume.value,
-          ...cloudResume,
+          ...migrateExperienceEntries(cloudResume as Record<string, unknown>),
         } as typeof resume.value
       }
 

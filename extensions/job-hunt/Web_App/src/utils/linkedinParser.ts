@@ -40,7 +40,9 @@ export interface ResumeData {
     company: string
     startDate: string
     endDate: string
-    description: string
+    summary: string
+    bullets: string[]
+    tags: string[]
   }>
   education: Array<{
     degree: string
@@ -65,13 +67,29 @@ export function parseLinkedInData(jsonData: string): Partial<ResumeData> | null 
         location: profile.location || ''
       },
       summary: profile.summary || profile.headline || '',
-      experience: (profile.experience || []).map(exp => ({
-        position: exp.title || '',
-        company: exp.companyName || '',
-        startDate: formatDate(exp.startDate),
-        endDate: exp.endDate ? formatDate(exp.endDate) : '',
-        description: exp.description || ''
-      })),
+      experience: (profile.experience || []).map(exp => {
+        const rawDesc = exp.description || ''
+        const bulletPrefixRe = /^[\u2022\-\*]\s+|^\d+\.\s+/
+        const descLines = rawDesc.split(/\n/).map((l: string) => l.trim()).filter(Boolean)
+        const bullets: string[] = []
+        const proseLines: string[] = []
+        for (const line of descLines) {
+          if (bulletPrefixRe.test(line)) {
+            bullets.push(line.replace(bulletPrefixRe, '').trim())
+          } else {
+            proseLines.push(line)
+          }
+        }
+        return {
+          position: exp.title || '',
+          company: exp.companyName || '',
+          startDate: formatDate(exp.startDate),
+          endDate: exp.endDate ? formatDate(exp.endDate) : '',
+          summary: proseLines.join(' ').replace(/\s{2,}/g, ' ').trim(),
+          bullets,
+          tags: [],
+        }
+      }),
       education: (profile.education || []).map(edu => ({
         degree: edu.fieldOfStudy || '',
         school: edu.schoolName || '',
@@ -182,15 +200,19 @@ function mergeExperience(
     }
 
     const existing = merged[existingIndex]
+    const existingSummaryLen = (existing.summary || '').trim().length + existing.bullets.join(' ').length
+    const entrySummaryLen = (entry.summary || '').trim().length + entry.bullets.join(' ').length
+    const mergedTags = Array.from(new Set([...(existing.tags || []), ...(entry.tags || [])]))
     merged[existingIndex] = {
       position: existing.position || entry.position,
       company: existing.company || entry.company,
       startDate: existing.startDate || entry.startDate,
       endDate: existing.endDate || entry.endDate,
-      description:
-        existing.description?.trim().length >= entry.description?.trim().length
-          ? existing.description
-          : entry.description
+      summary: existingSummaryLen >= entrySummaryLen ? existing.summary : entry.summary,
+      bullets: existingSummaryLen >= entrySummaryLen
+        ? (existing.bullets.length > 0 ? existing.bullets : entry.bullets)
+        : (entry.bullets.length > 0 ? entry.bullets : existing.bullets),
+      tags: mergedTags,
     }
   }
 
