@@ -1,8 +1,10 @@
 {
-  "buildCommand": "npm ci && npx vue-tsc -b && npx vite build",
+  "buildCommand": "./build.sh",
   "outputDirectory": "dist",
-  "installCommand": "npm ci --prefer-offline --no-audit",
   "nodeVersion": "20.x",
+  "env": {
+    "BUILD_CACHE_BUSTER": "@now"
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
