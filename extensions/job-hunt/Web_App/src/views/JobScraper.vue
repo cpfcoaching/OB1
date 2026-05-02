@@ -164,6 +164,100 @@
         </div>
       </div>
 
+      <!-- Smart Job Matching / Search Section -->
+      <div v-if="parsedJobs.length > 0" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'" class="border rounded-lg shadow-sm p-6 mt-6">
+        <h3 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-lg font-bold mb-4">🎯 Smart Job Matching</h3>
+        
+        <!-- Search Criteria -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-1">Skills/Keywords</label>
+            <input
+              v-model="searchCriteria.keywords"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              type="text"
+              placeholder="e.g., Python, React, AI"
+              class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-1">Location</label>
+            <input
+              v-model="searchCriteria.location"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              type="text"
+              placeholder="e.g., Remote, NYC, San Francisco"
+              class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-1">Min Salary</label>
+            <input
+              v-model.number="searchCriteria.minSalary"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              type="number"
+              placeholder="e.g., 100000"
+              class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="block text-sm font-medium mb-1">Experience Level</label>
+            <select
+              v-model="searchCriteria.experience"
+              :class="isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'"
+              class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
+              <option value="">Any</option>
+              <option value="entry">Entry Level</option>
+              <option value="mid">Mid-Level</option>
+              <option value="senior">Senior</option>
+              <option value="lead">Lead / Manager</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex gap-2 mb-4">
+          <button
+            @click="matchJobs"
+            :class="isDark ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-indigo-600 hover:bg-indigo-700'"
+            class="text-white px-4 py-2 rounded-lg transition font-medium text-sm"
+          >
+            🔍 Find Matches
+          </button>
+          <button
+            @click="() => { searchCriteria = { keywords: '', location: '', minSalary: null, experience: '' }; matchedJobs = [] }"
+            :class="isDark ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' : 'bg-gray-200 hover:bg-gray-300 text-gray-900'"
+            class="px-4 py-2 rounded-lg transition font-medium text-sm"
+          >
+            Clear
+          </button>
+        </div>
+
+        <!-- Matched Jobs Results -->
+        <div v-if="matchedJobs.length > 0" class="space-y-3">
+          <p :class="isDark ? 'text-gray-300' : 'text-gray-700'" class="text-sm font-semibold">Found {{ matchedJobs.length }} matching job(s)</p>
+          <div v-for="(match, idx) in matchedJobs" :key="idx" :class="isDark ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'" class="border rounded-lg p-4">
+            <div class="flex justify-between items-start mb-2">
+              <div class="flex-1">
+                <p :class="isDark ? 'text-white' : 'text-gray-900'" class="font-bold text-sm">{{ match.job.position }}</p>
+                <p :class="isDark ? 'text-gray-400' : 'text-gray-600'" class="text-xs">{{ match.job.company }}</p>
+              </div>
+              <div :class="match.score >= 80 ? 'bg-green-100 text-green-800' : match.score >= 60 ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-200 text-gray-800'" class="rounded-full px-3 py-1 text-sm font-bold">
+                {{ match.score }}% Match
+              </div>
+            </div>
+            <div v-if="match.reasons.length > 0" class="text-xs space-y-1">
+              <p v-for="(reason, i) in match.reasons" :key="i" :class="isDark ? 'text-gray-400' : 'text-gray-600'">✓ {{ reason }}</p>
+            </div>
+            <a v-if="match.job.url" :href="match.job.url" target="_blank" :class="isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'" class="text-xs mt-2 inline-block underline">View Job →</a>
+          </div>
+        </div>
+        <div v-else-if="Object.values(searchCriteria).some(v => v)" :class="isDark ? 'text-gray-400' : 'text-gray-600'" class="text-sm text-center py-4">
+          No jobs matched your criteria. Try adjusting your search.
+        </div>
+      </div>
+
       <!-- Import History -->
       <div v-if="importedCount > 0" :class="isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'" class="border rounded-lg shadow-sm p-6 mt-6">
         <h3 :class="isDark ? 'text-white' : 'text-gray-900'" class="text-lg font-bold mb-2">✅ Import Status</h3>
@@ -231,6 +325,15 @@ const pastedData = ref('')
 const parsedJobs = ref<any[]>([])
 const selectedJobIndices = ref<number[]>([])
 const importedCount = ref(0)
+
+// Smart Job Matching
+const searchCriteria = ref({
+  keywords: '',
+  location: '',
+  minSalary: null as number | null,
+  experience: ''
+})
+const matchedJobs = ref<any[]>([])
 
 const jobSources = [
   { id: 'linkedin', name: 'LinkedIn', emoji: '🔵' },
@@ -417,5 +520,72 @@ const autoApply = async () => {
   } finally {
     loading.value.autoApply = false
   }
+}
+
+// --- Smart Job Matching ---
+
+const matchJobs = () => {
+  matchedJobs.value = []
+
+  parsedJobs.value.forEach((job: any) => {
+    let score = 100
+    const reasons: string[] = []
+
+    const jobText = `${job.position} ${job.company}`.toLowerCase()
+
+    // 1. Keywords/Skills matching
+    if (searchCriteria.value.keywords.trim()) {
+      const keywords = searchCriteria.value.keywords.toLowerCase().split(/[\s,]+/).filter(k => k)
+      let keywordMatches = 0
+      keywords.forEach(kw => {
+        if (jobText.includes(kw)) {
+          keywordMatches++
+        }
+      })
+      const keywordScore = keywords.length > 0 ? (keywordMatches / keywords.length) * 100 : 100
+      if (keywordScore < 100) {
+        score = Math.min(score, keywordScore)
+      } else {
+        reasons.push(`Contains keywords: ${keywords.join(', ')}`)
+      }
+    }
+
+    // 2. Location matching
+    if (searchCriteria.value.location.trim()) {
+      const location = searchCriteria.value.location.toLowerCase()
+      if (jobText.includes(location) || jobText.includes('remote') && location.includes('remote')) {
+        reasons.push(`Location matches: ${searchCriteria.value.location}`)
+      } else {
+        score *= 0.7 // Reduce score if location doesn't match
+      }
+    }
+
+    // 3. Experience level matching
+    if (searchCriteria.value.experience) {
+      const expLevels: { [key: string]: string[] } = {
+        entry: ['junior', 'entry', 'entry-level', 'graduate', 'fresh'],
+        mid: ['mid', 'mid-level', 'intermediate', 'mid-senior'],
+        senior: ['senior', 'lead', 'principal', 'architect'],
+        lead: ['lead', 'manager', 'director', 'head', 'principal']
+      }
+      const requiredLevels = expLevels[searchCriteria.value.experience] || []
+      const hasExpMatch = requiredLevels.some(level => jobText.includes(level))
+      if (hasExpMatch) {
+        reasons.push(`Experience level: ${searchCriteria.value.experience}`)
+      }
+    }
+
+    // Only include jobs with reasonable match (>40% without keywords, or any match with keywords)
+    if (score >= 40 || reasons.length > 0) {
+      matchedJobs.value.push({
+        job,
+        score: Math.round(score),
+        reasons
+      })
+    }
+  })
+
+  // Sort by score descending
+  matchedJobs.value.sort((a, b) => b.score - a.score)
 }
 </script>

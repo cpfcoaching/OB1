@@ -1,8 +1,6 @@
 {
-  "buildCommand": "npm install --force && ./node_modules/.bin/vue-tsc -b && ./node_modules/.bin/vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "nodeVersion": "20.x",
-  "_cacheBuster": "2025-05-02T15:10:00Z",
   "rewrites": [
     {
       "source": "/api/(.*)",
