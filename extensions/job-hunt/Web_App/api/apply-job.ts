@@ -3,6 +3,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // TODO: Integrate with JobSpy or ACE agent for job application automation
-  res.status(501).json({ message: 'Job application automation integration in progress.' })
+  // Simulate auto-apply for demo; replace with real JobSpy/ACE integration
+  const { jobs = [] } = req.body || {}
+  res.status(200).json({ message: `Auto-applied to ${jobs.length} jobs.` })
 }

@@ -35,6 +35,28 @@
                 {{ source.emoji }} {{ source.name }}
               </button>
             </div>
+            <div class="grid grid-cols-1 gap-2 mt-4">
+              <button @click="scrapeJobs('job-ops')" :disabled="loading.jobOps" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-700 transition">
+                {{ loading.jobOps ? 'Scraping (job-ops)...' : '🔎 Scrape with job-ops' }}
+              </button>
+              <button @click="scrapeJobs('jobspy')" :disabled="loading.jobSpy" class="bg-purple-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-purple-700 transition">
+                {{ loading.jobSpy ? 'Scraping (JobSpy)...' : '🕵️ Scrape with JobSpy' }}
+              </button>
+              <button @click="scrapeJobs('career-ops')" :disabled="loading.careerOps" class="bg-green-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-green-700 transition">
+                {{ loading.careerOps ? 'Scraping (career-ops)...' : '🌍 Scrape with career-ops' }}
+              </button>
+              <button @click="aiMatch" :disabled="loading.aiMatch" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-indigo-700 transition">
+                {{ loading.aiMatch ? 'Matching (AI)...' : '🤖 AI Match Jobs' }}
+              </button>
+              <button @click="autoApply" :disabled="loading.autoApply" class="bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium text-sm hover:bg-yellow-700 transition">
+                {{ loading.autoApply ? 'Applying...' : '⚡ Auto-Apply to Jobs' }}
+              </button>
+            </div>
+            <div v-if="integrationResult" class="mt-3 p-3 rounded bg-gray-100 text-gray-800 text-xs border border-gray-300">
+              <span v-if="integrationResult.success">✅ {{ integrationResult.message }}</span>
+              <span v-else>❌ {{ integrationResult.message }}</span>
+            </div>
+            </div>
           </div>
 
           <!-- Input Area -->
@@ -194,6 +216,61 @@
 </template>
 
 <script setup lang="ts">
+import axios from 'axios'
+const loading = ref({ jobOps: false, jobSpy: false, careerOps: false, aiMatch: false, autoApply: false })
+const integrationResult = ref<null | { success: boolean, message: string }>(null)
+
+const scrapeJobs = async (source: string) => {
+  integrationResult.value = null
+  loading.value.jobOps = source === 'job-ops'
+  loading.value.jobSpy = source === 'jobspy'
+  loading.value.careerOps = source === 'career-ops'
+  try {
+    const res = await axios.post('/api/scrape-jobs', { source })
+    integrationResult.value = { success: true, message: res.data.message || 'Scraping complete.' }
+    // Optionally, update pastedData or parsedJobs with results
+    if (res.data.jobs) {
+      pastedData.value = JSON.stringify(res.data.jobs, null, 2)
+      parseJobs()
+    }
+  } catch (err: any) {
+    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'Scraping failed.' }
+  } finally {
+    loading.value.jobOps = false
+    loading.value.jobSpy = false
+    loading.value.careerOps = false
+  }
+}
+
+const aiMatch = async () => {
+  integrationResult.value = null
+  loading.value.aiMatch = true
+  try {
+    const res = await axios.post('/api/ai-match', { jobs: parsedJobs.value })
+    integrationResult.value = { success: true, message: res.data.message || 'AI matching complete.' }
+    // Optionally, update parsedJobs with AI-matched jobs
+    if (res.data.matchedJobs) {
+      parsedJobs.value = res.data.matchedJobs
+    }
+  } catch (err: any) {
+    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'AI matching failed.' }
+  } finally {
+    loading.value.aiMatch = false
+  }
+}
+
+const autoApply = async () => {
+  integrationResult.value = null
+  loading.value.autoApply = true
+  try {
+    const res = await axios.post('/api/apply-job', { jobs: parsedJobs.value })
+    integrationResult.value = { success: true, message: res.data.message || 'Auto-apply complete.' }
+  } catch (err: any) {
+    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'Auto-apply failed.' }
+  } finally {
+    loading.value.autoApply = false
+  }
+}
 import { onMounted, ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
