@@ -1,10 +1,8 @@
 {
-  "buildCommand": "./build.sh",
+  "buildCommand": "rm -rf node_modules .next dist && npm install && npx vue-tsc -b && npx vite build",
   "outputDirectory": "dist",
   "nodeVersion": "20.x",
-  "env": {
-    "BUILD_CACHE_BUSTER": "@now"
-  },
+  "regions": ["iad1"],
   "rewrites": [
     {
       "source": "/api/(.*)",
