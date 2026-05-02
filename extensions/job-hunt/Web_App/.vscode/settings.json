@@ -20,6 +20,10 @@
             "approve": true,
             "matchCommandLine": true
         },
-        "git stash": true
+        "git stash": true,
+        "/^tmpdir=\\$\\(mktemp -d\\) && cp package\\.json package-lock\\.json vite\\.config\\.ts postcss\\.config\\.js tailwind\\.config\\.js tsconfig\\.json tsconfig\\.app\\.json tsconfig\\.node\\.json index\\.html \"\\$tmpdir\" && cp -R src public \"\\$tmpdir\" && cd \"\\$tmpdir\" && npm ci --omit=dev && npm run build$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
     }
 }
