@@ -56,7 +56,6 @@
               <span v-if="integrationResult.success">✅ {{ integrationResult.message }}</span>
               <span v-else>❌ {{ integrationResult.message }}</span>
             </div>
-            </div>
           </div>
 
           <!-- Input Area -->
@@ -216,66 +215,12 @@
 </template>
 
 <script setup lang="ts">
-import axios from 'axios'
-const loading = ref({ jobOps: false, jobSpy: false, careerOps: false, aiMatch: false, autoApply: false })
-const integrationResult = ref<null | { success: boolean, message: string }>(null)
-
-const scrapeJobs = async (source: string) => {
-  integrationResult.value = null
-  loading.value.jobOps = source === 'job-ops'
-  loading.value.jobSpy = source === 'jobspy'
-  loading.value.careerOps = source === 'career-ops'
-  try {
-    const res = await axios.post('/api/scrape-jobs', { source })
-    integrationResult.value = { success: true, message: res.data.message || 'Scraping complete.' }
-    // Optionally, update pastedData or parsedJobs with results
-    if (res.data.jobs) {
-      pastedData.value = JSON.stringify(res.data.jobs, null, 2)
-      parseJobs()
-    }
-  } catch (err: any) {
-    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'Scraping failed.' }
-  } finally {
-    loading.value.jobOps = false
-    loading.value.jobSpy = false
-    loading.value.careerOps = false
-  }
-}
-
-const aiMatch = async () => {
-  integrationResult.value = null
-  loading.value.aiMatch = true
-  try {
-    const res = await axios.post('/api/ai-match', { jobs: parsedJobs.value })
-    integrationResult.value = { success: true, message: res.data.message || 'AI matching complete.' }
-    // Optionally, update parsedJobs with AI-matched jobs
-    if (res.data.matchedJobs) {
-      parsedJobs.value = res.data.matchedJobs
-    }
-  } catch (err: any) {
-    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'AI matching failed.' }
-  } finally {
-    loading.value.aiMatch = false
-  }
-}
-
-const autoApply = async () => {
-  integrationResult.value = null
-  loading.value.autoApply = true
-  try {
-    const res = await axios.post('/api/apply-job', { jobs: parsedJobs.value })
-    integrationResult.value = { success: true, message: res.data.message || 'Auto-apply complete.' }
-  } catch (err: any) {
-    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'Auto-apply failed.' }
-  } finally {
-    loading.value.autoApply = false
-  }
-}
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '@/composables/useAuth'
 import { useAnalytics } from '@/composables/useAnalytics'
 import TopBanner from '@/components/TopBanner.vue'
+import axios from 'axios'
 
 const router = useRouter()
 const { user, initializeAuth, isDark } = useAuth()
@@ -416,5 +361,61 @@ const importJobs = () => {
 
   // Alert user
   alert(`✅ Successfully imported ${jobsToImport.length} job(s)!`)
+}
+
+// --- Integration handlers (connect to Vercel API routes) ---
+
+const loading = ref({ jobOps: false, jobSpy: false, careerOps: false, aiMatch: false, autoApply: false })
+const integrationResult = ref<null | { success: boolean; message: string }>(null)
+
+const scrapeJobs = async (source: string) => {
+  integrationResult.value = null
+  loading.value.jobOps = source === 'job-ops'
+  loading.value.jobSpy = source === 'jobspy'
+  loading.value.careerOps = source === 'career-ops'
+  try {
+    const res = await axios.post('/api/scrape-jobs', { source })
+    integrationResult.value = { success: true, message: res.data.message || 'Scraping complete.' }
+    if (res.data.jobs && Array.isArray(res.data.jobs)) {
+      parsedJobs.value = res.data.jobs.map((j: any) => ({ ...j, status: 'Saved' }))
+      updateSelectedJobs()
+    }
+  } catch (err: any) {
+    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'Scraping failed.' }
+  } finally {
+    loading.value.jobOps = false
+    loading.value.jobSpy = false
+    loading.value.careerOps = false
+  }
+}
+
+const aiMatch = async () => {
+  integrationResult.value = null
+  loading.value.aiMatch = true
+  try {
+    const res = await axios.post('/api/ai-match', { jobs: parsedJobs.value })
+    integrationResult.value = { success: true, message: res.data.message || 'AI matching complete.' }
+    if (res.data.matchedJobs && Array.isArray(res.data.matchedJobs)) {
+      parsedJobs.value = res.data.matchedJobs
+      updateSelectedJobs()
+    }
+  } catch (err: any) {
+    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'AI matching failed.' }
+  } finally {
+    loading.value.aiMatch = false
+  }
+}
+
+const autoApply = async () => {
+  integrationResult.value = null
+  loading.value.autoApply = true
+  try {
+    const res = await axios.post('/api/apply-job', { jobs: parsedJobs.value })
+    integrationResult.value = { success: true, message: res.data.message || 'Auto-apply complete.' }
+  } catch (err: any) {
+    integrationResult.value = { success: false, message: err?.response?.data?.message || err.message || 'Auto-apply failed.' }
+  } finally {
+    loading.value.autoApply = false
+  }
 }
 </script>
