@@ -1,0 +1,16 @@
+{
+  "projectId": "prj_9PG118YY5kF76Z2oi0NMqdwZH870",
+  "orgId": "team_NvZO9djYPAoPfg3bUjR417TJ",
+  "projectName": "jobhunter-cpf-coaching",
+  "settings": {
+    "createdAt": 1777394278321,
+    "framework": "nextjs",
+    "devCommand": "npm run dev",
+    "installCommand": "npm install",
+    "buildCommand": "npm run build",
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}
