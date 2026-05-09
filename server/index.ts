@@ -1,6 +1,7 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { StreamableHTTPTransport } from "@hono/mcp";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -512,39 +513,49 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS, DELETE",
 };
 
-const app = new Hono();
+// --- Transport Logic ---
 
-// CORS preflight — required for browser/Electron-based clients (Claude Desktop, claude.ai)
-app.options("*", (c) => {
-  return c.text("ok", 200, corsHeaders);
-});
+const isStdio = Deno.args.includes("--stdio") || Deno.env.get("MCP_TRANSPORT") === "stdio";
 
-app.all("*", async (c) => {
-  // Accept access key via header OR URL query parameter
-  const provided = c.req.header("x-brain-key") || new URL(c.req.url).searchParams.get("key");
-  if (!provided || provided !== MCP_ACCESS_KEY) {
-    return c.json({ error: "Invalid or missing access key" }, 401, corsHeaders);
-  }
-
-  // Fix: Claude Desktop connectors don't send the Accept header that
-  // StreamableHTTPTransport requires. Build a patched request if missing.
-  // See: https://github.com/NateBJones-Projects/OB1/issues/33
-  if (!c.req.header("accept")?.includes("text/event-stream")) {
-    const headers = new Headers(c.req.raw.headers);
-    headers.set("Accept", "application/json, text/event-stream");
-    const patched = new Request(c.req.raw.url, {
-      method: c.req.raw.method,
-      headers,
-      body: c.req.raw.body,
-      // @ts-ignore -- duplex required for streaming body in Deno
-      duplex: "half",
-    });
-    Object.defineProperty(c.req, "raw", { value: patched, writable: true });
-  }
-
-  const transport = new StreamableHTTPTransport();
+if (isStdio) {
+  const transport = new StdioServerTransport();
   await server.connect(transport);
-  return transport.handleRequest(c);
-});
+  console.error("OpenBrain MCP Server running on stdio");
+} else {
+  const app = new Hono();
 
-Deno.serve(app.fetch);
+  // CORS preflight — required for browser/Electron-based clients (Claude Desktop, claude.ai)
+  app.options("*", (c) => {
+    return c.text("ok", 200, corsHeaders);
+  });
+
+  app.all("*", async (c) => {
+    // Accept access key via header OR URL query parameter
+    const provided = c.req.header("x-brain-key") || new URL(c.req.url).searchParams.get("key");
+    if (!provided || provided !== MCP_ACCESS_KEY) {
+      return c.json({ error: "Invalid or missing access key" }, 401, corsHeaders);
+    }
+
+    // Fix: Claude Desktop connectors don't send the Accept header that
+    // StreamableHTTPTransport requires. Build a patched request if missing.
+    if (!c.req.header("accept")?.includes("text/event-stream")) {
+      const headers = new Headers(c.req.raw.headers);
+      headers.set("Accept", "application/json, text/event-stream");
+      const patched = new Request(c.req.raw.url, {
+        method: c.req.raw.method,
+        headers,
+        body: c.req.raw.body,
+        // @ts-ignore -- duplex required for streaming body in Deno
+        duplex: "half",
+      });
+      Object.defineProperty(c.req, "raw", { value: patched, writable: true });
+    }
+
+    const transport = new StreamableHTTPTransport();
+    await server.connect(transport);
+    return transport.handleRequest(c);
+  });
+
+  console.error("OpenBrain MCP Server running on HTTP (SSE)");
+  Deno.serve(app.fetch);
+}
