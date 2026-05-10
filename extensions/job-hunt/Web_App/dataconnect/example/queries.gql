@@ -1,0 +1,49 @@
+mutation CreateUser($email: String!, $firebaseUid: String!, $displayName: String, $photoUrl: String) @auth(level: PUBLIC, insecureReason: "This operation is for creating a new user, and does not expose sensitive information.") {
+  user_insert(data: {
+    email: $email,
+    firebaseUid: $firebaseUid,
+    displayName: $displayName,
+    photoUrl: $photoUrl,
+    createdAt_expr: "request.time"
+  }) {
+    id
+  }
+}
+
+query GetMyApplications @auth(level: USER) {
+  applications(where: {userId: {eq_expr: "auth.uid"}}) {
+    id
+    status
+    jobPosting {
+      title
+      company {
+        name
+      }
+    }
+    applicationDate
+  }
+}
+
+mutation UpdateApplicationStatus($applicationId: UUID!, $newStatus: String!) @auth(level: USER) {
+  application_update(
+    key: {id: $applicationId},
+    data: {status: $newStatus}
+  ) {
+    id
+  }
+}
+
+query GetJobPostingDetails($jobPostingId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation retrieves public job posting details.") {
+  jobPosting(key: {id: $jobPostingId}) {
+    id
+    title
+    description
+    location
+    salaryRange
+    postedDate
+    company {
+      name
+      website
+    }
+  }
+}

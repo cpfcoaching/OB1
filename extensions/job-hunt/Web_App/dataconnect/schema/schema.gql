@@ -1,0 +1,59 @@
+type User @table {
+  email: String!
+  firebaseUid: String!
+  displayName: String
+  photoUrl: String
+  createdAt: Timestamp
+}
+
+type Company @table {
+  user: User!
+  name: String!
+  website: String
+  notes: String
+  industry: String
+  location: String
+}
+
+type JobPosting @table {
+  user: User!
+  company: Company!
+  title: String!
+  description: String
+  jobUrl: String
+  postedDate: Date
+  salaryRange: String
+  location: String
+}
+
+type Application @table {
+  user: User!
+  jobPosting: JobPosting!
+  status: String!
+  applicationDate: Date!
+  notes: String
+  resumeVersion: String
+  coverLetterVersion: String
+}
+
+type Interview @table {
+  user: User!
+  application: Application!
+  interviewDate: Timestamp!
+  type: String!
+  interviewerNames: String
+  notes: String
+  outcome: String
+}
+
+type Contact @table {
+  user: User!
+  company: Company
+  firstName: String!
+  lastName: String!
+  email: String
+  phoneNumber: String
+  linkedinProfile: String
+  relationship: String
+  notes: String
+}

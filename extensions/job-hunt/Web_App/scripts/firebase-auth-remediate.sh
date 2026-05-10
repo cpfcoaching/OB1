@@ -4,6 +4,11 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ENV_FILE="${ROOT_DIR}/.env.local"
 GCLOUD_BIN="${GCLOUD_BIN:-/Users/MacAttack/google-cloud-sdk/bin/gcloud}"
+MODE="server-compatible"
+
+if [[ "${1:-}" == "--mode" ]]; then
+  MODE="${2:-}"
+fi
 
 if [[ ! -x "${GCLOUD_BIN}" ]]; then
   echo "ERROR: gcloud binary not found at ${GCLOUD_BIN}"
@@ -48,12 +53,27 @@ VERCEL_REFS=(
 
 ALL_REFS="$(printf '%s\n' "${BASE_REFS[@]}" "${VERCEL_REFS[@]}" | sed '/^$/d' | sort -u | paste -sd, -)"
 
-echo "Applying browser referrer restrictions with required auth handler domains"
-${GCLOUD_BIN} services api-keys update "${KEY_NAME}" --clear-restrictions --project="${PROJECT_ID}" --quiet
-${GCLOUD_BIN} services api-keys update "${KEY_NAME}" --allowed-referrers="${ALL_REFS}" --project="${PROJECT_ID}" --quiet
+if [[ "${MODE}" == "browser" ]]; then
+  echo "Applying browser referrer restrictions with required auth handler domains"
+  ${GCLOUD_BIN} services api-keys update "${KEY_NAME}" --clear-restrictions --project="${PROJECT_ID}" --quiet
+  ${GCLOUD_BIN} services api-keys update "${KEY_NAME}" --allowed-referrers="${ALL_REFS}" --project="${PROJECT_ID}" --quiet
+elif [[ "${MODE}" == "server-compatible" ]]; then
+  echo "Applying API-target restrictions compatible with backend calls that may have empty referer"
+  ${GCLOUD_BIN} services api-keys update "${KEY_NAME}" --clear-restrictions --project="${PROJECT_ID}" --quiet
+  ${GCLOUD_BIN} services api-keys update "${KEY_NAME}" \
+    --api-target=service=identitytoolkit.googleapis.com \
+    --api-target=service=securetoken.googleapis.com \
+    --api-target=service=firebaseinstallations.googleapis.com \
+    --api-target=service=firestore.googleapis.com \
+    --api-target=service=firebasestorage.googleapis.com \
+    --project="${PROJECT_ID}" --quiet
+else
+  echo "ERROR: Unsupported mode '${MODE}'. Use --mode browser or --mode server-compatible"
+  exit 1
+fi
 
 echo "Updated restrictions:"
-${GCLOUD_BIN} services api-keys describe "${KEY_NAME}" --project="${PROJECT_ID}" --format='yaml(restrictions.browserKeyRestrictions.allowedReferrers)'
+${GCLOUD_BIN} services api-keys describe "${KEY_NAME}" --project="${PROJECT_ID}" --format='yaml(restrictions)'
 
 echo "Running post-fix diagnosis"
 "${ROOT_DIR}/scripts/firebase-auth-diagnose.sh"

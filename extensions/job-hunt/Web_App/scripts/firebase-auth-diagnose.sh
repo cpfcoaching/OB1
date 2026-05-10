@@ -68,9 +68,18 @@ if [[ -n "${AUTH_DOMAIN}" ]]; then
   check_referrer "${AUTH_HANDLER_REF}/" || a=1
 fi
 
+# Validate server-side token-validation compatibility where Referer may be empty.
+if grep -q 'API_KEY_HTTP_REFERRER_BLOCKED' <(
+  curl -sS "https://identitytoolkit.googleapis.com/v2/projects/${PROJECT_ID}/config?key=${KEY}" || true
+); then
+  echo "FAIL (<empty referer>): API_KEY_HTTP_REFERRER_BLOCKED"
+  a=1
+fi
+
 if [[ "$a" -eq 0 ]]; then
-  echo "RESULT: OK - no API key restriction blockers detected for tested referrers."
+  echo "RESULT: OK - no API key restriction blockers detected for browser and empty-referrer paths."
 else
   echo "RESULT: BLOCKED - run scripts/firebase-auth-remediate.sh"
+  echo "Tip: use './scripts/firebase-auth-remediate.sh --mode server-compatible' when backend calls can have empty referer."
   exit 2
 fi

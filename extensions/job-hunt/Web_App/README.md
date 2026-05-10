@@ -89,9 +89,14 @@ If login shows errors like `API_KEY_SERVICE_BLOCKED`, `API_KEY_HTTP_REFERRER_BLO
 
 ```bash
 ./scripts/firebase-auth-diagnose.sh
-./scripts/firebase-auth-remediate.sh
+./scripts/firebase-auth-remediate.sh --mode server-compatible
 ./scripts/firebase-auth-diagnose.sh
 ```
+
+Remediation modes:
+
+- `--mode server-compatible` (recommended): Uses API-target restrictions only, so backend calls without Referer (for example, token validation from serverless functions) do not fail with `<empty> are blocked`.
+- `--mode browser`: Uses browser referrer restrictions for frontend-only usage patterns.
 
 What these scripts do:
 

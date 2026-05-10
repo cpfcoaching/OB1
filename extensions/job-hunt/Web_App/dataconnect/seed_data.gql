@@ -1,0 +1,93 @@
+mutation SeedData @transaction @auth(level: PUBLIC, insecureReason: "This is seed data for development and testing, so it is safe to expose to the public.") {
+  user1: user_insert(data: {
+    id: "00000000-0000-0000-0000-000000000001",
+    email: "user1@example.com",
+    firebaseUid: "firebaseuid1",
+    displayName: "User One",
+    createdAt: "2023-01-01T00:00:00Z"
+  })
+  user2: user_insert(data: {
+    id: "00000000-0000-0000-0000-000000000002",
+    email: "user2@example.com",
+    firebaseUid: "firebaseuid2",
+    displayName: "User Two",
+    createdAt: "2023-01-02T00:00:00Z"
+  })
+  company1: company_insert(data: {
+    id: "10000000-0000-0000-0000-000000000001",
+    userId_expr: "response.user1.id",
+    name: "Tech Solutions Inc.",
+    website: "https://techsolutions.com",
+    industry: "Technology",
+    location: "San Francisco, CA"
+  })
+  company2: company_insert(data: {
+    id: "10000000-0000-0000-0000-000000000002",
+    userId_expr: "response.user2.id",
+    name: "Innovate Global",
+    website: "https://innovateglobal.net",
+    industry: "Consulting",
+    location: "New York, NY"
+  })
+  jobPosting1: jobPosting_insert(data: {
+    id: "20000000-0000-0000-0000-000000000001",
+    userId_expr: "response.user1.id",
+    companyId_expr: "response.company1.id",
+    title: "Senior Software Engineer",
+    description: "Develop and maintain web applications.",
+    jobUrl: "https://techsolutions.com/careers/senior-engineer",
+    postedDate: "2023-03-15",
+    salaryRange: "$120,000 - $160,000",
+    location: "San Francisco, CA"
+  })
+  jobPosting2: jobPosting_insert(data: {
+    id: "20000000-0000-0000-0000-000000000002",
+    userId_expr: "response.user2.id",
+    companyId_expr: "response.company2.id",
+    title: "Marketing Manager",
+    description: "Lead marketing campaigns and strategies.",
+    jobUrl: "https://innovateglobal.net/jobs/marketing-manager",
+    postedDate: "2023-03-20",
+    salaryRange: "$90,000 - $110,000",
+    location: "New York, NY"
+  })
+  application1: application_insert(data: {
+    id: "30000000-0000-0000-0000-000000000001",
+    userId_expr: "response.user1.id",
+    jobPostingId_expr: "response.jobPosting1.id",
+    status: "Submitted",
+    applicationDate: "2023-03-16",
+    notes: "Applied directly through company website.",
+    resumeVersion: "v1.0",
+    coverLetterVersion: "v1.0"
+  })
+  application2: application_insert(data: {
+    id: "30000000-0000-0000-0000-000000000002",
+    userId_expr: "response.user2.id",
+    jobPostingId_expr: "response.jobPosting2.id",
+    status: "Pending Review",
+    applicationDate: "2023-03-21",
+    notes: "Networking contact referred me.",
+    resumeVersion: "v2.0",
+    coverLetterVersion: "v1.1"
+  })
+  contact1: contact_insert(data: {
+    id: "40000000-0000-0000-0000-000000000001",
+    userId_expr: "response.user1.id",
+    companyId_expr: "response.company1.id",
+    firstName: "Alice",
+    lastName: "Smith",
+    email: "alice.smith@techsolutions.com",
+    phoneNumber: "555-111-2222",
+    relationship: "Recruiter"
+  })
+  interview1: interview_insert(data: {
+    id: "50000000-0000-0000-0000-000000000001",
+    userId_expr: "response.user1.id",
+    applicationId_expr: "response.application1.id",
+    interviewDate: "2023-03-22T10:00:00Z",
+    type: "Phone Screen",
+    interviewerNames: "Alice Smith",
+    outcome: "Pending"
+  })
+}
