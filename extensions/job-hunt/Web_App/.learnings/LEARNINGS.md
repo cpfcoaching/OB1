@@ -106,3 +106,36 @@ Relying on inherited project settings caused Vercel to treat this app as Next.js
 - Last-Seen: 2026-05-09
 
 ---
+
+## [LRN-20260510-001] best_practice
+
+**Logged**: 2026-05-10T00:00:00Z
+**Priority**: high
+**Status**: pending
+**Area**: authentication
+
+### Summary
+
+For Firebase web auth, use browser referrer restrictions and always include the Firebase auth handler domain from `VITE_FIREBASE_AUTH_DOMAIN`.
+
+### Details
+
+Even when app domains are allowlisted, Google popup/redirect auth can still fail because part of the flow runs through `<project>.firebaseapp.com`. Missing this referrer produces `API_KEY_HTTP_REFERRER_BLOCKED` while missing Identity Toolkit access produces `API_KEY_SERVICE_BLOCKED`.
+
+### Suggested Action
+
+- Run `./scripts/firebase-auth-diagnose.sh` during release validation.
+- Run `./scripts/firebase-auth-remediate.sh` for automated restriction repair.
+- Keep both root domains and Vercel aliases in browser key restrictions.
+
+### Metadata
+
+- Source: error
+- Related Files: scripts/firebase-auth-diagnose.sh, scripts/firebase-auth-remediate.sh, README.md
+- Tags: firebase, auth, api-key, referrer, production
+- Pattern-Key: auth.firebase_api_key_restrictions
+- Recurrence-Count: 1
+- First-Seen: 2026-05-10
+- Last-Seen: 2026-05-10
+
+---

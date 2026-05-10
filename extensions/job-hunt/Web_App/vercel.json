@@ -1,6 +1,7 @@
 {
   "framework": "vite",
-  "buildCommand": "npm run build",
+  "installCommand": "if [ -f package.json ]; then npm install; else echo 'No package.json found, skipping install'; fi",
+  "buildCommand": "if [ -f package.json ]; then npm run build; else echo 'No package.json found, using checked-in dist output'; fi",
   "outputDirectory": "dist",
   "rewrites": [
     {

@@ -83,6 +83,31 @@ This prevents production failures such as:
 
 Configure `cpfcoaching.us` in Vercel Domains and point DNS through Cloudflare.
 
+## 🔐 Firebase Auth Remediation (Automated)
+
+If login shows errors like `API_KEY_SERVICE_BLOCKED`, `API_KEY_HTTP_REFERRER_BLOCKED`, or Identity Toolkit blocked requests, run:
+
+```bash
+./scripts/firebase-auth-diagnose.sh
+./scripts/firebase-auth-remediate.sh
+./scripts/firebase-auth-diagnose.sh
+```
+
+What these scripts do:
+
+- Validate whether the configured web API key can call Identity Toolkit from your app domains.
+- Auto-update API key browser referrer restrictions to include:
+  - `https://app.cpfcoaching.us/*`
+  - `https://cpfcoaching.us/*`
+  - Firebase auth handler domain from `VITE_FIREBASE_AUTH_DOMAIN` (for popup/redirect flow)
+  - Active Vercel aliases for this project
+- Re-run diagnosis to confirm restrictions are no longer blocking auth.
+
+Requirements:
+
+- `gcloud` installed and authenticated
+- `.env.local` contains `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_PROJECT_ID`, and `VITE_FIREBASE_AUTH_DOMAIN`
+
 After each production deploy, use a hard refresh to avoid stale bundles:
 
 - macOS Safari/Chrome: `Cmd + Shift + R`

@@ -86,3 +86,46 @@ Production root returned JSON error with `Vercel Node Bridge Failure` and `handl
 - Last-Seen: 2026-05-09
 
 ---
+
+## [ERR-20260510-001] firebase-auth-api-key-blocked
+
+**Logged**: 2026-05-10T00:00:00Z
+**Priority**: high
+**Status**: resolved
+**Area**: authentication
+
+### Summary
+
+Google sign-in failed because Firebase Identity Toolkit calls were blocked by API key restrictions.
+
+### Error
+
+```text
+Requests to this API identitytoolkit method ... are blocked.
+API_KEY_SERVICE_BLOCKED
+API_KEY_HTTP_REFERRER_BLOCKED
+```
+
+### Context
+
+- Operation: User login at `https://app.cpfcoaching.us/login`.
+- Root cause 1: Web API key restrictions excluded `identitytoolkit.googleapis.com`.
+- Root cause 2: Browser referrer restrictions omitted Firebase auth handler domain (`https://streamdeck-365513.firebaseapp.com/*`).
+- Impact: Sign-in flow failed before token exchange completed.
+
+### Suggested Fix
+
+- Replace API-target restrictions on the web key with browser referrer restrictions for production domains and Firebase auth handler domain.
+- Validate with a project config preflight call and confirm no `API_KEY_SERVICE_BLOCKED` / `API_KEY_HTTP_REFERRER_BLOCKED` errors.
+- Keep scripts for repeatable diagnosis and remediation.
+
+### Metadata
+
+- Reproducible: yes
+- Related Files: scripts/firebase-auth-diagnose.sh, scripts/firebase-auth-remediate.sh, README.md
+- Pattern-Key: auth.firebase_api_key_restrictions
+- Recurrence-Count: 1
+- First-Seen: 2026-05-10
+- Last-Seen: 2026-05-10
+
+---
