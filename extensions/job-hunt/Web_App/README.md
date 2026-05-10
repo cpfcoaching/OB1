@@ -56,13 +56,13 @@ Repo config in `vercel.json` should include:
 
 ```json
 {
-	"framework": "vite",
-	"buildCommand": "npm run build",
-	"outputDirectory": "dist",
-	"rewrites": [
-		{ "source": "/api/(.*)", "destination": "/api/$1" },
-		{ "source": "/(.*)", "destination": "/index.html" }
-	]
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
 ```
 
@@ -93,8 +93,8 @@ Quick verification checks:
 ```bash
 curl -sS 'https://cpfcoaching.us/?_cb='"$(date +%s)" | head -n 5
 curl -sS -X POST 'https://cpfcoaching.us/api/ai-match' \
-	-H 'content-type: application/json' \
-	-d '{"jobs":[{"title":"Test"}]}'
+  -H 'content-type: application/json' \
+  -d '{"jobs":[{"title":"Test"}]}'
 ```
 
 ## 📚 Full Documentation

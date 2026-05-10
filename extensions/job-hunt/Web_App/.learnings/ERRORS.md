@@ -1,5 +1,7 @@
 # Errors
 
+<!-- markdownlint-disable MD024 -->
+
 Command failures and runtime/integration errors. Keep entries redacted; never include secrets or full personal data.
 
 ---
@@ -12,24 +14,29 @@ Command failures and runtime/integration errors. Keep entries redacted; never in
 **Area**: frontend
 
 ### Summary
+
 LinkedIn import failed at runtime with `t is not iterable` when full-profile JSON shapes did not match expected arrays.
 
 ### Error
-```
+
+```text
 TypeError: t is not iterable
 ```
 
 ### Context
+
 - Operation: Import LinkedIn profile JSON in Resume Builder.
 - Root cause: Merge and stats paths assumed iterable arrays (`skills`, `experience`, `education`, bullets/tags) from external payloads.
 - Impact: Import blocked for valid but differently shaped LinkedIn payloads.
 
 ### Suggested Fix
+
 - Coerce external data shapes before spread/loop operations.
 - Guard all merge paths with safe array coercion helpers.
 - Keep parser tolerant for alternative field names and nested object forms.
 
 ### Metadata
+
 - Reproducible: yes
 - Related Files: src/utils/linkedinParser.ts
 - Pattern-Key: harden.input_shape_validation
@@ -47,25 +54,30 @@ TypeError: t is not iterable
 **Area**: deployment
 
 ### Summary
+
 Production root returned JSON error with `Vercel Node Bridge Failure` and `handler.fetch is not a function`.
 
 ### Error
+
 ```text
 {"error":"Vercel Node Bridge Failure","message":"handler.fetch is not a function"}
 ```
 
 ### Context
+
 - Operation: Open production domain after deploy.
 - Root cause 1: Vercel project framework preset was `nextjs` for a Vite project.
 - Root cause 2: API functions were Node-only handlers; bridge expected fetch-compatible surface.
 - Impact: Root route and/or API invocation failed in production.
 
 ### Suggested Fix
+
 - Set Vercel framework preset to `vite`.
 - Keep `vercel.json` with `framework`, `buildCommand`, `outputDirectory`, and SPA rewrites.
 - Implement dual-compatible API handlers that support both Node req/res and fetch-style calls.
 
 ### Metadata
+
 - Reproducible: yes
 - Related Files: vercel.json, api/ai-match.ts, api/apply-job.ts, api/scrape-jobs.ts
 - Pattern-Key: deploy.runtime_framework_mismatch
