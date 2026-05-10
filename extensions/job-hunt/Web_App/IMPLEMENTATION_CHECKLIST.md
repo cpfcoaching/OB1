@@ -1,6 +1,9 @@
+<!-- markdownlint-disable MD013 MD060 -->
+
 # Implementation Checklist: Vercel PDF Parser
 
 ## Status Summary
+
 ✅ **Completed**: Assessment, Strategy, Parser Implementation, Testing Framework  
 ⏳ **Next**: Local testing, Vercel deployment, End-to-end validation
 
@@ -9,6 +12,7 @@
 ## Implementation Progress
 
 ### Phase 1: Assessment & Strategy ✅
+
 - ✅ Created `VERCEL_IMPLEMENTATION_STRATEGY.md` with comprehensive approach
 - ✅ Identified architectural mismatch (workspace Vue.js vs live Next.js/RSC)
 - ✅ Documented Vercel constraints and serverless requirements
@@ -16,9 +20,11 @@
 - ✅ Designed dual runtime handler pattern
 
 ### Phase 2: API Implementation ✅
+
 **File**: `api/parse-resume.ts`
 
 **Features**:
+
 - ✅ Dual runtime handlers (Node.js + Fetch API)
 - ✅ pdfjs-dist integration with serverless config
 - ✅ Base64 PDF input handling
@@ -28,17 +34,21 @@
 - ✅ Timeout-aware processing (< 8s target)
 
 **Code Quality**:
+
 - ✅ TypeScript types (VercelRequest, VercelResponse)
 - ✅ Comprehensive comments explaining serverless constraints
 - ✅ Proper error responses with status codes
 - ✅ Configuration constants for limits and timeouts
 
 ### Phase 3: Testing Framework ✅
+
 **Files**:
+
 - ✅ `scripts/test-pdf-parser.mjs` - Comprehensive test script
 - ✅ `public/samples/resume.pdf` - Sample PDF for testing
 
 **Test Coverage**:
+
 - ✅ File validation
 - ✅ Base64 encoding/decoding
 - ✅ pdfjs-dist loading
@@ -52,7 +62,8 @@
 ## Files Created/Modified
 
 ### New Files
-```
+
+```text
 api/parse-resume.ts                          (220 lines - PDF parser endpoint)
 scripts/test-pdf-parser.mjs                  (170 lines - Test harness)
 public/samples/resume.pdf                    (Sample PDF)
@@ -60,7 +71,8 @@ VERCEL_IMPLEMENTATION_STRATEGY.md            (Comprehensive strategy doc)
 ```
 
 ### Modified Files
-```
+
+```text
 None (only additions)
 ```
 
@@ -69,13 +81,15 @@ None (only additions)
 ## Next Steps (One-by-One as Requested)
 
 ### Step 1: Local Test
+
 ```bash
 cd /Volumes/Crucial\ X9\ Pro\ For\ Mac/Library/OpenBrain/OB1/extensions/job-hunt/Web_App
 node scripts/test-pdf-parser.mjs public/samples/resume.pdf
 ```
 
 **Expected Output**:
-```
+
+```text
 ✅ All tests passed!
 
 PDF loaded: 1 page(s)
@@ -85,6 +99,7 @@ Processing time: XXXms
 ```
 
 **Success Criteria**:
+
 - ✅ No errors
 - ✅ Text extracted from PDF
 - ✅ Confidence > 80%
@@ -93,16 +108,19 @@ Processing time: XXXms
 ---
 
 ### Step 2: Build Verification
+
 ```bash
 npm run build
 ```
 
 **Expected Output**:
+
 - ✅ Build succeeds without errors
 - ✅ `dist/` directory created
 - ✅ API functions compiled
 
 **Check**:
+
 ```bash
 ls -la dist/ | grep -E '(parse-resume|api)'
 ```
@@ -110,6 +128,7 @@ ls -la dist/ | grep -E '(parse-resume|api)'
 ---
 
 ### Step 3: Vercel Deployment
+
 ```bash
 git add -A
 git commit -m "feat: add Vercel-compatible PDF parser endpoint"
@@ -117,6 +136,7 @@ git push
 ```
 
 **Vercel Dashboard**:
+
 1. Check build logs → should pass
 2. Check Functions tab → should show `/api/parse-resume`
 3. Check API endpoint → should respond with 200 status
@@ -124,6 +144,7 @@ git push
 ---
 
 ### Step 4: Manual API Test
+
 ```bash
 curl -X POST https://cpfcoaching.us/api/parse-resume \
   -H "Content-Type: application/json" \
@@ -131,6 +152,7 @@ curl -X POST https://cpfcoaching.us/api/parse-resume \
 ```
 
 **Expected Response**:
+
 ```json
 {
   "success": true,
@@ -144,7 +166,8 @@ curl -X POST https://cpfcoaching.us/api/parse-resume \
 ---
 
 ### Step 5: End-to-End on cpfcoaching.us
-1. Navigate to https://cpfcoaching.us
+
+1. Navigate to <https://cpfcoaching.us>
 2. Login with test account
 3. Go to Resume section (if available)
 4. Upload `public/samples/resume.pdf`
@@ -153,6 +176,7 @@ curl -X POST https://cpfcoaching.us/api/parse-resume \
 7. Check browser DevTools for no errors
 
 **Success Criteria**:
+
 - ✅ Text extracted and displayed
 - ✅ No "handler.fetch" errors
 - ✅ Response time < 3 seconds
@@ -196,12 +220,14 @@ curl -X POST https://cpfcoaching.us/api/parse-resume \
 ## Configuration Details
 
 ### Vercel Function Settings
+
 - **Runtime**: Node.js 18+ (default)
 - **Memory**: 512MB (default, sufficient)
 - **Timeout**: 10 seconds (default, using < 8s)
 - **Environment**: Automatic from `vercel.json`
 
 ### pdfjs-dist Configuration
+
 ```typescript
 {
   data: pdfBuffer,
@@ -212,11 +238,13 @@ curl -X POST https://cpfcoaching.us/api/parse-resume \
 ```
 
 **Why These Settings**:
+
 - ✅ Workers would require additional threads (not available)
 - ✅ eval() forbidden in Vercel for security
 - ✅ Font loading adds overhead/complexity
 
 ### File Size Limits
+
 - **Max PDF**: 5MB (Firebase Cloud Storage default)
 - **Max Pages**: 100 (resume reasonable upper bound)
 - **Max Base64**: ~6.7MB encoded (5MB × 1.33)
@@ -228,6 +256,7 @@ curl -X POST https://cpfcoaching.us/api/parse-resume \
 If deployment causes issues:
 
 **Immediate**:
+
 ```bash
 git revert HEAD
 git push
@@ -235,12 +264,14 @@ git push
 ```
 
 **Verify Rollback**:
+
 ```bash
 curl https://cpfcoaching.us/api/parse-resume
 # Should return 404 (endpoint removed)
 ```
 
 **Client Fallback** (if resume upload component exists):
+
 - Show "Upload unavailable - try again later"
 - Redirect to alternative upload method
 
@@ -267,27 +298,24 @@ After successful deployment, update:
    - Add "Resume Upload & PDF Parsing" to features
 
 2. **API.md** (new file)
-   ```markdown
-   ## POST /api/parse-resume
-   
-   Extract text from PDF resumes.
-   
-   **Request**:
-   ```json
-   { "pdf": "base64-encoded-pdf-bytes" }
-   ```
-   
-   **Response**:
-   ```json
-   {
-     "success": true,
-     "text": "extracted text...",
-     "pageCount": 1,
-     "confidence": 0.95,
-     "processingTimeMs": 234
-   }
-   ```
-   ```
+   - Add endpoint docs for `POST /api/parse-resume`.
+   - Include request example:
+
+     ```json
+     { "pdf": "base64-encoded-pdf-bytes" }
+     ```
+
+   - Include response example:
+
+     ```json
+     {
+       "success": true,
+       "text": "extracted text...",
+       "pageCount": 1,
+       "confidence": 0.95,
+       "processingTimeMs": 234
+     }
+     ```
 
 3. **DEPLOYMENT.md**
    - Add "Vercel PDF Parsing" section
@@ -338,18 +366,22 @@ After successful deployment, update:
 ## Support & Troubleshooting
 
 ### Issue: "handler.fetch is not a function"
+
 **Cause**: Function missing dual runtime handlers  
 **Solution**: Verify both `export default` and `handler.fetch` present in `api/parse-resume.ts`
 
 ### Issue: "PDF exceeds maximum size"
+
 **Cause**: User uploading > 5MB file  
 **Solution**: Validate file size in client before upload
 
 ### Issue: "No readable text was found"
+
 **Cause**: PDF is image-based (scanned document)  
 **Solution**: Show message "Scanned PDFs not supported - please upload digital resume"
 
 ### Issue: Timeout (> 10s)
+
 **Cause**: Very large PDF or slow network  
 **Solution**: Increase max pages limit or optimize extraction
 

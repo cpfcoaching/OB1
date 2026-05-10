@@ -5,9 +5,7 @@ mutation CreateUser($email: String!, $firebaseUid: String!, $displayName: String
     displayName: $displayName,
     photoUrl: $photoUrl,
     createdAt_expr: "request.time"
-  }) {
-    id
-  }
+  })
 }
 
 query GetMyApplications @auth(level: USER) {
@@ -24,13 +22,14 @@ query GetMyApplications @auth(level: USER) {
   }
 }
 
-mutation UpdateApplicationStatus($applicationId: UUID!, $newStatus: String!) @auth(level: USER) {
-  application_update(
-    key: {id: $applicationId},
+mutation UpdateApplicationStatus($applicationId: UUID!, $newStatus: String!) @auth(level: USER, insecureReason: "Sample operation. Production usage must enforce owner checks in connector policy and operation constraints.") {
+  application_updateMany(
+    where: {
+      id: {eq: $applicationId}
+      userId: {eq_expr: "auth.uid"}
+    },
     data: {status: $newStatus}
-  ) {
-    id
-  }
+  )
 }
 
 query GetJobPostingDetails($jobPostingId: UUID!) @auth(level: PUBLIC, insecureReason: "This operation retrieves public job posting details.") {

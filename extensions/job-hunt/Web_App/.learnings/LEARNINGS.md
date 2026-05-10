@@ -8,6 +8,104 @@ Corrections, insights, and best practices captured during development.
 
 ---
 
+## [LRN-20260510-002] best_practice
+
+**Logged**: 2026-05-10T00:00:00Z
+**Priority**: high
+**Status**: pending
+**Area**: dataconnect
+
+### Summary
+
+Data Connect mutations that return `*_KeyOutput` should be treated as key acknowledgements, not full entities.
+
+### Details
+
+The current example operations attempted to select fields like `id` directly from `User_KeyOutput` and `Application_KeyOutput`. This breaks validation because those types expose no subfields by contract.
+
+### Suggested Action
+
+- Update example operations to avoid selection sets on key outputs.
+- Standardize a two-step pattern: mutation -> follow-up query for entity fields.
+- Add a schema-aware query validation check for Data Connect examples.
+
+### Metadata
+
+- Source: error
+- Related Files: dataconnect/example/queries.gql
+- Tags: dataconnect, graphql, schema-contract
+- Pattern-Key: dataconnect.keyoutput_contract_mismatch
+- Recurrence-Count: 1
+- First-Seen: 2026-05-10
+- Last-Seen: 2026-05-10
+
+---
+
+## [LRN-20260510-003] best_practice
+
+**Logged**: 2026-05-10T00:00:00Z
+**Priority**: medium
+**Status**: pending
+**Area**: documentation
+
+### Summary
+
+Implementation docs need lint-clean formatting to keep operational diagnostics readable and actionable.
+
+### Details
+
+Large volumes of markdownlint warnings across implementation docs reduce signal-to-noise during release checks. Formatting debt can hide real build/runtime errors and slows triage.
+
+### Suggested Action
+
+- Add a docs hygiene pass before release checkpoints.
+- Enforce fenced code language and spacing conventions.
+- Keep markdownlint enabled but with autofix in local workflow.
+
+### Metadata
+
+- Source: error
+- Related Files: IMPLEMENTATION_CHECKLIST.md, VERCEL_IMPLEMENTATION_STRATEGY.md
+- Tags: docs, lint, release-readiness
+- Pattern-Key: docs.markdownlint_hygiene
+- Recurrence-Count: 1
+- First-Seen: 2026-05-10
+- Last-Seen: 2026-05-10
+
+---
+
+## [LRN-20260510-004] best_practice
+
+**Logged**: 2026-05-10T00:00:00Z
+**Priority**: low
+**Status**: pending
+**Area**: tooling
+
+### Summary
+
+Enable TypeScript file-name casing checks early to prevent cross-platform import breakage.
+
+### Details
+
+When `forceConsistentCasingInFileNames` is disabled, incorrect import casing may pass locally on case-insensitive environments but fail in CI or deployment environments.
+
+### Suggested Action
+
+- Set `forceConsistentCasingInFileNames: true` in `web-app/tsconfig.json`.
+- Run typecheck in CI on every PR.
+
+### Metadata
+
+- Source: error
+- Related Files: web-app/tsconfig.json
+- Tags: typescript, ci, portability
+- Pattern-Key: typescript.casing_consistency
+- Recurrence-Count: 1
+- First-Seen: 2026-05-10
+- Last-Seen: 2026-05-10
+
+---
+
 ## [LRN-20260428-001] best_practice
 
 **Logged**: 2026-04-28T00:00:00Z

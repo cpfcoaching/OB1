@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD013 MD060 -->
+
 # Vercel Implementation Strategy: Self-Contained PDF Parsing
 
 ## Executive Summary
@@ -5,6 +7,7 @@
 This document outlines how to implement PDF resume parsing as a self-contained Vercel serverless function, eliminating external dependencies and ensuring all functionality runs within Vercel's constraints.
 
 **Key Principles:**
+
 - ✅ Self-contained within Vercel serverless (no external APIs)
 - ✅ Reduced complexity (use built-in capabilities)
 - ✅ Proper testing before/during/after deployment
@@ -15,6 +18,7 @@ This document outlines how to implement PDF resume parsing as a self-contained V
 ## Current Architecture Assessment
 
 ### What Exists
+
 - **Frontend:** Vue.js application in root directory (src/, components/, views/)
 - **API Layer:** Vercel serverless functions in api/ directory
 - **Build:** Vite for frontend, Vercel for deployment
@@ -22,12 +26,14 @@ This document outlines how to implement PDF resume parsing as a self-contained V
 - **Firebase:** Auth working; resume storage location TBD
 
 ### What's Missing
+
 1. **PDF Parsing Endpoint:** No /api/parse-resume.ts or equivalent
 2. **Client Integration:** No resume upload handler
 3. **Storage Handler:** Unclear how/where PDFs are stored
 4. **Error Handling:** No fallback if parsing fails
 
 ### Vercel Constraints to Remember
+
 - **Memory Limit:** ~512MB per function
 - **Timeout:** ~10 seconds for billable execution
 - **No File System:** Can't write to disk permanently
@@ -40,7 +46,7 @@ This document outlines how to implement PDF resume parsing as a self-contained V
 
 ### Architecture
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │       Frontend (Vue.js)                  │
 │  - Resume Upload Component               │
@@ -89,12 +95,14 @@ This document outlines how to implement PDF resume parsing as a self-contained V
 **File:** `/api/parse-resume.ts`
 
 Requirements:
+
 - Accept multipart form data with PDF file
 - Extract text using pdfjs-dist with serverless config
 - Return `{ text, pageCount, confidence }`
 - Handle errors gracefully
 
 Key Decisions:
+
 - Accept file as base64 or multipart (base64 simpler for Vercel)
 - Limit file size to 5MB (reasonable for resume)
 - Extract all text; allow frontend to parse structure
@@ -102,11 +110,13 @@ Key Decisions:
 
 ### Phase 2: Wire into Client (30 min)
 
-**Files:** 
+**Files:**
+
 - `src/components/ResumeUpload.vue` (new or update existing)
 - `src/composables/usePdfParser.ts` (new)
 
 Requirements:
+
 - File input with validation (PDF only, < 5MB)
 - Call /api/parse-resume on upload
 - Display extracted text
@@ -116,6 +126,7 @@ Requirements:
 ### Phase 3: Local Testing (30 min)
 
 **Test Coverage:**
+
 - ✅ Valid PDF → extracted text
 - ✅ Large PDF → handles without timeout
 - ✅ Invalid PDF → graceful error
@@ -127,6 +138,7 @@ Requirements:
 ### Phase 4: Vercel Deployment (20 min)
 
 **Steps:**
+
 1. `npm run build` locally (verify no errors)
 2. `git push` to trigger Vercel deploy
 3. Check Vercel build logs for function compilation
@@ -136,6 +148,7 @@ Requirements:
 ### Phase 5: End-to-End Testing (30 min)
 
 **On cpfcoaching.us:**
+
 1. Upload valid resume PDF
 2. Verify text extracted correctly
 3. Verify no gibberish/binary text
@@ -144,6 +157,7 @@ Requirements:
 6. Monitor Vercel function logs for errors
 
 **Success Criteria:**
+
 - Text is readable English (not binary)
 - Page count matches actual PDF
 - Response time < 3 seconds
@@ -203,11 +217,13 @@ export async function parsePdf(pdfBuffer: Buffer) {
 ### Configuration Details
 
 **Vercel Requirements:**
+
 - Function timeout: 10 seconds (default, sufficient for resumes)
 - Memory: 512MB default (sufficient for pdfjs-dist)
 - Runtime: Node.js 18+ (already deployed)
 
 **File Limits:**
+
 - Max upload: 5MB (Firebase Cloud Storage standard)
 - Max parsing time: < 3 seconds for typical resume
 
@@ -229,23 +245,27 @@ export async function parsePdf(pdfBuffer: Buffer) {
 ## Success Criteria
 
 ### Build Phase
+
 - ✅ `npm run build` completes without errors
 - ✅ TypeScript type-checks pass
 - ✅ No missing dependencies
 
 ### Local Test Phase
+
 - ✅ PDF parsing works with sample resume
 - ✅ Extracted text is readable
 - ✅ No "handler.fetch" errors in tests
 - ✅ Response time < 1 second (local)
 
 ### Vercel Deployment
+
 - ✅ Build completes successfully
 - ✅ Function appears in Vercel Functions dashboard
 - ✅ No deployment errors in logs
 - ✅ Function endpoint responds with 200 status
 
 ### End-to-End on cpfcoaching.us
+
 - ✅ Upload form accepts PDF
 - ✅ Extracted text displayed correctly
 - ✅ No gibberish/binary characters
@@ -269,6 +289,7 @@ If deployment causes issues:
 ## Documentation for Maintenance
 
 After implementation, update:
+
 1. README.md - Add "Resume Upload" to features list
 2. API.md (new) - Document /api/parse-resume endpoint
 3. DEPLOYMENT.md - Add "Vercel PDF Parsing" section
