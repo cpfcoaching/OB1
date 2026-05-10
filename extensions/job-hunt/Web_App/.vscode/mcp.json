@@ -1,0 +1,154 @@
+{
+	"servers": {
+		"microsoft/markitdown": {
+			"type": "stdio",
+			"command": "uvx",
+			"args": [
+				"markitdown-mcp@0.0.1a4"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"microsoft/playwright-mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"@playwright/mcp@latest"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.0.1-seed"
+		},
+		"firecrawl/firecrawl-mcp-server": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"-y",
+				"firecrawl-mcp@latest"
+			],
+			"env": {
+				"FIRECRAWL_API_KEY": "${input:api_key}"
+			},
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"makenotion/notion-mcp-server": {
+			"type": "http",
+			"url": "https://mcp.notion.com/sse",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"com.microsoft/azure": {
+			"type": "stdio",
+			"command": "dnx",
+			"args": [
+				"Azure.Mcp@3.0.0-beta.6",
+				"--yes",
+				"--",
+				"server",
+				"start"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "3.0.0-beta.6"
+		},
+		"com.supabase/mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"--project-ref",
+				"${input:project-ref}",
+				"--read-only",
+				"${input:read-only}",
+				"--features",
+				"${input:features}",
+				"--api-url",
+				"${input:api-url}",
+				"--registry",
+				"https://registry.npmjs.org",
+				"@supabase/mcp-server-supabase@0.8.1"
+			],
+			"env": {
+				"SUPABASE_ACCESS_TOKEN": "${input:SUPABASE_ACCESS_TOKEN}"
+			},
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.8.1"
+		},
+		"com.microsoft/microsoft-fabric": {
+			"type": "stdio",
+			"command": "dnx",
+			"args": [
+				"Microsoft.Fabric.Mcp@1.0.0",
+				"--yes",
+				"--",
+				"server",
+				"start"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"microsoftdocs/mcp": {
+			"type": "http",
+			"url": "https://learn.microsoft.com/api/mcp",
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.0"
+		},
+		"io.github.vercel/next-devtools-mcp": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"next-devtools-mcp@0.3.6"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "0.3.6"
+		},
+		"io.github.microsoft/awesome-copilot": {
+			"type": "stdio",
+			"command": "docker",
+			"args": [
+				"run",
+				"-i",
+				"--rm",
+				"ghcr.io/microsoft/mcp-dotnet-samples/awesome-copilot:1.0.2026050721"
+			],
+			"gallery": "https://api.mcp.github.com",
+			"version": "1.0.2026050721"
+		}
+	},
+	"inputs": [
+		{
+			"id": "api_key",
+			"type": "promptString",
+			"description": "your API key",
+			"password": true
+		},
+		{
+			"id": "project-ref",
+			"type": "promptString",
+			"description": "Supabase project reference ID",
+			"password": false
+		},
+		{
+			"id": "read-only",
+			"type": "promptString",
+			"description": "Enable read-only mode",
+			"password": false
+		},
+		{
+			"id": "features",
+			"type": "promptString",
+			"description": "Comma-separated list of features to enable",
+			"password": false
+		},
+		{
+			"id": "api-url",
+			"type": "promptString",
+			"description": "Custom API URL",
+			"password": false
+		},
+		{
+			"id": "SUPABASE_ACCESS_TOKEN",
+			"type": "promptString",
+			"description": "Personal access token for Supabase API",
+			"password": true
+		}
+	]
+}
