@@ -1,0 +1,11 @@
+{
+  "name": "open-brain-linkedin-import",
+  "version": "1.0.0",
+  "description": "Import LinkedIn activity and history into Open Brain",
+  "type": "module",
+  "scripts": {
+    "import": "node import-linkedin-data.mjs",
+    "dry-run": "node import-linkedin-data.mjs --dry-run --limit 5"
+  },
+  "dependencies": {}
+}

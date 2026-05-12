@@ -1,0 +1,8 @@
+{
+  "id": "linkedin-import",
+  "name": "LinkedIn Data Import",
+  "description": "Import work history and endorsements from your LinkedIn Data Export into your Open Brain.",
+  "version": "1.0.0",
+  "author": "Antigravity",
+  "tags": ["import", "career", "networking", "ingestion"]
+}
