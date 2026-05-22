@@ -1,7 +1,4 @@
-<!-- markdownlint-disable MD013 MD022 MD024 MD025 MD031 MD032 MD051 -->
-
 # Generated TypeScript README
-
 This README will guide you through the process of using the generated JavaScript SDK package for the connector `example`. It will also provide examples on how to use your generated SDK to call your Data Connect queries and mutations.
 
 **If you're looking for the `React README`, you can find it at [`dataconnect-generated/react/README.md`](./react/README.md)**
@@ -9,7 +6,6 @@ This README will guide you through the process of using the generated JavaScript
 ***NOTE:** This README is generated alongside the generated SDK. If you make changes to this file, they will be overwritten when the SDK is regenerated.*
 
 # Table of Contents
-
 - [**Overview**](#generated-javascript-readme)
 - [**Accessing the connector**](#accessing-the-connector)
   - [*Connecting to the local Emulator*](#connecting-to-the-local-emulator)
@@ -21,7 +17,6 @@ This README will guide you through the process of using the generated JavaScript
   - [*UpdateApplicationStatus*](#updateapplicationstatus)
 
 # Accessing the connector
-
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `example`. You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
 
 You can use this generated SDK by importing from the package `@dataconnect/generated` as shown below. Both CommonJS and ESM imports are supported.
@@ -36,7 +31,6 @@ const dataConnect = getDataConnect(connectorConfig);
 ```
 
 ## Connecting to the local Emulator
-
 By default, the connector will connect to the production service.
 
 To connect to the emulator, you can use the following code.
@@ -55,14 +49,12 @@ After it's initialized, you can call your Data Connect [queries](#queries) and [
 # Queries
 
 There are two ways to execute a Data Connect Query using the generated Web SDK:
-
 - Using a Query Reference function, which returns a `QueryRef`
   - The `QueryRef` can be used as an argument to `executeQuery()`, which will execute the Query and return a `QueryPromise`
 - Using an action shortcut function, which returns a `QueryPromise`
   - Calling the action shortcut function will execute the Query and return a `QueryPromise`
 
 The following is true for both the action shortcut function and the `QueryRef` function:
-
 - The `QueryPromise` returned will resolve to the result of the Query once it has finished executing
 - If the Query accepts arguments, both the action shortcut function and the `QueryRef` function accept a single argument: an object that contains all the required variables (and the optional variables) for the Query
 - Both functions can be called with or without passing in a `DataConnect` instance as an argument. If no `DataConnect` argument is passed in, then the generated SDK will call `getDataConnect(connectorConfig)` behind the scenes for you.
@@ -70,9 +62,7 @@ The following is true for both the action shortcut function and the `QueryRef` f
 Below are examples of how to use the `example` connector's generated functions to execute each query. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-queries).
 
 ## GetMyApplications
-
 You can execute the `GetMyApplications` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
-
 ```typescript
 getMyApplications(options?: ExecuteQueryOptions): QueryPromise<GetMyApplicationsData, undefined>;
 
@@ -83,9 +73,7 @@ interface GetMyApplicationsRef {
 }
 export const getMyApplicationsRef: GetMyApplicationsRef;
 ```
-
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
-
 ```typescript
 getMyApplications(dc: DataConnect, options?: ExecuteQueryOptions): QueryPromise<GetMyApplicationsData, undefined>;
 
@@ -97,22 +85,17 @@ export const getMyApplicationsRef: GetMyApplicationsRef;
 ```
 
 If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getMyApplicationsRef:
-
 ```typescript
 const name = getMyApplicationsRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-
 The `GetMyApplications` query has no variables.
-
 ### Return Type
-
 Recall that executing the `GetMyApplications` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
 The `data` property is an object of type `GetMyApplicationsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
-
 ```typescript
 export interface GetMyApplicationsData {
   applications: ({
@@ -128,7 +111,6 @@ export interface GetMyApplicationsData {
   } & Application_Key)[];
 }
 ```
-
 ### Using `GetMyApplications`'s action shortcut function
 
 ```typescript
@@ -181,9 +163,7 @@ executeQuery(ref).then((response) => {
 ```
 
 ## GetJobPostingDetails
-
 You can execute the `GetJobPostingDetails` query using the following action shortcut function, or by calling `executeQuery()` after calling the following `QueryRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
-
 ```typescript
 getJobPostingDetails(vars: GetJobPostingDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetJobPostingDetailsData, GetJobPostingDetailsVariables>;
 
@@ -194,9 +174,7 @@ interface GetJobPostingDetailsRef {
 }
 export const getJobPostingDetailsRef: GetJobPostingDetailsRef;
 ```
-
 You can also pass in a `DataConnect` instance to the action shortcut function or `QueryRef` function.
-
 ```typescript
 getJobPostingDetails(dc: DataConnect, vars: GetJobPostingDetailsVariables, options?: ExecuteQueryOptions): QueryPromise<GetJobPostingDetailsData, GetJobPostingDetailsVariables>;
 
@@ -208,14 +186,12 @@ export const getJobPostingDetailsRef: GetJobPostingDetailsRef;
 ```
 
 If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the getJobPostingDetailsRef:
-
 ```typescript
 const name = getJobPostingDetailsRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-
 The `GetJobPostingDetails` query requires an argument of type `GetJobPostingDetailsVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
@@ -223,13 +199,10 @@ export interface GetJobPostingDetailsVariables {
   jobPostingId: UUIDString;
 }
 ```
-
 ### Return Type
-
 Recall that executing the `GetJobPostingDetails` query returns a `QueryPromise` that resolves to an object with a `data` property.
 
 The `data` property is an object of type `GetJobPostingDetailsData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
-
 ```typescript
 export interface GetJobPostingDetailsData {
   jobPosting?: {
@@ -246,7 +219,6 @@ export interface GetJobPostingDetailsData {
   } & JobPosting_Key;
 }
 ```
-
 ### Using `GetJobPostingDetails`'s action shortcut function
 
 ```typescript
@@ -313,14 +285,12 @@ executeQuery(ref).then((response) => {
 # Mutations
 
 There are two ways to execute a Data Connect Mutation using the generated Web SDK:
-
 - Using a Mutation Reference function, which returns a `MutationRef`
   - The `MutationRef` can be used as an argument to `executeMutation()`, which will execute the Mutation and return a `MutationPromise`
 - Using an action shortcut function, which returns a `MutationPromise`
   - Calling the action shortcut function will execute the Mutation and return a `MutationPromise`
 
 The following is true for both the action shortcut function and the `MutationRef` function:
-
 - The `MutationPromise` returned will resolve to the result of the Mutation once it has finished executing
 - If the Mutation accepts arguments, both the action shortcut function and the `MutationRef` function accept a single argument: an object that contains all the required variables (and the optional variables) for the Mutation
 - Both functions can be called with or without passing in a `DataConnect` instance as an argument. If no `DataConnect` argument is passed in, then the generated SDK will call `getDataConnect(connectorConfig)` behind the scenes for you.
@@ -328,9 +298,7 @@ The following is true for both the action shortcut function and the `MutationRef
 Below are examples of how to use the `example` connector's generated functions to execute each mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#using-mutations).
 
 ## CreateUser
-
 You can execute the `CreateUser` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
-
 ```typescript
 createUser(vars: CreateUserVariables): MutationPromise<CreateUserData, CreateUserVariables>;
 
@@ -341,9 +309,7 @@ interface CreateUserRef {
 }
 export const createUserRef: CreateUserRef;
 ```
-
 You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
-
 ```typescript
 createUser(dc: DataConnect, vars: CreateUserVariables): MutationPromise<CreateUserData, CreateUserVariables>;
 
@@ -355,14 +321,12 @@ export const createUserRef: CreateUserRef;
 ```
 
 If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the createUserRef:
-
 ```typescript
 const name = createUserRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-
 The `CreateUser` mutation requires an argument of type `CreateUserVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
@@ -373,19 +337,15 @@ export interface CreateUserVariables {
   photoUrl?: string | null;
 }
 ```
-
 ### Return Type
-
 Recall that executing the `CreateUser` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
 
 The `data` property is an object of type `CreateUserData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
-
 ```typescript
 export interface CreateUserData {
   user_insert: User_Key;
 }
 ```
-
 ### Using `CreateUser`'s action shortcut function
 
 ```typescript
@@ -456,9 +416,7 @@ executeMutation(ref).then((response) => {
 ```
 
 ## UpdateApplicationStatus
-
 You can execute the `UpdateApplicationStatus` mutation using the following action shortcut function, or by calling `executeMutation()` after calling the following `MutationRef` function, both of which are defined in [dataconnect-generated/index.d.ts](./index.d.ts):
-
 ```typescript
 updateApplicationStatus(vars: UpdateApplicationStatusVariables): MutationPromise<UpdateApplicationStatusData, UpdateApplicationStatusVariables>;
 
@@ -469,9 +427,7 @@ interface UpdateApplicationStatusRef {
 }
 export const updateApplicationStatusRef: UpdateApplicationStatusRef;
 ```
-
 You can also pass in a `DataConnect` instance to the action shortcut function or `MutationRef` function.
-
 ```typescript
 updateApplicationStatus(dc: DataConnect, vars: UpdateApplicationStatusVariables): MutationPromise<UpdateApplicationStatusData, UpdateApplicationStatusVariables>;
 
@@ -483,14 +439,12 @@ export const updateApplicationStatusRef: UpdateApplicationStatusRef;
 ```
 
 If you need the name of the operation without creating a ref, you can retrieve the operation name by calling the `operationName` property on the updateApplicationStatusRef:
-
 ```typescript
 const name = updateApplicationStatusRef.operationName;
 console.log(name);
 ```
 
 ### Variables
-
 The `UpdateApplicationStatus` mutation requires an argument of type `UpdateApplicationStatusVariables`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
 
 ```typescript
@@ -499,19 +453,15 @@ export interface UpdateApplicationStatusVariables {
   newStatus: string;
 }
 ```
-
 ### Return Type
-
 Recall that executing the `UpdateApplicationStatus` mutation returns a `MutationPromise` that resolves to an object with a `data` property.
 
 The `data` property is an object of type `UpdateApplicationStatusData`, which is defined in [dataconnect-generated/index.d.ts](./index.d.ts). It has the following fields:
-
 ```typescript
 export interface UpdateApplicationStatusData {
   application_updateMany: number;
 }
 ```
-
 ### Using `UpdateApplicationStatus`'s action shortcut function
 
 ```typescript
@@ -576,3 +526,4 @@ executeMutation(ref).then((response) => {
   console.log(data.application_updateMany);
 });
 ```
+

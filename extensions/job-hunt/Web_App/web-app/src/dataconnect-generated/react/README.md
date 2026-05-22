@@ -1,7 +1,4 @@
-<!-- markdownlint-disable MD013 MD022 MD024 MD025 MD031 MD032 MD051 -->
-
 # Generated React README
-
 This README will guide you through the process of using the generated React SDK package for the connector `example`. It will also provide examples on how to use your generated SDK to call your Data Connect queries and mutations.
 
 **If you're looking for the `JavaScript README`, you can find it at [`dataconnect-generated/README.md`](../README.md)**
@@ -13,7 +10,6 @@ You can use this generated SDK by importing from the package `@dataconnect/gener
 You can also follow the instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#react).
 
 # Table of Contents
-
 - [**Overview**](#generated-react-readme)
 - [**TanStack Query Firebase & TanStack React Query**](#tanstack-query-firebase-tanstack-react-query)
   - [*Package Installation*](#installing-tanstack-query-firebase-and-tanstack-react-query-packages)
@@ -28,19 +24,15 @@ You can also follow the instructions from the [Data Connect documentation](https
   - [*UpdateApplicationStatus*](#updateapplicationstatus)
 
 # TanStack Query Firebase & TanStack React Query
-
 This SDK provides [React](https://react.dev/) hooks generated specific to your application, for the operations found in the connector `example`. These hooks are generated using [TanStack Query Firebase](https://react-query-firebase.invertase.dev/) by our partners at Invertase, a library built on top of [TanStack React Query v5](https://tanstack.com/query/v5/docs/framework/react/overview).
 
 ***You do not need to be familiar with Tanstack Query or Tanstack Query Firebase to use this SDK.*** However, you may find it useful to learn more about them, as they will empower you as a user of this Generated React SDK.
 
 ## Installing TanStack Query Firebase and TanStack React Query Packages
-
 In order to use the React generated SDK, you must install the `TanStack React Query` and `TanStack Query Firebase` packages.
-
 ```bash
 npm i --save @tanstack/react-query @tanstack-query-firebase/react
 ```
-
 ```bash
 npm i --save firebase@latest # Note: React has a peer dependency on ^11.3.0
 ```
@@ -48,7 +40,6 @@ npm i --save firebase@latest # Note: React has a peer dependency on ^11.3.0
 You can also follow the installation instructions from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#tanstack-install), or the [TanStack Query Firebase documentation](https://react-query-firebase.invertase.dev/react) and [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/installation).
 
 ## Configuring TanStack Query
-
 In order to use the React generated SDK in your application, you must wrap your application's component tree in a `QueryClientProvider` component from TanStack React Query. None of your generated React SDK hooks will work without this provider.
 
 ```javascript
@@ -70,7 +61,6 @@ function App() {
 To learn more about `QueryClientProvider`, see the [TanStack React Query documentation](https://tanstack.com/query/latest/docs/framework/react/quick-start) and the [TanStack Query Firebase documentation](https://invertase.docs.page/tanstack-query-firebase/react#usage).
 
 # Accessing the connector
-
 A connector is a collection of Queries and Mutations. One SDK is generated for each connector - this SDK is generated for the connector `example`.
 
 You can find more information about connectors in the [Data Connect documentation](https://firebase.google.com/docs/data-connect#how-does).
@@ -83,7 +73,6 @@ const dataConnect = getDataConnect(connectorConfig);
 ```
 
 ## Connecting to the local Emulator
-
 By default, the connector will connect to the production service.
 
 To connect to the emulator, you can use the following code.
@@ -112,7 +101,6 @@ Query hooks execute their Queries automatically when called, and periodically re
 To learn more about TanStack React Query's Queries, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/guides/queries).
 
 ## Using Query Hooks
-
 Here's a general overview of how to use the generated Query hooks in your code:
 
 - If the Query has no variables, the Query hook function does not require arguments.
@@ -126,31 +114,24 @@ Here's a general overview of how to use the generated Query hooks in your code:
 Below are examples of how to use the `example` connector's generated Query hook functions to execute each Query. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#operations-react-angular).
 
 ## GetMyApplications
-
 You can execute the `GetMyApplications` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
 useGetMyApplications(dc: DataConnect, options?: useDataConnectQueryOptions<GetMyApplicationsData>): UseDataConnectQueryResult<GetMyApplicationsData, undefined>;
 ```
-
 You can also pass in a `DataConnect` instance to the Query hook function.
-
 ```javascript
 useGetMyApplications(options?: useDataConnectQueryOptions<GetMyApplicationsData>): UseDataConnectQueryResult<GetMyApplicationsData, undefined>;
 ```
 
 ### Variables
-
 The `GetMyApplications` Query has no variables.
-
 ### Return Type
-
 Recall that calling the `GetMyApplications` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
 To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetMyApplications` Query is of type `GetMyApplicationsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
 ```javascript
 export interface GetMyApplicationsData {
   applications: ({
@@ -212,21 +193,17 @@ export default function GetMyApplicationsComponent() {
 ```
 
 ## GetJobPostingDetails
-
 You can execute the `GetJobPostingDetails` Query using the following Query hook function, which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts):
 
 ```javascript
 useGetJobPostingDetails(dc: DataConnect, vars: GetJobPostingDetailsVariables, options?: useDataConnectQueryOptions<GetJobPostingDetailsData>): UseDataConnectQueryResult<GetJobPostingDetailsData, GetJobPostingDetailsVariables>;
 ```
-
 You can also pass in a `DataConnect` instance to the Query hook function.
-
 ```javascript
 useGetJobPostingDetails(vars: GetJobPostingDetailsVariables, options?: useDataConnectQueryOptions<GetJobPostingDetailsData>): UseDataConnectQueryResult<GetJobPostingDetailsData, GetJobPostingDetailsVariables>;
 ```
 
 ### Variables
-
 The `GetJobPostingDetails` Query requires an argument of type `GetJobPostingDetailsVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
@@ -234,15 +211,12 @@ export interface GetJobPostingDetailsVariables {
   jobPostingId: UUIDString;
 }
 ```
-
 ### Return Type
-
 Recall that calling the `GetJobPostingDetails` Query hook function returns a `UseQueryResult` object. This object holds the state of your Query, including whether the Query is loading, has completed, or has succeeded/failed, and any data returned by the Query, among other things.
 
 To check the status of a Query, use the `UseQueryResult.status` field. You can also check for pending / success / error status using the `UseQueryResult.isPending`, `UseQueryResult.isSuccess`, and `UseQueryResult.isError` fields.
 
 To access the data returned by a Query, use the `UseQueryResult.data` field. The data for the `GetJobPostingDetails` Query is of type `GetJobPostingDetailsData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
 ```javascript
 export interface GetJobPostingDetailsData {
   jobPosting?: {
@@ -322,7 +296,6 @@ Mutation hooks do not execute their Mutations automatically when called. Rather,
 To learn more about TanStack React Query's Mutations, see the [TanStack React Query documentation](https://tanstack.com/query/v5/docs/framework/react/guides/mutations).
 
 ## Using Mutation Hooks
-
 Here's a general overview of how to use the generated Mutation hooks in your code:
 
 - Mutation hook functions are not called with the arguments to the Mutation. Instead, arguments are passed to `UseMutationResult.mutate()`.
@@ -338,21 +311,16 @@ Here's a general overview of how to use the generated Mutation hooks in your cod
 Below are examples of how to use the `example` connector's generated Mutation hook functions to execute each Mutation. You can also follow the examples from the [Data Connect documentation](https://firebase.google.com/docs/data-connect/web-sdk#operations-react-angular).
 
 ## CreateUser
-
 You can execute the `CreateUser` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-
 ```javascript
 useCreateUser(options?: useDataConnectMutationOptions<CreateUserData, FirebaseError, CreateUserVariables>): UseDataConnectMutationResult<CreateUserData, CreateUserVariables>;
 ```
-
 You can also pass in a `DataConnect` instance to the Mutation hook function.
-
 ```javascript
 useCreateUser(dc: DataConnect, options?: useDataConnectMutationOptions<CreateUserData, FirebaseError, CreateUserVariables>): UseDataConnectMutationResult<CreateUserData, CreateUserVariables>;
 ```
 
 ### Variables
-
 The `CreateUser` Mutation requires an argument of type `CreateUserVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
@@ -363,9 +331,7 @@ export interface CreateUserVariables {
   photoUrl?: string | null;
 }
 ```
-
 ### Return Type
-
 Recall that calling the `CreateUser` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
@@ -373,7 +339,6 @@ To check the status of a Mutation, use the `UseMutationResult.status` field. You
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `CreateUser` Mutation is of type `CreateUserData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
 ```javascript
 export interface CreateUserData {
   user_insert: User_Key;
@@ -446,21 +411,16 @@ export default function CreateUserComponent() {
 ```
 
 ## UpdateApplicationStatus
-
 You can execute the `UpdateApplicationStatus` Mutation using the `UseMutationResult` object returned by the following Mutation hook function (which is defined in [dataconnect-generated/react/index.d.ts](./index.d.ts)):
-
 ```javascript
 useUpdateApplicationStatus(options?: useDataConnectMutationOptions<UpdateApplicationStatusData, FirebaseError, UpdateApplicationStatusVariables>): UseDataConnectMutationResult<UpdateApplicationStatusData, UpdateApplicationStatusVariables>;
 ```
-
 You can also pass in a `DataConnect` instance to the Mutation hook function.
-
 ```javascript
 useUpdateApplicationStatus(dc: DataConnect, options?: useDataConnectMutationOptions<UpdateApplicationStatusData, FirebaseError, UpdateApplicationStatusVariables>): UseDataConnectMutationResult<UpdateApplicationStatusData, UpdateApplicationStatusVariables>;
 ```
 
 ### Variables
-
 The `UpdateApplicationStatus` Mutation requires an argument of type `UpdateApplicationStatusVariables`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
 
 ```javascript
@@ -469,9 +429,7 @@ export interface UpdateApplicationStatusVariables {
   newStatus: string;
 }
 ```
-
 ### Return Type
-
 Recall that calling the `UpdateApplicationStatus` Mutation hook function returns a `UseMutationResult` object. This object holds the state of your Mutation, including whether the Mutation is loading, has completed, or has succeeded/failed, among other things.
 
 To check the status of a Mutation, use the `UseMutationResult.status` field. You can also check for pending / success / error status using the `UseMutationResult.isPending`, `UseMutationResult.isSuccess`, and `UseMutationResult.isError` fields.
@@ -479,7 +437,6 @@ To check the status of a Mutation, use the `UseMutationResult.status` field. You
 To execute the Mutation, call `UseMutationResult.mutate()`. This function executes the Mutation, but does not return the data from the Mutation.
 
 To access the data returned by a Mutation, use the `UseMutationResult.data` field. The data for the `UpdateApplicationStatus` Mutation is of type `UpdateApplicationStatusData`, which is defined in [dataconnect-generated/index.d.ts](../index.d.ts). It has the following fields:
-
 ```javascript
 export interface UpdateApplicationStatusData {
   application_updateMany: number;
@@ -548,3 +505,4 @@ export default function UpdateApplicationStatusComponent() {
   return <div>Mutation execution {mutation.isSuccess ? 'successful' : 'failed'}!</div>;
 }
 ```
+

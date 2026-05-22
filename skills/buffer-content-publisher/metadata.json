@@ -1,0 +1,20 @@
+{
+  "name": "Buffer Content Publisher",
+  "description": "Draft and queue CPF Coaching voice content to Buffer. Turns a topic or rough notes into a platform-optimized LinkedIn post or Twitter/X thread and queues it via the Buffer MCP in one workflow.",
+  "category": "skills",
+  "author": {
+    "name": "CPF-Coaching",
+    "github": "CPF-Coaching"
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": ["Buffer"],
+    "tools": ["Buffer MCP"]
+  },
+  "tags": ["buffer", "social-media", "linkedin", "twitter", "publishing", "cpf-coaching", "voice", "content"],
+  "difficulty": "beginner",
+  "estimated_time": "10 minutes",
+  "created": "2026-05-20",
+  "updated": "2026-05-20"
+}

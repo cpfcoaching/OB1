@@ -1,0 +1,20 @@
+{
+  "name": "Buffer MCP",
+  "description": "Connect Buffer's social media scheduling platform to Claude via the official remote MCP server. Enables post drafting, queue management, and channel access directly from your AI client.",
+  "category": "integrations",
+  "author": {
+    "name": "CPF-Coaching",
+    "github": "CPF-Coaching"
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": ["Buffer"],
+    "tools": []
+  },
+  "tags": ["buffer", "social-media", "publishing", "scheduling", "linkedin", "mcp"],
+  "difficulty": "beginner",
+  "estimated_time": "5 minutes",
+  "created": "2026-05-20",
+  "updated": "2026-05-20"
+}
