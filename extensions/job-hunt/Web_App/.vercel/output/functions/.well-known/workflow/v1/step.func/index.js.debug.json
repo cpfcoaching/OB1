@@ -1,0 +1,10 @@
+{
+  "stepFiles": [
+    "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/extensions/job-hunt/Web_App/node_modules/workflow/dist/stdlib.js",
+    "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/extensions/job-hunt/Web_App/workflows/user-signup.ts"
+  ],
+  "workflowFiles": [
+    "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/extensions/job-hunt/Web_App/workflows/user-signup.ts"
+  ],
+  "serdeOnlyFiles": []
+}
