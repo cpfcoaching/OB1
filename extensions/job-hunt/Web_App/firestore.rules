@@ -1,0 +1,114 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: only the authenticated owner may access their own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Collections where documents are keyed by userId ─────────────────────
+    // resumes, ranking_weights, recommendation_filters, user_context_profiles
+
+    match /resumes/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /ranking_weights/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /recommendation_filters/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /user_context_profiles/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ── Collections where documents carry a userId field ────────────────────
+
+    match /companies/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /job_postings/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /applications/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /interviews/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /job_contacts/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /resume_snapshots/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /recommendation_outcomes/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /recommendation_tweak_feedback/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /resume_tweak_templates/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /recommendation_optimizer_runs/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    match /self_improvement_events/{docId} {
+      allow read, write: if request.auth != null
+        && (resource == null || resource.data.userId == request.auth.uid)
+        && (!request.resource.data.keys().hasAny(['userId'])
+            || request.resource.data.userId == request.auth.uid);
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
