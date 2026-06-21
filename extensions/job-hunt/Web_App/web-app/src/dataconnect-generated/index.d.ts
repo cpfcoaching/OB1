@@ -66,7 +66,7 @@ export interface GetMyApplicationsData {
         name: string;
       };
     };
-      applicationDate: DateString;
+    applicationDate: DateString;
   } & Application_Key)[];
 }
 
