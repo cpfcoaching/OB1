@@ -1,3 +1,5 @@
+<!-- markdownlint-disable MD012 MD022 MD024 MD025 MD031 MD032 MD051 -->
+
 # Generated React README
 This README will guide you through the process of using the generated React SDK package for the connector `example`. It will also provide examples on how to use your generated SDK to call your Data Connect queries and mutations.
 
