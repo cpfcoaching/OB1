@@ -1,4 +1,7 @@
 # Generated TypeScript README
+<!-- markdownlint-disable MD012 MD022 MD024 MD025 MD031 MD032 MD051 -->
+
+# Generated TypeScript README
 This README will guide you through the process of using the generated JavaScript SDK package for the connector `example`. It will also provide examples on how to use your generated SDK to call your Data Connect queries and mutations.
 
 **If you're looking for the `React README`, you can find it at [`dataconnect-generated/react/README.md`](./react/README.md)**
