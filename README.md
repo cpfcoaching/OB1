@@ -1,8 +1,6 @@
-<p align="center">
-  <img src=".github/ob1-logo-wide.png" alt="Open Brain" width="600">
-</p>
+# Open Brain
 
-<h1 align="center">Open Brain</h1>
+![Open Brain](.github/ob1-logo-wide.png)
 
 The infrastructure layer for your thinking. One database, one AI gateway, one chat channel. Any AI you use can plug in. No middleware, no SaaS chains, no Zapier.
 
@@ -10,11 +8,11 @@ This isn't a notes app. It's a database with vector search and an open protocol 
 
 > Open Brain was created by [Nate B. Jones](https://natesnewsletter.substack.com/). Follow the [Substack](https://natesnewsletter.substack.com/) for updates, discussion, and the companion prompt pack. Join the [Discord](https://discord.gg/Cgh9WJEkeG) for real-time help and community.
 
-https://github.com/user-attachments/assets/80a79b09-f323-42c6-b11b-de10bb6fa36f
+[Overview Video](https://github.com/user-attachments/assets/80a79b09-f323-42c6-b11b-de10bb6fa36f)
 
 ## Getting Started
 
-https://github.com/user-attachments/assets/85208d73-112b-4204-82fd-d03b6c397a8b
+[Getting Started Video](https://github.com/user-attachments/assets/85208d73-112b-4204-82fd-d03b6c397a8b)
 
 Never built an Open Brain? Start here:
 
@@ -27,7 +25,7 @@ Never built an Open Brain? Start here:
 
 ## Extensions — The Learning Path
 
-https://github.com/user-attachments/assets/cc477f00-bb6b-4f96-9f7d-a6bcd0cf8b60
+[Extensions Overview Video](https://github.com/user-attachments/assets/cc477f00-bb6b-4f96-9f7d-a6bcd0cf8b60)
 
 Build these in order. Each one teaches new concepts through something you'll actually use. By the end, your agent manages your household, your schedule, your meals, your professional network, and your career — all interconnected.
 
@@ -44,7 +42,7 @@ Extensions compound. Your CRM knows about thoughts you've captured. Your meal pl
 
 ## Primitives: Concepts That Compound
 
-https://github.com/user-attachments/assets/f488e495-fe2a-4ccc-a834-fc6ab5a0ed41
+[Primitives Overview Video](https://github.com/user-attachments/assets/f488e495-fe2a-4ccc-a834-fc6ab5a0ed41)
 
 Some concepts show up in multiple extensions. Learn them once, apply them everywhere.
 
@@ -55,7 +53,7 @@ Some concepts show up in multiple extensions. Learn them once, apply them everyw
 
 ## Community Contributions
 
-https://github.com/user-attachments/assets/9454662f-2648-4928-8723-f7d52e94e9b8
+[Community Contributions Video](https://github.com/user-attachments/assets/9454662f-2648-4928-8723-f7d52e94e9b8)
 
 Beyond the curated learning path, the community builds and shares real tools that real people use. Every contribution below was reviewed, approved, and merged by the maintainer team. Look for the **Community Contribution** badge in each README.
 
