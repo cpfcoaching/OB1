@@ -294,14 +294,14 @@ The tests verify:
 
 ## Troubleshooting
 
-**Issue: Docker sandbox fails with command not found**
+### Issue: Docker sandbox fails with command not found
 
 Install Docker Desktop, or use the default local sandbox until Docker is available.
 
-**Issue: Live wrapper returns invalid JSON**
+### Issue: Live wrapper returns invalid JSON
 
 Run the wrapper directly and pipe a sample payload into it. The orchestrator expects one JSON object on stdout and a zero exit code.
 
-**Issue: Generated code needs another command**
+### Issue: Generated code needs another command
 
 Add the command to `PermissionPolicy` only after documenting the side effects and approval requirement. Keep the active command pool as small as possible.
