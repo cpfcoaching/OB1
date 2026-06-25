@@ -1,0 +1,21 @@
+{
+  "name": "Master Agent Orchestrator",
+  "description": "Standalone OB1 recipe for coordinating a reasoning planner, coding worker, debugger, durable state, permission policy, and execution sandbox.",
+  "category": "recipes",
+  "author": {
+    "name": "OB1 Team",
+    "github": "NateBJones-Projects"
+  },
+  "version": "0.1.0",
+  "requires": {
+    "open_brain": false,
+    "services": ["OB1 Agent Memory API (optional)"],
+    "tools": ["Python 3.10+"]
+  },
+  "requires_skills": ["aiception"],
+  "tags": ["agent", "orchestration", "workflow", "sandbox", "state", "memory", "aiception", "openbrain"],
+  "difficulty": "advanced",
+  "estimated_time": "30 minutes",
+  "created": "2026-06-24",
+  "updated": "2026-06-24"
+}

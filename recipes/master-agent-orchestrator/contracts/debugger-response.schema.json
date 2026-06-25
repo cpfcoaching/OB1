@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Debugger response",
+  "type": "object",
+  "required": ["feedback"],
+  "properties": {
+    "feedback": { "type": "string" }
+  },
+  "additionalProperties": false
+}

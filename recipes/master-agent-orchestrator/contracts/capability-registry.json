@@ -1,0 +1,95 @@
+{
+  "schema_version": "openbrain.master_agent.capability_registry.v1",
+  "roles": {
+    "claude": {
+      "responsibility": "Reasoning, planning, review, and debugging feedback",
+      "tools": [
+        {
+          "name": "create_task_list",
+          "responsibility": "Turn a global goal into ordered subtasks",
+          "input_shape": {
+            "goal": "string",
+            "workspace": "object",
+            "recalled_memory": "array"
+          },
+          "side_effect_profile": "read_only",
+          "required_permission": "always_allow",
+          "execution_owner": "planner"
+        },
+        {
+          "name": "delegate_to_codex",
+          "responsibility": "Select one bounded coding task and provide relevant context",
+          "input_shape": {
+            "task": "object",
+            "state": "object"
+          },
+          "side_effect_profile": "delegation_only",
+          "required_permission": "always_allow",
+          "execution_owner": "orchestrator"
+        },
+        {
+          "name": "approve_and_proceed",
+          "responsibility": "Approve successful task state and advance the workflow",
+          "input_shape": {
+            "task_id": "string",
+            "run_result": "object"
+          },
+          "side_effect_profile": "state_write",
+          "required_permission": "policy_checked",
+          "execution_owner": "orchestrator"
+        },
+        {
+          "name": "debug_error",
+          "responsibility": "Diagnose failed generated code using exact stderr and task context",
+          "input_shape": {
+            "goal": "string",
+            "task": "object",
+            "artifact": "object",
+            "result": "object"
+          },
+          "side_effect_profile": "read_only",
+          "required_permission": "always_allow",
+          "execution_owner": "debugger"
+        }
+      ]
+    },
+    "codex": {
+      "responsibility": "Code generation and execution artifact creation",
+      "tools": [
+        {
+          "name": "write_file",
+          "responsibility": "Produce a new generated file inside the task sandbox",
+          "input_shape": {
+            "file_name": "string",
+            "content": "string"
+          },
+          "side_effect_profile": "sandbox_file_write",
+          "required_permission": "policy_checked",
+          "execution_owner": "sandbox"
+        },
+        {
+          "name": "patch_code",
+          "responsibility": "Produce a revised generated artifact after debugger feedback",
+          "input_shape": {
+            "file_name": "string",
+            "content": "string",
+            "feedback": "array"
+          },
+          "side_effect_profile": "sandbox_file_write",
+          "required_permission": "policy_checked",
+          "execution_owner": "sandbox"
+        },
+        {
+          "name": "run_terminal_command",
+          "responsibility": "Request execution of an approved command inside the sandbox",
+          "input_shape": {
+            "command": "array"
+          },
+          "side_effect_profile": "sandbox_execution",
+          "required_permission": "policy_checked",
+          "execution_owner": "sandbox"
+        }
+      ]
+    }
+  }
+}
