@@ -1,0 +1,290 @@
+{
+  "capabilities": {
+    "roles": {
+      "claude": {
+        "responsibility": "Reasoning, planning, review, and debugging feedback",
+        "tools": [
+          {
+            "execution_owner": "planner",
+            "input_shape": {
+              "goal": "string",
+              "recalled_memory": "array",
+              "workspace": "object"
+            },
+            "name": "create_task_list",
+            "required_permission": "always_allow",
+            "responsibility": "Turn a global goal into ordered subtasks",
+            "side_effect_profile": "read_only"
+          },
+          {
+            "execution_owner": "orchestrator",
+            "input_shape": {
+              "state": "object",
+              "task": "object"
+            },
+            "name": "delegate_to_codex",
+            "required_permission": "always_allow",
+            "responsibility": "Select one bounded coding task and provide relevant context",
+            "side_effect_profile": "delegation_only"
+          },
+          {
+            "execution_owner": "orchestrator",
+            "input_shape": {
+              "run_result": "object",
+              "task_id": "string"
+            },
+            "name": "approve_and_proceed",
+            "required_permission": "policy_checked",
+            "responsibility": "Approve successful task state and advance the workflow",
+            "side_effect_profile": "state_write"
+          },
+          {
+            "execution_owner": "debugger",
+            "input_shape": {
+              "artifact": "object",
+              "goal": "string",
+              "result": "object",
+              "task": "object"
+            },
+            "name": "debug_error",
+            "required_permission": "always_allow",
+            "responsibility": "Diagnose failed generated code using exact stderr and task context",
+            "side_effect_profile": "read_only"
+          }
+        ]
+      },
+      "codex": {
+        "responsibility": "Code generation and execution artifact creation",
+        "tools": [
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "content": "string",
+              "file_name": "string"
+            },
+            "name": "write_file",
+            "required_permission": "policy_checked",
+            "responsibility": "Produce a new generated file inside the task sandbox",
+            "side_effect_profile": "sandbox_file_write"
+          },
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "content": "string",
+              "feedback": "array",
+              "file_name": "string"
+            },
+            "name": "patch_code",
+            "required_permission": "policy_checked",
+            "responsibility": "Produce a revised generated artifact after debugger feedback",
+            "side_effect_profile": "sandbox_file_write"
+          },
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "command": "array"
+            },
+            "name": "run_terminal_command",
+            "required_permission": "policy_checked",
+            "responsibility": "Request execution of an approved command inside the sandbox",
+            "side_effect_profile": "sandbox_execution"
+          }
+        ]
+      }
+    },
+    "schema_version": "openbrain.master_agent.capability_registry.v1"
+  },
+  "console_logs": [
+    {
+      "attempt": 1,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "task.py"
+      ],
+      "duration_ms": 1094,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"goal_excerpt\": \"Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain sta\", \"status\": \"ok\", \"task_description\": \"Create architecture notes for: Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain sta\", \"task_id\": \"plan-architecture\"}\n",
+      "task_id": "plan-architecture"
+    },
+    {
+      "attempt": 1,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "task.py"
+      ],
+      "duration_ms": 691,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"goal_excerpt\": \"Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain sta\", \"status\": \"ok\", \"task_description\": \"Build the smallest executable slice\", \"task_id\": \"build-minimum-slice\"}\n",
+      "task_id": "build-minimum-slice"
+    },
+    {
+      "attempt": 1,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
+        "task.py"
+      ],
+      "duration_ms": 492,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"goal_excerpt\": \"Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain sta\", \"status\": \"ok\", \"task_description\": \"Run acceptance checks and summarize outcome\", \"task_id\": \"run-acceptance-check\"}\n",
+      "task_id": "run-acceptance-check"
+    }
+  ],
+  "goal": "Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain state, Docker sandboxing, memory, and ACE learning",
+  "history": [
+    {
+      "event": "capability_registry_loaded",
+      "time": 1782516694
+    },
+    {
+      "event": "workspace_snapshot_captured",
+      "time": 1782516694
+    },
+    {
+      "event": "memory_recalled:0",
+      "time": 1782516694
+    },
+    {
+      "event": "plan_created",
+      "time": 1782516694
+    },
+    {
+      "event": "task_completed:plan-architecture",
+      "time": 1782516696
+    },
+    {
+      "event": "task_completed:build-minimum-slice",
+      "time": 1782516697
+    },
+    {
+      "event": "task_completed:run-acceptance-check",
+      "time": 1782516697
+    },
+    {
+      "event": "run_completed",
+      "time": 1782516697
+    }
+  ],
+  "learning_candidates": [
+    {
+      "evidence": "3 tasks completed for goal: Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain sta",
+      "lesson": "A run is only complete after every task status and console log is persisted.",
+      "reusable": true,
+      "title": "Completed orchestration run",
+      "trigger": "All planned tasks reached completed status"
+    }
+  ],
+  "recalled_memory": [],
+  "status": "completed",
+  "tasks": [
+    {
+      "attempts": 1,
+      "description": "Create architecture notes for: Coordinate Claude for planning and debugging with Codex/GPT for code generation and execution using shared OpenBrain sta",
+      "feedback": [],
+      "id": "plan-architecture",
+      "status": "completed"
+    },
+    {
+      "attempts": 1,
+      "description": "Build the smallest executable slice",
+      "feedback": [],
+      "id": "build-minimum-slice",
+      "status": "completed"
+    },
+    {
+      "attempts": 1,
+      "description": "Run acceptance checks and summarize outcome",
+      "feedback": [],
+      "id": "run-acceptance-check",
+      "status": "completed"
+    }
+  ],
+  "workspace": {
+    "captured_at": 1782516694,
+    "file_tree": [
+      ".DS_Store",
+      ".cache_ggshield",
+      ".env",
+      ".env.example",
+      ".gitignore",
+      ".gitmodules",
+      "AGENTS.md",
+      "CLAUDE.md",
+      "CONNECTION_FIXES.md",
+      "CONNECTION_SETUP.md",
+      "CONNECTIVITY.md",
+      "OpenBrain.code-workspace",
+      "QUICK_REFERENCE.md",
+      "SETUP_PROGRESS.md",
+      "SETUP_SUMMARY.md",
+      "STATUS_REPORT.md",
+      "brain-connect.sh",
+      "claude_desktop_config.CLEAN.json",
+      "claude_desktop_config.LIVE.json",
+      "claude_desktop_config.additions.json",
+      "claude_desktop_config.json",
+      "claude_desktop_config.json.example",
+      "deno.lock",
+      "deploy-job-hunt-schema.ts",
+      "deploy-schema.sh",
+      "fix-connections.ts",
+      "get-job-hunt-setup.sh",
+      "health-check.ts",
+      "job-hunt-setup-complete.sh",
+      "linkedin-import-sync-log.json",
+      "mcp-wrapper.sh",
+      "openbrain-mcp-only.json",
+      "package-lock.json",
+      "package.json",
+      "run_sync.sh",
+      "setup-connections.ts",
+      "substack_cookies.json",
+      "supabase_schema.sql",
+      "sync.log",
+      "sync_prompt_kits.py",
+      "test-connections.ts",
+      "test-job-hunt.ts",
+      "test_supabase_write.ts",
+      "vCISO-Briefing-July-2026.md",
+      "vCISO-Briefing-June-2026.md",
+      ".claude/settings.local.json",
+      ".firebase/.graphqlrc",
+      ".github/dependabot.yml",
+      ".letta/claude/session-84f33f21-b2a7-45c4-a891-50757a9396d9.json",
+      ".letta/claude/session-b4b6de9f-1a76-4cf4-a8a0-220ad083e21c.json",
+      ".letta/claude/session-d719c0b4-5687-4a50-a90a-ad9f1d2420e6.json",
+      ".vscode/mcp.json",
+      ".vscode/settings.json",
+      "OB1/.DS_Store",
+      "OB1/.gitignore",
+      "OB1/AGENTS.md",
+      "OB1/CLAUDE.md",
+      "OB1/CODE_OF_CONDUCT.md",
+      "OB1/CONTRIBUTING.md",
+      "OB1/CONTRIBUTORS.md",
+      "OB1/LICENSE.md",
+      "OB1/README.md",
+      "OB1/SECURITY.md",
+      "OB1/sec-linkedin-post.png",
+      "OB1/.claude/settings.local.json",
+      "OB1/.claude/skills/review-pr.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/.git",
+      "OB1/.claude/worktrees/confident-spence-d435b2/.gitignore",
+      "OB1/.claude/worktrees/confident-spence-d435b2/AGENTS.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/CLAUDE.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/CODE_OF_CONDUCT.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/CONTRIBUTING.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/CONTRIBUTORS.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/LICENSE.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/README.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/SECURITY.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/sec-linkedin-post.png",
+      "OB1/.claude/worktrees/confident-spence-d435b2/.claude/settings.local.json",
+      "OB1/.claude/worktrees/confident-spence-d435b2/.claude/skills/review-pr.md",
+      "OB1/.claude/worktrees/confident-spence-d435b2/.codex/config.toml"
+    ],
+    "root": "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain"
+  }
+}

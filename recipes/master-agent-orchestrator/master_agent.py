@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shlex
 import shutil
 import subprocess
@@ -145,13 +146,13 @@ class WorkspaceContext:
         files: list[str] = []
         if not self.root.exists():
             return WorkspaceSnapshot(root=str(self.root), file_tree=[], captured_at=int(time.time()))
-        for path in sorted(self.root.rglob("*")):
-            if len(files) >= self.max_files:
-                break
-            if any(part in DEFAULT_SKIP_DIRS for part in path.parts):
-                continue
-            if path.is_file():
+        for dirpath, dirnames, filenames in os.walk(self.root):
+            dirnames[:] = sorted(dirname for dirname in dirnames if dirname not in DEFAULT_SKIP_DIRS)
+            for filename in sorted(filenames):
+                path = Path(dirpath) / filename
                 files.append(path.relative_to(self.root).as_posix())
+                if len(files) >= self.max_files:
+                    return WorkspaceSnapshot(root=str(self.root), file_tree=files, captured_at=int(time.time()))
         return WorkspaceSnapshot(root=str(self.root), file_tree=files, captured_at=int(time.time()))
 
 

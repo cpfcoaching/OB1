@@ -160,6 +160,16 @@ class MasterAgentTests(unittest.TestCase):
             self.assertEqual(len(recalled), 1)
             self.assertEqual(recalled[0].id, "m1")
 
+    def test_workspace_snapshot_stops_at_max_files(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            for index in range(25):
+                (root / f"file-{index:02d}.txt").write_text("x", encoding="utf-8")
+
+            snapshot = WorkspaceContext(root, max_files=5).snapshot()
+
+            self.assertEqual(len(snapshot.file_tree), 5)
+
     def test_command_coder_rejects_missing_contract_fields(self):
         coder = CommandCoder(StaticWorker({"file_name": "task.py", "content": "print('x')\n"}))
 
