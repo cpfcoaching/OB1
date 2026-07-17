@@ -1,40 +1,39 @@
 ---
 name: heavy-file-ingestion
-description: Use when a user asks to read, analyze, summarize, or extract from a heavyweight file such as PDF, DOCX, PPTX, XLSX, CSV, or TSV. Convert the file into markdown or CSV first, generate a lightweight index, and only spend model tokens on the compressed artifact. Trigger on requests like "read this PDF", "look through this spreadsheet", "summarize this deck", or any time raw file ingestion would waste tokens.
-author: Nate B. Jones
-version: 1.0.0
+description: Use when a user provides or asks to analyze a heavyweight or binary file such as PDF, PPTX, DOCX, XLSX, CSV, TSV, long text, or a document dump. First convert the source into lightweight Markdown or CSV artifacts under the OpenBrain Intake _ingested folder, generate an index, and analyze only the converted artifacts, never the original heavy file directly.
 ---
 
 # Heavy File Ingestion
 
-## Problem
+## Core Rule
 
-Agents waste money and context when they read heavyweight files raw. This skill turns bulky documents into cheaper working artifacts first, then tells the main agent how much reasoning power the file actually deserves.
+Convert first, index second, analyze last. Do not read or reason from the original heavy file directly when a deterministic conversion path exists. Read `index.md` first, then only the relevant Markdown, CSV, or chunk artifacts.
+
+Default artifact root:
+
+`/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/Intake/_ingested/`
+
+The converter creates a per-source folder named from the source stem plus a short path hash. Use `--output-dir` only when the user explicitly asks for another destination.
 
 ## Trigger Conditions
 
-- The user asks to read or analyze a PDF, slide deck, spreadsheet, or word-processing file
-- The file is large, structured, or expensive enough that raw ingestion is a bad trade
-- The user wants a markdown working copy, CSV extraction, or a quick map of the file before analysis
-- The agent needs a deterministic first pass before choosing whether a model fallback is worth the cost
+Use this skill when any request touches:
 
-## Core Policy
+- A PDF, slide deck, spreadsheet, CSV or TSV dump, DOCX, long Markdown or text document, or other binary-heavy file.
+- A folder of such files.
+- Analysis, summarization, extraction, comparison, QA, or reporting based on one of those files.
+- A file large enough that loading it raw would waste context or risk missed structure.
 
-1. **Convert before reading.** Do not dump raw heavyweight files into model context if a deterministic converter can create a cheaper artifact.
-1. **Index before reasoning.** Read the generated `index.md` or `index.json` first. It should tell you what is in the file, how clean the extraction was, and whether escalation is justified.
-1. **Match the converter to the file type.**
-   - PDFs and documents: markdown artifact
-   - Presentations: markdown slide outline
-   - Spreadsheets: CSV per sheet plus a markdown manifest
-1. **Escalate by cost tier, not instinct.**
-   - Tier 1: deterministic converter plus index
-   - Tier 2: cheap model on the extracted artifact only if quality flags say the deterministic pass lost structure
-   - Tier 3: expensive model only after the file has already been compressed into markdown, CSV, or a sampled subset
+## Standard Workflow
 
-## Process
+1. Identify the source path, extension, size, and whether it is one file or a batch.
+2. Convert with the bundled script before analysis:
 
-1. Identify the file path, extension, and rough size.
-1. Run the converter script instead of reading the original file directly:
+```bash
+python /Users/MacAttack/.agents/skills/heavy-file-ingestion/scripts/convert_heavy_file.py /absolute/path/to/source.ext
+```
+
+3. If dependencies are missing, install them for the run with `uv`:
 
 ```bash
 uv run \
@@ -42,34 +41,61 @@ uv run \
   --with python-docx \
   --with python-pptx \
   --with openpyxl \
-  python skills/heavy-file-ingestion/scripts/convert_heavy_file.py /absolute/path/to/file.ext
+  python /Users/MacAttack/.agents/skills/heavy-file-ingestion/scripts/convert_heavy_file.py /absolute/path/to/source.ext
 ```
 
-1. If you already have `markitdown` installed and want to prefer it for PDF or DOCX conversion, rerun with:
+4. Read the generated `index.md` first.
+5. Read only the converted artifacts listed in the index. Use chunk files for very large outputs.
+6. Base the answer, extraction, or analysis on the converted artifacts. Cite the artifact folder and any quality flags.
+
+## File Type Recipes
+
+- PDF: Use native `pdfplumber` page extraction by default. If the index flags `scanned_pdf_suspected`, `low_text_density`, or `low_text_output`, retry with MarkItDown or a stronger OCR/layout tool. Do not feed the PDF itself into the model until deterministic extraction has failed and the user approves escalation.
+- PPTX: Use `python-pptx` to extract slide titles, text blocks, and speaker notes into `presentation.md`.
+- DOCX: Use MarkItDown when available, otherwise use `python-docx` to extract headings, paragraphs, and table previews into `document.md`.
+- XLSX: Use `openpyxl` to create one CSV per sheet plus `workbook.md` with sheet names, row counts, headers, and previews.
+- CSV or TSV: Normalize to `table.csv` and create `table.md` with row, column, header, and preview details.
+- Long TXT or MD: Copy into a Markdown working artifact and chunk it if needed.
+
+## Index Requirements
+
+Every conversion must leave:
+
+- `index.md`: human-readable map of source path, type, size, converter, recommended next step, quality flags, artifact list, one-line artifact summaries, stats, and preview lines.
+- `index.json`: machine-readable copy of the same metadata.
+- Converted artifacts such as `document.md`, `presentation.md`, `workbook.md`, per-sheet CSVs, `table.csv`, or `chunks/`.
+
+If no trustworthy text is extracted, the index must say so through quality flags instead of pretending the extraction succeeded.
+
+## Chunking Guidance
+
+Keep artifacts comfortably readable:
+
+- Markdown and text artifacts over about 40,000 characters should also produce `chunks/<artifact-stem>/NNN.md`.
+- CSV artifacts over about 5,000 data rows should also produce `chunks/<artifact-stem>/NNN.csv`.
+- Analyze the smallest relevant chunk or CSV sheet first, then expand only when the index shows the answer needs more coverage.
+- For very large batch jobs, convert every file first, then make a top-level summary from the generated indexes.
+
+## Fallbacks
+
+If the bundled script cannot convert a file:
+
+1. Read `index.md` and record the exact warning or quality flag.
+2. Install the missing dependency with `uv run --with ...` or `pip install ...` only when needed for the requested file type.
+3. Try MarkItDown for mixed office documents:
 
 ```bash
-python skills/heavy-file-ingestion/scripts/convert_heavy_file.py /absolute/path/to/file.ext --prefer markitdown
+uvx --from 'markitdown[pdf,docx,pptx,xlsx]' markitdown /absolute/path/to/source.ext
 ```
 
-1. Read the generated `index.md` first.
-2. Only read the extracted markdown or CSV outputs that the index says are worth reading.
-3. If the index flags weak extraction, use a cheap fallback:
-   - Try an alternate deterministic converter
-   - Use a small model to rebuild only the structure or outline from the extracted artifact
-   - Escalate to a stronger model only when the cheaper passes still leave critical ambiguity
+4. Use Docling or OCR only after the deterministic first pass proves the cheaper path is insufficient.
+5. Ask before using paid services, public uploads, or anything that changes customer-facing systems.
 
-## Output
+## Completion Check
 
-The skill should leave behind:
+Before answering the user's substantive question, verify:
 
-- A deterministic artifact the agent can work from
-- `index.md` with file counts, structure hints, preview lines, and a recommended next step
-- `index.json` with the same information in machine-friendly form
-- Warnings when the deterministic pass is not trustworthy enough for direct reasoning
-
-## Notes
-
-- Prefer the bundled script over rewriting ad hoc conversion code each time.
-- Do not treat "sub-agent" as the default answer to messy files. A cheap deterministic pass beats a cheap model when the task is conversion, counting, routing, or indexing.
-- For scanned PDFs, image-heavy decks, or bizarre layouts, the deterministic pass is still useful because it tells you that a fallback is needed before you waste a stronger model on the original file.
-- Use [`references/open-source-stack.md`](./references/open-source-stack.md) when you need to choose a better extractor or explain why one was picked.
+- The artifact folder exists under the Intake root or the user-approved override.
+- `index.md` and `index.json` exist.
+- The answer uses converted artifacts, not the original heavy file.
+- Any weak extraction, missing dependency, skipped file, or unsupported type is surfaced clearly.

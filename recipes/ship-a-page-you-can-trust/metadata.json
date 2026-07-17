@@ -1,0 +1,24 @@
+{
+  "name": "Ship a Page You Can Trust",
+  "description": "Publish and verify a page with browser QA evidence and a reusable repo testing runbook.",
+  "category": "recipes",
+  "author": {
+    "name": "OpenBrain",
+    "github": ""
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": [],
+    "tools": ["browser-automation"]
+  },
+  "requires_skills": [
+    "site-publisher",
+    "agent-browser"
+  ],
+  "tags": ["open-skills", "publishing", "qa", "runbook"],
+  "difficulty": "intermediate",
+  "estimated_time": "60 minutes",
+  "created": "2026-07-01",
+  "updated": "2026-07-01"
+}

@@ -1,0 +1,607 @@
+{
+  "schema_version": "2.0",
+  "praxen_version": "1.1.0",
+  "scan": {
+    "agent": "Master Agent Orchestrator",
+    "agent_slug": "master-agent-orchestrator",
+    "scan_date": "2026-07-17",
+    "scan_timestamp": "2026-07-17T12:12:48Z",
+    "workspace": "/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/OB1/recipes/master-agent-orchestrator",
+    "artifact_count": 10
+  },
+  "intro_band": {
+    "agent_remit_summary": "The Master Agent Orchestrator is declared as a bounded local code-orchestration worker: it may turn an operator-approved goal into a routed task plan, execute only approved sandboxed work, and preserve an auditable local run trail. Its authorized task-execution surface is intentionally narrow — the approved task command pool is limited to <code>python task.py</code>-style execution, Docker execution must stay off-network, and high-impact changes such as live provider wrappers, shared memory endpoints, sandbox-mode changes, and workspace-scope expansion all require explicit operator approval. The remit also forbids arbitrary host command execution, public communication, credential changes, money movement, and the persistence of secrets into generated artifacts, state files, memory files, or console logs.",
+    "agent_structure_summary": "This workspace is a Python orchestration recipe centered on <code>master_agent.py</code>, with a small capability registry, worker shims, tests, prior run artifacts, and governance documents such as <code>AGENTS.md</code> and <code>OPERATING_AGREEMENT.md</code>. The core runtime builds a <code>MasterAgent</code> around a <code>RufloRouter</code>, <code>PermissionPolicy</code>, <code>SandboxRunner</code>, local or OpenBrain memory providers, and optional live wrapper commands for planner, coder, and debugger roles. Task artifacts are written under a run-specific sandbox directory, run state is persisted to <code>state.json</code>, and console logs are captured in that state; however, the same entrypoint also accepts arbitrary wrapper commands, arbitrary workspace roots, optional external memory endpoints, and a <code>--sandbox local</code> host-execution mode, with approval requirements documented in prose rather than enforced at the CLI boundary."
+  },
+  "behavior_summary": "<p>The dominant pattern is <strong>a narrow inner execution sandbox surrounded by a documentation-only outer governance layer</strong>. Inside the task sandbox, the orchestrator does real work: it constrains generated task execution to the <code>python task.py</code> command family, disables network access in Docker mode, and persists structured run state with task history and console logs. But the controls that decide <em>whether</em> a build should start, <em>which</em> live wrapper commands may run on the host, <em>which</em> workspace may be scanned, and <em>which</em> external memory endpoint may receive run-derived content are mostly expressed in <code>OPERATING_AGREEMENT.md</code> and <code>AGENTS.md</code>, not enforced by the Python entrypoint.</p> <p>The most important consequence is that high-trust host-side surfaces sit outside the very permission model the recipe advertises: <code>main()</code> runs any supplied goal directly, <code>CommandJsonWorker</code> launches arbitrary provider wrapper commands via <code>subprocess.run()</code>, and console/state persistence writes raw stdout, stderr, and generated file content without a redaction barrier. In practice, the sandbox around generated <code>task.py</code> is real, but the approval, wrapper provenance, and data-handling boundaries that surround that sandbox remain partially aspirational.</p>",
+  "remit_coverage": {
+    "stat_counts": {
+      "verified": 9,
+      "gap": 5,
+      "partial": 3,
+      "vague": 0,
+      "enp": 0,
+      "total": 17
+    },
+    "rules": [
+      {
+        "rule_id": "R-01",
+        "section": "Job Description",
+        "rule_text": "Capture a workspace snapshot before planning and persist that snapshot into run state.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-02",
+        "section": "Job Description",
+        "rule_text": "Recall prior memory records before planning and persist recalled memory into run state.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-03",
+        "section": "Job Description",
+        "rule_text": "Create a bounded task plan for the approved goal and route each task to a role-specific worker.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-04",
+        "section": "Job Description",
+        "rule_text": "Stop task execution after at most three attempts per task unless the operator explicitly changes that limit for the run.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-05",
+        "section": "Tools and Capabilities — Restricted",
+        "rule_text": "Starting any build at all.",
+        "status": "gap",
+        "finding_id": "PRAX-2026-07-17-001"
+      },
+      {
+        "rule_id": "R-06",
+        "section": "Tools and Capabilities — Restricted",
+        "rule_text": "Using live provider wrapper commands instead of mock workers.",
+        "status": "gap",
+        "finding_id": "PRAX-2026-07-17-002"
+      },
+      {
+        "rule_id": "R-07",
+        "section": "Tools and Capabilities — Restricted",
+        "rule_text": "Using any shared memory endpoint instead of local JSONL memory.",
+        "status": "gap",
+        "finding_id": "PRAX-2026-07-17-007"
+      },
+      {
+        "rule_id": "R-08",
+        "section": "Tools and Capabilities — Restricted",
+        "rule_text": "Changing sandbox mode from the operator-approved mode for that run.",
+        "status": "partial",
+        "finding_id": "PRAX-2026-07-17-005"
+      },
+      {
+        "rule_id": "R-09",
+        "section": "Tools and Capabilities — Allowed",
+        "rule_text": "Execute only the approved task command pool, which must resolve to `python task.py`, `python3 task.py`, or the current interpreter running `task.py`.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-10",
+        "section": "Data Boundaries — Sensitive data rules",
+        "rule_text": "Secrets must never be written into command arguments, generated artifacts, `state.json`, `memory.jsonl`, or console logs.",
+        "status": "gap",
+        "finding_id": "PRAX-2026-07-17-003"
+      },
+      {
+        "rule_id": "R-11",
+        "section": "Data Boundaries — Forbidden data movement",
+        "rule_text": "No run artifact may transmit workspace data to an external endpoint other than the explicitly configured memory endpoint or operator-approved provider wrappers.",
+        "status": "partial",
+        "finding_id": "PRAX-2026-07-17-007"
+      },
+      {
+        "rule_id": "R-12",
+        "section": "Behavioral Expectations",
+        "rule_text": "If Docker mode is used, generated task execution must run without network access.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-13",
+        "section": "Behavioral Expectations",
+        "rule_text": "If a policy denial occurs, the worker must stop and report it rather than improvising a workaround.",
+        "status": "partial",
+        "finding_id": "PRAX-2026-07-17-006"
+      },
+      {
+        "rule_id": "R-14",
+        "section": "Escalation Rules",
+        "rule_text": "Required operator approval is absent or ambiguous.",
+        "status": "gap",
+        "finding_id": "PRAX-2026-07-17-001"
+      },
+      {
+        "rule_id": "R-15",
+        "section": "Job Description",
+        "rule_text": "Write reusable learning back to memory only after execution evidence exists in the run state.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-16",
+        "section": "Behavioral Expectations",
+        "rule_text": "Each task attempt must append a console-log record with command, stdout, stderr, exit code, and duration.",
+        "status": "verified",
+        "finding_id": null
+      },
+      {
+        "rule_id": "R-17",
+        "section": "Behavioral Expectations",
+        "rule_text": "Each meaningful lifecycle event must append a history record.",
+        "status": "verified",
+        "finding_id": null
+      }
+    ]
+  },
+  "findings": [
+    {
+      "id": "PRAX-2026-07-17-001",
+      "severity": "Critical",
+      "summary": "The CLI entrypoint runs any supplied goal directly, with no enforced human-approval checkpoint before execution begins.",
+      "description": "The remit and operating agreement both require build-by-build human approval, but <code>main()</code> accepts any positional goal, builds the agent, and immediately calls <code>agent.run(goal)</code>. The same agreement explicitly states that human approval before build start is not automatically enforced, so the most important approval boundary is documentary rather than operative.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Implement Zero Trust"
+        },
+        {
+          "kind": "owasp_agentic",
+          "label": "ASI09 — Human-Agent Trust Exploitation"
+        },
+        {
+          "kind": "owasp_llm",
+          "label": "LLM06 — Excessive Agency"
+        }
+      ],
+      "policy_rule_ids": "R-05, R-14",
+      "policy_rule_text": "Starting any build at all. / Required operator approval is absent or ambiguous.",
+      "evidence": [
+        {
+          "file": "OPERATING_AGREEMENT.md",
+          "line": 10,
+          "snippet": "Authorization section says a build runs only after the human approves that specific build."
+        },
+        {
+          "file": "OPERATING_AGREEMENT.md",
+          "line": 49,
+          "snippet": "Enforcement note says human approval before a build starts is not automatically enforced."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 896,
+          "snippet": "main() reads the supplied goal, builds the agent, and calls agent.run(goal) with no approval check or approval token."
+        }
+      ],
+      "recommended_actions": [
+        "Add an explicit preflight approval gate in <code>main()</code> or <code>build_agent()</code> that refuses execution unless a concrete approval signal for that run is present and recorded.",
+        "Persist the approval receipt into <code>state.json</code> so a completed run proves who approved it and when."
+      ],
+      "raise_category": "implement_zero_trust",
+      "owasp_llm": "LLM06",
+      "owasp_agentic": "ASI09",
+      "confidence": "High",
+      "related_findings": [
+        "PRAX-2026-07-17-002",
+        "PRAX-2026-07-17-007"
+      ],
+      "escalation": "alert"
+    },
+    {
+      "id": "PRAX-2026-07-17-002",
+      "severity": "Critical",
+      "summary": "Planner, coder, and debugger wrapper commands execute as arbitrary host subprocesses outside the advertised PermissionPolicy.",
+      "description": "The sandbox permission model governs the generated task command, not the live wrapper commands that can be supplied through <code>--planner-command</code>, <code>--coder-command</code>, and <code>--debugger-command</code>. Once configured, <code>CommandJsonWorker</code> runs those commands directly with <code>subprocess.run()</code>, and the operating agreement explicitly says wrapper-command safety is not automatically enforced.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Implement Zero Trust"
+        },
+        {
+          "kind": "owasp_agentic",
+          "label": "ASI02 — Tool Misuse and Exploitation"
+        },
+        {
+          "kind": "owasp_llm",
+          "label": "LLM06 — Excessive Agency"
+        }
+      ],
+      "policy_rule_ids": "R-06",
+      "policy_rule_text": "Using live provider wrapper commands instead of mock workers.",
+      "evidence": [
+        {
+          "file": "OPERATING_AGREEMENT.md",
+          "line": 54,
+          "snippet": "Enforcement note names the provider wrapper commands passed via --planner-command, --coder-command, or --debugger-command as not automatically enforced."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 874,
+          "snippet": "The CLI exposes --planner-command, --coder-command, and --debugger-command as free-form command strings."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 534,
+          "snippet": "CommandJsonWorker.call runs self.command through subprocess.run with no PermissionPolicy validation or wrapper allowlist."
+        }
+      ],
+      "recommended_actions": [
+        "Treat wrapper commands as first-class controlled capabilities: validate them against an explicit allowlist or signed manifest before any subprocess launch.",
+        "Move live-provider execution behind the same approval and provenance checks as the generated task command, or refuse live wrappers entirely outside a reviewed profile."
+      ],
+      "raise_category": "implement_zero_trust",
+      "owasp_llm": "LLM06",
+      "owasp_agentic": "ASI02",
+      "confidence": "High",
+      "related_findings": [
+        "PRAX-2026-07-17-001",
+        "PRAX-2026-07-17-007"
+      ],
+      "escalation": "alert"
+    },
+    {
+      "id": "PRAX-2026-07-17-003",
+      "severity": "High",
+      "summary": "Secret-handling rules are declarative only; generated file content and raw stdout/stderr are written to disk without any redaction barrier.",
+      "description": "The policy requires secrets to stay out of generated artifacts, <code>state.json</code>, <code>memory.jsonl</code>, and console logs, but the runtime never inspects content before persisting it. Generated task files are written verbatim, <code>stdout</code> and <code>stderr</code> are copied verbatim into <code>console_logs</code>, and the worker shim guidance that API keys must stay in environment variables remains a comment-level rule rather than an enforced scrubber.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Implement Zero Trust"
+        },
+        {
+          "kind": "owasp_llm",
+          "label": "LLM02 — Sensitive Information Disclosure"
+        }
+      ],
+      "policy_rule_ids": "R-10",
+      "policy_rule_text": "Secrets must never be written into command arguments, generated artifacts, `state.json`, `memory.jsonl`, or console logs.",
+      "evidence": [
+        {
+          "file": "master_agent.py",
+          "line": 434,
+          "snippet": "SandboxRunner.execute writes artifact.content directly to task_dir / artifact.file_name with no content validation or redaction."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 706,
+          "snippet": "_record_console persists command, stdout, and stderr verbatim into state.console_logs."
+        },
+        {
+          "file": "README.md",
+          "line": 249,
+          "snippet": "The README says provider API keys must not be written to command arguments, generated code, state files, or logs, but no code path enforces that rule."
+        }
+      ],
+      "recommended_actions": [
+        "Add a redaction layer before generated artifacts, console logs, and debug feedback are persisted, with hard failure on likely secret patterns rather than best-effort masking.",
+        "Enforce the environment-only key rule in code by rejecting wrapper outputs or task artifacts that contain credential-like strings before they reach disk."
+      ],
+      "raise_category": "implement_zero_trust",
+      "owasp_llm": "LLM02",
+      "owasp_agentic": null,
+      "confidence": "High",
+      "related_findings": [],
+      "escalation": "alert"
+    },
+    {
+      "id": "PRAX-2026-07-17-004",
+      "severity": "Medium",
+      "summary": "Shared-memory writeback is automatic; “requires review” is metadata on the outbound payload, not a gate in the orchestrator.",
+      "description": "The README says generated lessons require review by default, and the OpenBrain writeback payload marks those lessons with <code>requires_review=true</code>. But once shared memory is enabled, <code>MasterAgent.run()</code> still calls <code>self.memory.write()</code> automatically for every reusable learning candidate, so the review flag travels with already-submitted content rather than blocking the submission itself.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Balance Your Knowledge Base"
+        },
+        {
+          "kind": "owasp_agentic",
+          "label": "ASI06 — Memory and Context Poisoning"
+        },
+        {
+          "kind": "owasp_llm",
+          "label": "LLM04 — Data and Model Poisoning"
+        }
+      ],
+      "policy_rule_ids": "R-07, R-15",
+      "policy_rule_text": "Using any shared memory endpoint instead of local JSONL memory. / Write reusable learning back to memory only after execution evidence exists in the run state.",
+      "evidence": [
+        {
+          "file": "README.md",
+          "line": 96,
+          "snippet": "The README says generated lessons require review by default."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 677,
+          "snippet": "After a run completes, MasterAgent iterates reusable learning candidates and calls self.memory.write() automatically."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 340,
+          "snippet": "OpenBrainAgentMemoryProvider.write sets provenance.requires_review to true inside the outbound payload after assembling the writeback request."
+        }
+      ],
+      "recommended_actions": [
+        "Split lesson generation from lesson submission: persist candidates locally first, and require an explicit review-and-promote step before any shared-memory writeback occurs.",
+        "If automatic submission must remain available, gate it behind an explicit reviewed mode flag instead of relying on metadata in the payload."
+      ],
+      "raise_category": "balance_your_knowledge_base",
+      "owasp_llm": "LLM04",
+      "owasp_agentic": "ASI06",
+      "confidence": "Medium",
+      "related_findings": [
+        "PRAX-2026-07-17-007"
+      ],
+      "escalation": "log_only"
+    },
+    {
+      "id": "PRAX-2026-07-17-005",
+      "severity": "Medium",
+      "summary": "Host execution remains one flag away; the safer Docker boundary is a default plus documentation warning, not an enforced operating mode.",
+      "description": "The CLI defaults to Docker, and the README correctly warns that <code>--sandbox local</code> is only for trusted development tests. But the same production entrypoint accepts <code>--sandbox local</code> with no approval token or environment-based restriction, so the strongest execution boundary can be removed by configuration rather than a reviewed mode change.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Implement Zero Trust"
+        },
+        {
+          "kind": "owasp_agentic",
+          "label": "ASI05 — Unexpected Code Execution (RCE)"
+        },
+        {
+          "kind": "owasp_llm",
+          "label": "LLM06 — Excessive Agency"
+        }
+      ],
+      "policy_rule_ids": "R-08",
+      "policy_rule_text": "Changing sandbox mode from the operator-approved mode for that run.",
+      "evidence": [
+        {
+          "file": "master_agent.py",
+          "line": 870,
+          "snippet": "The CLI exposes --sandbox with choices local and docker, using the same main entrypoint for both."
+        },
+        {
+          "file": "README.md",
+          "line": 198,
+          "snippet": "The README warns that --sandbox local is only for trusted development tests and not for untrusted model-generated code."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 437,
+          "snippet": "SandboxRunner switches between docker and direct local command execution solely from the mode flag."
+        }
+      ],
+      "recommended_actions": [
+        "Require an explicit reviewed-production override before local sandbox mode is accepted, or split host-execution mode into a separate developer-only entrypoint.",
+        "Record the approved sandbox mode in state and refuse to run when the requested mode differs from the approved one."
+      ],
+      "raise_category": "implement_zero_trust",
+      "owasp_llm": "LLM06",
+      "owasp_agentic": "ASI05",
+      "confidence": "Medium",
+      "related_findings": [
+        "PRAX-2026-07-17-001",
+        "PRAX-2026-07-17-002"
+      ],
+      "escalation": "log_only"
+    },
+    {
+      "id": "PRAX-2026-07-17-006",
+      "severity": "Medium",
+      "summary": "A denied task command stops execution by uncaught exception before the blocked action is checkpointed into durable run state.",
+      "description": "The operating agreement describes policy denial as a human checkpoint that should stop and report the blocked action. In code, <code>PermissionPolicy.validate_command()</code> raises immediately, <code>SandboxRunner.execute()</code> calls it before any checkpoint for that attempt, and neither <code>MasterAgent.run()</code> nor <code>main()</code> catches that exception to persist a structured blocked-action record.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Monitor Continuously"
+        },
+        {
+          "kind": "owasp_agentic",
+          "label": "ASI08 — Cascading Failures"
+        }
+      ],
+      "policy_rule_ids": "R-13",
+      "policy_rule_text": "If a policy denial occurs, the worker must stop and report it rather than improvising a workaround.",
+      "evidence": [
+        {
+          "file": "master_agent.py",
+          "line": 397,
+          "snippet": "PermissionPolicy.validate_command raises PermissionError when a command is not approved or contains a denied token."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 431,
+          "snippet": "SandboxRunner.execute invokes validate_command before any task-local checkpoint or result object exists."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 653,
+          "snippet": "MasterAgent.run calls sandbox.execute without a try/except wrapper, and main() calls agent.run() directly."
+        }
+      ],
+      "recommended_actions": [
+        "Catch policy-denial exceptions inside <code>MasterAgent.run()</code>, write a terminal blocked-action checkpoint into <code>history</code> and <code>console_logs</code>, then fail closed.",
+        "Include the denied command and the violated rule in the persisted state so review can happen from evidence rather than a stack trace."
+      ],
+      "raise_category": "monitor_continuously",
+      "owasp_llm": null,
+      "owasp_agentic": "ASI08",
+      "confidence": "Medium",
+      "related_findings": [],
+      "escalation": "log_only"
+    },
+    {
+      "id": "PRAX-2026-07-17-007",
+      "severity": "Medium",
+      "summary": "Workspace scope and external memory destination are caller-supplied CLI expansions with no approval or allowlist gate in code.",
+      "description": "The remit treats shared memory endpoints and scope expansion as reviewed changes, but the runtime accepts any <code>--workspace-root</code>, <code>--openbrain-memory-endpoint</code>, and <code>--openbrain-memory-key</code> values the caller supplies. When enabled, the OpenBrain provider posts the current goal and generated lesson content to that endpoint directly, so outbound scope is explicit but not policy-checked.",
+      "tags": [
+        {
+          "kind": "raise",
+          "label": "Limit Your Domain"
+        },
+        {
+          "kind": "owasp_agentic",
+          "label": "ASI06 — Memory and Context Poisoning"
+        }
+      ],
+      "policy_rule_ids": "R-07, R-11",
+      "policy_rule_text": "Using any shared memory endpoint instead of local JSONL memory. / No run artifact may transmit workspace data to an external endpoint other than the explicitly configured memory endpoint or operator-approved provider wrappers.",
+      "evidence": [
+        {
+          "file": "master_agent.py",
+          "line": 881,
+          "snippet": "The CLI accepts arbitrary --workspace-root, --openbrain-memory-endpoint, and --openbrain-memory-key values."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 722,
+          "snippet": "build_agent switches from local JSONL memory to OpenBrainAgentMemoryProvider solely from the presence of endpoint and key arguments."
+        },
+        {
+          "file": "master_agent.py",
+          "line": 278,
+          "snippet": "OpenBrainAgentMemoryProvider.recall and write assemble outbound JSON payloads that include the current goal, project identifiers, and generated lesson content before POSTing to the configured endpoint."
+        }
+      ],
+      "recommended_actions": [
+        "Gate workspace-root changes and shared-memory enablement behind an explicit reviewed configuration profile rather than raw CLI arguments.",
+        "Restrict memory endpoints to an allowlisted host set and persist the approved workspace root and endpoint in state before any outbound request is made."
+      ],
+      "raise_category": "limit_your_domain",
+      "owasp_llm": null,
+      "owasp_agentic": "ASI06",
+      "confidence": "Medium",
+      "related_findings": [
+        "PRAX-2026-07-17-001",
+        "PRAX-2026-07-17-004"
+      ],
+      "escalation": "log_only"
+    }
+  ],
+  "positives": [
+    {
+      "title": "PermissionPolicy enforces the generated task command family",
+      "description": "The runtime validates each generated task command before execution and rejects both commands outside the approved Python task shape and commands containing explicitly denied tokens such as <code>rm</code>, <code>sudo</code>, <code>curl</code>, and <code>ssh</code>.",
+      "evidence_path": "master_agent.py:393-405"
+    },
+    {
+      "title": "Docker sandbox execution is off-network",
+      "description": "When Docker mode is selected, the runtime launches the task container with <code>--network none</code> and mounts only the task directory into <code>/workspace</code>, creating a real network-isolation boundary for generated code.",
+      "evidence_path": "master_agent.py:467-481"
+    },
+    {
+      "title": "Durable run state captures task history and console output",
+      "description": "The orchestrator persists workflow checkpoints to <code>state.json</code> and appends command, exit code, stdout, stderr, and duration into <code>console_logs</code>; an active run artifact in <code>runs/ruflo-smoke/state.json</code> shows those fields populated.",
+      "evidence_path": "master_agent.py:693-716; runs/ruflo-smoke/state.json"
+    },
+    {
+      "title": "The test suite exercises core safety mechanics",
+      "description": "Tests cover permission-policy rejection, retry handling, memory-provider mapping, and Docker no-network command construction, which provides real evidence that the harness's core control mechanics are under automated test.",
+      "evidence_path": "tests/test_master_agent.py:92-140, 179-220"
+    },
+    {
+      "title": "Specific, verifiable behavioral rules in the Worker Remit",
+      "description": "The remit names exact approval points, command-pool boundaries, data-handling constraints, and escalation behaviors, so the strongest gaps in this report are implementation gaps rather than policy vagueness.",
+      "evidence_path": "WORKER_REMIT.md"
+    }
+  ],
+  "log_files": {
+    "present": true,
+    "no_logs_note": "",
+    "rows": [
+      {
+        "path": "runs/ruflo-smoke/state.json",
+        "source": "JsonStateStore",
+        "content_type": "structured JSON run ledger",
+        "purpose": "stores goal, tasks, history, console_logs, and learning_candidates for a completed orchestration run",
+        "mtime": "2026-06-27 07:58:09 EDT",
+        "status": "active"
+      },
+      {
+        "path": "runs/ruflo-smoke/memory.jsonl",
+        "source": "JsonlMemoryStore",
+        "content_type": "JSON lines memory store",
+        "purpose": "stores recalled and learned memory records across local orchestration runs",
+        "mtime": "2026-06-27 07:58:09 EDT",
+        "status": "active"
+      }
+    ]
+  },
+  "raise_posture": {
+    "weighted_overall": 2.0,
+    "weighted_rationale": "Partial. The orchestrator has genuine control substance in its inner loop — explicit command validation, off-network Docker execution, durable state checkpoints, and tests that exercise retry and permission-policy behavior. But the highest-trust decisions around build authorization, live wrapper execution, workspace-scope widening, external memory destinations, and secret-safe persistence are still governed mainly by operator discipline and local guidance rather than hard runtime gates. The result is a system that is materially safer than an unconstrained shell-running agent, but not yet strong enough to treat its governance rules as fully enforced behavior.",
+    "categories": [
+      {
+        "key": "limit_your_domain",
+        "name": "Limit Your Domain",
+        "score": 2,
+        "confidence": "High",
+        "weight": 0.15,
+        "rationale": "The task-execution domain is intentionally narrow once code reaches <code>SandboxRunner.execute()</code> — only <code>python task.py</code>-style commands are approved — but the outer runtime still accepts arbitrary <code>--workspace-root</code> values and live wrapper commands configured outside the same boundary."
+      },
+      {
+        "key": "balance_your_knowledge_base",
+        "name": "Balance Your Knowledge Base",
+        "score": 2,
+        "confidence": "Medium",
+        "weight": 0.15,
+        "rationale": "Recalled memory is explicit and source-tagged, and OpenBrain writeback marks generated lessons with <code>requires_review=true</code>; however, generated lessons are still submitted automatically when shared memory is enabled, and raw stdout/stderr is persisted without content filtering."
+      },
+      {
+        "key": "implement_zero_trust",
+        "name": "Implement Zero Trust",
+        "score": 2,
+        "confidence": "High",
+        "weight": 0.25,
+        "rationale": "<code>PermissionPolicy</code> and Docker network isolation are real controls, but the build-start approval rule, live wrapper command approval, shared-memory enablement, and local-sandbox mode all rely on documentation rather than an enforced preflight gate in <code>main()</code> and <code>build_agent()</code>."
+      },
+      {
+        "key": "manage_your_supply_chain",
+        "name": "Manage Your Supply Chain",
+        "score": 2,
+        "confidence": "Medium",
+        "weight": 0.15,
+        "rationale": "The recipe itself is lightweight and explicit about its tool surface, but live provider wrappers and Docker images are injected from operator-supplied commands and tags with no provenance check or allowlist enforcement beyond operator discipline."
+      },
+      {
+        "key": "build_an_ai_red_team",
+        "name": "Build an AI Red Team",
+        "score": 2,
+        "confidence": "High",
+        "weight": 0.15,
+        "rationale": "The test suite exercises retry handling, permission-policy rejection, Docker no-network execution, and memory-provider mapping, which is meaningful adversarial coverage for the harness; however, there is no evidence of a broader hostile-wrapper, secret-spill, or approval-bypass test program driving architectural changes."
+      },
+      {
+        "key": "monitor_continuously",
+        "name": "Monitor Continuously",
+        "score": 2,
+        "confidence": "High",
+        "weight": 0.15,
+        "rationale": "The orchestrator persists <code>history</code>, <code>console_logs</code>, and <code>learning_candidates</code> to durable run state, and active run artifacts are present on disk, but there is no alerting layer and the permission-denial path can abort before a blocked action is checkpointed into state."
+      }
+    ]
+  },
+  "footer": {
+    "severity_counts": {
+      "critical": 2,
+      "high": 1,
+      "medium": 4,
+      "low": 0,
+      "info": 0
+    }
+  }
+}

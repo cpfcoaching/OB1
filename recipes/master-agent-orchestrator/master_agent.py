@@ -35,6 +35,7 @@ CONTRACT_FILES = [
     "contracts/coder-response.schema.json",
     "contracts/debugger-response.schema.json",
     "contracts/capability-registry.json",
+    "contracts/ruflo-flow.schema.json",
 ]
 
 
@@ -85,6 +86,83 @@ class WorkspaceSnapshot:
     root: str
     file_tree: list[str]
     captured_at: int
+
+
+class RufloRouter:
+    def __init__(self, topology: str = "hierarchical", memory_namespace: str = "master-agent-orchestrator"):
+        self.topology = topology
+        self.memory_namespace = memory_namespace
+
+    def initialize(self, goal: str, state: dict[str, Any]) -> dict[str, Any]:
+        return {
+            "approach": "ruflo",
+            "router": {
+                "name": "master-agent-router",
+                "responsibility": "Route each request into a bounded agent swarm with shared state.",
+            },
+            "swarm": {
+                "topology": self.topology,
+                "agents": [
+                    {
+                        "id": "architect",
+                        "model_role": "claude",
+                        "responsibility": "Reasoning, planning, system design, and task decomposition.",
+                    },
+                    {
+                        "id": "coder",
+                        "model_role": "codex-gpt",
+                        "responsibility": "Code artifact generation inside approved task boundaries.",
+                    },
+                    {
+                        "id": "tester",
+                        "model_role": "codex-gpt",
+                        "responsibility": "Sandbox execution and acceptance checks.",
+                    },
+                    {
+                        "id": "reviewer",
+                        "model_role": "claude",
+                        "responsibility": "Failure diagnosis, review, and proceed or retry decisions.",
+                    },
+                    {
+                        "id": "learner",
+                        "model_role": "ace-aiception",
+                        "responsibility": "Extract reusable learning and write memory after the run.",
+                    },
+                ],
+            },
+            "hooks": [
+                "preflight_doctor",
+                "load_capabilities",
+                "snapshot_workspace",
+                "recall_memory",
+                "route_tasks",
+                "sandbox_execute",
+                "learn_from_outcome",
+            ],
+            "memory": {
+                "namespace": self.memory_namespace,
+                "backend": "local-jsonl-or-openbrain-agent-memory-api",
+            },
+            "goal_excerpt": goal[:160],
+            "created_at": int(time.time()),
+        }
+
+    def route_tasks(self, tasks: list[Task]) -> dict[str, dict[str, str]]:
+        routes: dict[str, dict[str, str]] = {}
+        for task in tasks:
+            task_text = f"{task.id} {task.description}".lower()
+            if "plan" in task_text or "architecture" in task_text:
+                agent = "architect"
+            elif "acceptance" in task_text or "test" in task_text or "verify" in task_text:
+                agent = "tester"
+            else:
+                agent = "coder"
+            routes[task.id] = {
+                "agent": agent,
+                "handoff": "shared_state",
+                "status": "routed",
+            }
+        return routes
 
 
 class CapabilityRegistry:
@@ -525,6 +603,7 @@ class MasterAgent:
         learner: Learner | None = None,
         workspace_context: WorkspaceContext | None = None,
         capability_registry: CapabilityRegistry | None = None,
+        ruflo_router: RufloRouter | None = None,
         max_attempts: int = 3,
     ):
         self.planner = planner
@@ -536,11 +615,15 @@ class MasterAgent:
         self.learner = learner
         self.workspace_context = workspace_context
         self.capability_registry = capability_registry
+        self.ruflo_router = ruflo_router
         self.max_attempts = max_attempts
 
     def run(self, goal: str) -> dict[str, Any]:
         state = self.state_store.load()
         state["goal"] = goal
+        if self.ruflo_router and "ruflo_flow" not in state:
+            state["ruflo_flow"] = self.ruflo_router.initialize(goal, state)
+            self._checkpoint(state, "ruflo_flow_initialized")
         if self.capability_registry and "capabilities" not in state:
             state["capabilities"] = self.capability_registry.load()
             self._checkpoint(state, "capability_registry_loaded")
@@ -552,7 +635,11 @@ class MasterAgent:
             state["recalled_memory"] = [asdict(record) for record in recalled]
             self._checkpoint(state, f"memory_recalled:{len(recalled)}")
         if not state.get("tasks"):
-            state["tasks"] = [asdict(task) for task in self.planner.create_plan(goal)]
+            planned_tasks = self.planner.create_plan(goal)
+            state["tasks"] = [asdict(task) for task in planned_tasks]
+            if self.ruflo_router:
+                state["task_routes"] = self.ruflo_router.route_tasks(planned_tasks)
+                self._checkpoint(state, "ruflo_tasks_routed")
             self._checkpoint(state, "plan_created")
 
         tasks = [Task(**task) for task in state["tasks"]]
@@ -651,6 +738,11 @@ def build_agent(args: argparse.Namespace) -> MasterAgent:
         docker_image=args.docker_image,
         docker_entrypoint=args.docker_entrypoint,
     )
+    ruflo_router = (
+        RufloRouter(topology=args.ruflo_topology, memory_namespace=args.ruflo_memory_namespace)
+        if args.orchestration == "ruflo"
+        else None
+    )
 
     if args.planner_command:
         planner: Planner = CommandPlanner(CommandJsonWorker(shlex.split(args.planner_command)))
@@ -675,6 +767,7 @@ def build_agent(args: argparse.Namespace) -> MasterAgent:
         learner=AiceptionLearner(),
         workspace_context=workspace_context,
         capability_registry=capability_registry,
+        ruflo_router=ruflo_router,
         max_attempts=args.max_attempts,
     )
 
@@ -713,6 +806,7 @@ def doctor_report(
         "planner": args.planner_command,
         "coder": args.coder_command,
         "debugger": args.debugger_command,
+        "ruflo": args.ruflo_command,
     }
     provider_status = {
         role: {
@@ -760,6 +854,11 @@ def doctor_report(
         },
         "contracts": contracts,
         "provider_commands": provider_status,
+        "orchestration": {
+            "mode": args.orchestration,
+            "ruflo_topology": args.ruflo_topology,
+            "ruflo_memory_namespace": args.ruflo_memory_namespace,
+        },
     }
 
 
@@ -775,6 +874,10 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("--planner-command", help="Command that returns planner JSON.")
     parser.add_argument("--coder-command", help="Command that returns coder JSON.")
     parser.add_argument("--debugger-command", help="Command that returns debugger JSON.")
+    parser.add_argument("--orchestration", choices=["ruflo", "legacy"], default="ruflo", help="Routing approach for new requests.")
+    parser.add_argument("--ruflo-topology", default="hierarchical", help="Ruflo-style swarm topology label stored in state.")
+    parser.add_argument("--ruflo-memory-namespace", default="master-agent-orchestrator", help="Ruflo-style memory namespace stored in state.")
+    parser.add_argument("--ruflo-command", help="Optional Ruflo CLI command for readiness checks or future handoff.")
     parser.add_argument("--workspace-root", default=".", help="Workspace root to snapshot into shared state.")
     parser.add_argument("--max-files", type=int, default=200, help="Maximum files to include in the workspace snapshot.")
     parser.add_argument("--openbrain-memory-endpoint", help="Optional OB1 Agent Memory API endpoint.")

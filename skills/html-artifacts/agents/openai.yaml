@@ -1,0 +1,5 @@
+interface:
+  display_name: "HTML Artifacts"
+  short_description: "Self-contained executive HTML artifacts"
+  default_prompt: "Use $html-artifacts to turn this dense output into a self-contained executive HTML artifact."
+  brand_color: "#0E7A4F"

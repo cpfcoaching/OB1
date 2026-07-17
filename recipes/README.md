@@ -6,6 +6,13 @@ Step-by-step builds that add a new capability to your Open Brain. Follow the ins
 
 | Recipe | What It Does |
 | ------ | ------------ |
+| [Talk to Published](talk-to-published/) | Turn a voice memo or rough spoken idea into a polished draft, artifact, or published page |
+| [Release Day](release-day/) | Create a source-backed same-day briefing, visual, published page, and stakeholder update |
+| [The Video Production Line](video-production-line/) | Move raw talking-head footage through transcript, paper edit, graphics, NLE assembly, and stakeholder handoff |
+| [Ship a Page You Can Trust](ship-a-page-you-can-trust/) | Publish and verify a page with browser QA evidence and a reusable repo testing runbook |
+| [The Research Engine](research-engine/) | Build traceable research outputs from heavy files, current sources, assumptions, and meeting inputs |
+| [Delegate and Verify](delegate-and-verify/) | Coordinate visible delegated engineering work with goal prompts, verification gates, PR review, and stakeholder updates |
+| [The Skill Library Flywheel](skill-library-flywheel/) | Turn substantial session discoveries into skill drafts, testing runbooks, memory, or operating-map updates |
 | [Bring Your Own Context](bring-your-own-context/) | Portable context workflow that packages extraction prompts, profile generation, and remote MCP deployment into one entrypoint |
 | [Email History Import](email-history-import/) | Pull your Gmail archive into searchable thoughts |
 | [ChatGPT Conversation Import](chatgpt-conversation-import/) | Ingest your ChatGPT data export |

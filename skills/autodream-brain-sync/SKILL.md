@@ -1,12 +1,12 @@
 ---
 name: autodream-brain-sync
 description: |
-  Syncs Claude Code's local memory system to Open Brain. Triggers whenever memories are
+  Syncs Codex's local memory system to Open Brain. Triggers whenever memories are
   saved via dreaming, autodream, or explicit "remember this" requests. After every local
   memory file write, captures the same content to Open Brain via mcp__open-brain__capture_thought
-  so that memories are accessible from all connected AI clients (ChatGPT, Claude Desktop,
+  so that memories are accessible from all connected AI clients (ChatGPT, Codex Desktop,
   Codex) and across all devices. Trigger on: memory saves, autodream, dreaming, "remember",
-  "save to memory", or any write to the .claude/projects/*/memory/ directory.
+  "save to memory", or any write to the .Codex/projects/*/memory/ directory.
 author: rumbitopi
 version: 1.0.0
 ---
@@ -15,11 +15,11 @@ version: 1.0.0
 
 ## Problem
 
-Claude Code's auto-memory system (dreaming/autodream) saves memories to local files under `.claude/projects/*/memory/`. These files are only accessible to Claude Code on the same machine. If you use multiple AI clients (ChatGPT, Claude Desktop, Codex) or multiple devices, those memories are invisible to your other sessions.
+Codex's auto-memory system (dreaming/autodream) saves memories to local files under `.Codex/projects/*/memory/`. These files are only accessible to Codex on the same machine. If you use multiple AI clients (ChatGPT, Codex Desktop, Codex) or multiple devices, those memories are invisible to your other sessions.
 
 ## Trigger Conditions
 
-- Any write to a memory file in `.claude/projects/*/memory/` (excluding `MEMORY.md` index)
+- Any write to a memory file in `.Codex/projects/*/memory/` (excluding `MEMORY.md` index)
 - User says "remember this", "save to memory", "dream", "autodream"
 - End-of-session memory saves (auto-dreaming)
 - Explicit `/memory` command usage
@@ -49,4 +49,4 @@ Each memory save produces:
 
 ## Notes for Other Clients
 
-This skill is specific to Claude Code's auto-memory system. Other clients don't have local memory files, so they capture directly to Open Brain without needing this sync step. The skill ensures Claude Code's local memories don't become an isolated silo.
+This skill is specific to Codex's auto-memory system. Other clients don't have local memory files, so they capture directly to Open Brain without needing this sync step. The skill ensures Codex's local memories don't become an isolated silo.

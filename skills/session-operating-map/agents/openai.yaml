@@ -1,0 +1,5 @@
+interface:
+  display_name: "Session Operating Map"
+  short_description: "Coordinate parallel agent workstreams"
+  default_prompt: "Use $session-operating-map to set up or update the repo operating map for parallel agent work."
+  brand_color: "#0E7A4F"

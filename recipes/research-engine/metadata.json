@@ -1,0 +1,25 @@
+{
+  "name": "Research Engine",
+  "description": "Build traceable research outputs from heavy files, current sources, assumptions, and meeting inputs.",
+  "category": "recipes",
+  "author": {
+    "name": "OpenBrain",
+    "github": ""
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": [],
+    "tools": ["web-search"]
+  },
+  "requires_skills": [
+    "heavy-file-ingestion",
+    "meeting-synthesis",
+    "html-artifacts"
+  ],
+  "tags": ["open-skills", "research", "ingestion", "artifact"],
+  "difficulty": "intermediate",
+  "estimated_time": "90 minutes",
+  "created": "2026-07-01",
+  "updated": "2026-07-01"
+}

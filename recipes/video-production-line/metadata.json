@@ -1,0 +1,24 @@
+{
+  "name": "Video Production Line",
+  "description": "Move raw talking-head footage through transcript, paper edit, graphics, NLE assembly, and stakeholder handoff.",
+  "category": "recipes",
+  "author": {
+    "name": "OpenBrain",
+    "github": ""
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": [],
+    "tools": ["video-editor", "transcription"]
+  },
+  "requires_skills": [
+    "nle-assistant",
+    "stakeholder-update-email"
+  ],
+  "tags": ["open-skills", "video", "editing", "stakeholder-update"],
+  "difficulty": "advanced",
+  "estimated_time": "2 hours",
+  "created": "2026-07-01",
+  "updated": "2026-07-01"
+}

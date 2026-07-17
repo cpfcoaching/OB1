@@ -1,0 +1,218 @@
+{
+  "capabilities": {
+    "roles": {
+      "claude": {
+        "responsibility": "Reasoning, planning, review, and debugging feedback",
+        "tools": [
+          {
+            "execution_owner": "planner",
+            "input_shape": {
+              "goal": "string",
+              "recalled_memory": "array",
+              "workspace": "object"
+            },
+            "name": "create_task_list",
+            "required_permission": "always_allow",
+            "responsibility": "Turn a global goal into ordered subtasks",
+            "side_effect_profile": "read_only"
+          },
+          {
+            "execution_owner": "orchestrator",
+            "input_shape": {
+              "state": "object",
+              "task": "object"
+            },
+            "name": "delegate_to_codex",
+            "required_permission": "always_allow",
+            "responsibility": "Select one bounded coding task and provide relevant context",
+            "side_effect_profile": "delegation_only"
+          },
+          {
+            "execution_owner": "orchestrator",
+            "input_shape": {
+              "run_result": "object",
+              "task_id": "string"
+            },
+            "name": "approve_and_proceed",
+            "required_permission": "policy_checked",
+            "responsibility": "Approve successful task state and advance the workflow",
+            "side_effect_profile": "state_write"
+          },
+          {
+            "execution_owner": "debugger",
+            "input_shape": {
+              "artifact": "object",
+              "goal": "string",
+              "result": "object",
+              "task": "object"
+            },
+            "name": "debug_error",
+            "required_permission": "always_allow",
+            "responsibility": "Diagnose failed generated code using exact stderr and task context",
+            "side_effect_profile": "read_only"
+          }
+        ]
+      },
+      "codex": {
+        "responsibility": "Code generation and execution artifact creation",
+        "tools": [
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "content": "string",
+              "file_name": "string"
+            },
+            "name": "write_file",
+            "required_permission": "policy_checked",
+            "responsibility": "Produce a new generated file inside the task sandbox",
+            "side_effect_profile": "sandbox_file_write"
+          },
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "content": "string",
+              "feedback": "array",
+              "file_name": "string"
+            },
+            "name": "patch_code",
+            "required_permission": "policy_checked",
+            "responsibility": "Produce a revised generated artifact after debugger feedback",
+            "side_effect_profile": "sandbox_file_write"
+          },
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "command": "array"
+            },
+            "name": "run_terminal_command",
+            "required_permission": "policy_checked",
+            "responsibility": "Request execution of an approved command inside the sandbox",
+            "side_effect_profile": "sandbox_execution"
+          }
+        ]
+      }
+    },
+    "schema_version": "openbrain.master_agent.capability_registry.v1"
+  },
+  "console_logs": [
+    {
+      "attempt": 1,
+      "command": [
+        "/usr/bin/python3",
+        "task.py"
+      ],
+      "duration_ms": 14,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"goal_excerpt\": \"Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs\", \"status\": \"ok\", \"task_description\": \"Create architecture notes for: Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs\", \"task_id\": \"plan-architecture\"}\n",
+      "task_id": "plan-architecture"
+    },
+    {
+      "attempt": 1,
+      "command": [
+        "/usr/bin/python3",
+        "task.py"
+      ],
+      "duration_ms": 16,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"goal_excerpt\": \"Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs\", \"status\": \"ok\", \"task_description\": \"Build the smallest executable slice\", \"task_id\": \"build-minimum-slice\"}\n",
+      "task_id": "build-minimum-slice"
+    },
+    {
+      "attempt": 1,
+      "command": [
+        "/usr/bin/python3",
+        "task.py"
+      ],
+      "duration_ms": 30,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"goal_excerpt\": \"Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs\", \"status\": \"ok\", \"task_description\": \"Run acceptance checks and summarize outcome\", \"task_id\": \"run-acceptance-check\"}\n",
+      "task_id": "run-acceptance-check"
+    }
+  ],
+  "goal": "Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs",
+  "history": [
+    {
+      "event": "capability_registry_loaded",
+      "time": 1782560956
+    },
+    {
+      "event": "workspace_snapshot_captured",
+      "time": 1782560956
+    },
+    {
+      "event": "memory_recalled:0",
+      "time": 1782560956
+    },
+    {
+      "event": "plan_created",
+      "time": 1782560956
+    },
+    {
+      "event": "task_completed:plan-architecture",
+      "time": 1782560956
+    },
+    {
+      "event": "task_completed:build-minimum-slice",
+      "time": 1782560956
+    },
+    {
+      "event": "task_completed:run-acceptance-check",
+      "time": 1782560956
+    },
+    {
+      "event": "run_completed",
+      "time": 1782560956
+    }
+  ],
+  "learning_candidates": [
+    {
+      "evidence": "3 tasks completed for goal: Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs",
+      "lesson": "A run is only complete after every task status and console log is persisted.",
+      "reusable": true,
+      "title": "Completed orchestration run",
+      "trigger": "All planned tasks reached completed status"
+    }
+  ],
+  "recalled_memory": [],
+  "status": "completed",
+  "tasks": [
+    {
+      "attempts": 1,
+      "description": "Create architecture notes for: Coordinate Claude and Codex: plan a small CPF utility, have Codex write it, verify it runs",
+      "feedback": [],
+      "id": "plan-architecture",
+      "status": "completed"
+    },
+    {
+      "attempts": 1,
+      "description": "Build the smallest executable slice",
+      "feedback": [],
+      "id": "build-minimum-slice",
+      "status": "completed"
+    },
+    {
+      "attempts": 1,
+      "description": "Run acceptance checks and summarize outcome",
+      "feedback": [],
+      "id": "run-acceptance-check",
+      "status": "completed"
+    }
+  ],
+  "workspace": {
+    "captured_at": 1782560956,
+    "file_tree": [
+      "README.md",
+      "master_agent.py",
+      "metadata.json",
+      "contracts/capability-registry.json",
+      "contracts/coder-response.schema.json",
+      "contracts/debugger-response.schema.json",
+      "contracts/planner-response.schema.json",
+      "tests/test_master_agent.py"
+    ],
+    "root": "/sessions/beautiful-dreamy-feynman/mnt/OpenBrain/OB1/recipes/master-agent-orchestrator"
+  }
+}

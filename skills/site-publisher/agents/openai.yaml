@@ -1,0 +1,7 @@
+interface:
+  display_name: "Site Publisher"
+  short_description: "Publish finished artifacts to shareable URLs"
+  default_prompt: "Use $site-publisher to publish this finished artifact as an unlisted share page with local and live verification."
+  brand_color: "#0E7A4F"
+policy:
+  allow_implicit_invocation: false

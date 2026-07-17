@@ -1,0 +1,5 @@
+interface:
+  display_name: "Visible Delegation"
+  short_description: "Supervise delegated agent sessions in tmux"
+  default_prompt: "Use $visible-delegation to hand this scoped task to another visible agent session."
+  brand_color: "#0E7A4F"

@@ -1,15 +1,15 @@
 ---
-name: heavy-file-ingestion-claude-code
-description: Use in Claude Code when a user asks to read, analyze, summarize, or extract from a heavyweight file such as PDF, DOCX, PPTX, XLSX, CSV, or TSV. Convert the file into markdown or CSV first with the bundled script, generate a lightweight index, and only spend model tokens on the compressed artifact.
+name: heavy-file-ingestion-Codex
+description: Use in Codex when a user asks to read, analyze, summarize, or extract from a heavyweight file such as PDF, DOCX, PPTX, XLSX, CSV, or TSV. Convert the file into markdown or CSV first with the bundled script, generate a lightweight index, and only spend model tokens on the compressed artifact.
 author: Nate B. Jones
 version: 1.0.0
 ---
 
-# Heavy File Ingestion For Claude Code
+# Heavy File Ingestion For Codex
 
 ## Problem
 
-Claude Code has the tools to convert files locally, so it should not waste context by reading heavyweight files raw.
+Codex has the tools to convert files locally, so it should not waste context by reading heavyweight files raw.
 
 ## Trigger Conditions
 

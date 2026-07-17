@@ -1,0 +1,24 @@
+{
+  "name": "Talk to Published",
+  "description": "Turn a voice memo or rough spoken idea into a polished draft, artifact, or published page.",
+  "category": "recipes",
+  "author": {
+    "name": "OpenBrain",
+    "github": ""
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": [],
+    "tools": []
+  },
+  "requires_skills": [
+    "html-artifacts",
+    "site-publisher"
+  ],
+  "tags": ["open-skills", "publishing", "voice", "content"],
+  "difficulty": "intermediate",
+  "estimated_time": "45 minutes",
+  "created": "2026-07-01",
+  "updated": "2026-07-01"
+}

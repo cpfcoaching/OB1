@@ -1,0 +1,5 @@
+interface:
+  display_name: "Session To Skill Extractor"
+  short_description: "Extract reusable skills from sessions"
+  default_prompt: "Use $session-to-skill-extractor to evaluate whether this session produced a reusable skill draft."
+  brand_color: "#0E7A4F"

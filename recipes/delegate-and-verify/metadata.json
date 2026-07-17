@@ -1,0 +1,27 @@
+{
+  "name": "Delegate and Verify",
+  "description": "Coordinate visible delegated engineering work with goal prompts, verification gates, PR review, and stakeholder updates.",
+  "category": "recipes",
+  "author": {
+    "name": "OpenBrain",
+    "github": ""
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": ["github"],
+    "tools": ["tmux", "gh"]
+  },
+  "requires_skills": [
+    "session-operating-map",
+    "goal-prompt-generator",
+    "visible-delegation",
+    "self-pr-merge",
+    "stakeholder-update-email"
+  ],
+  "tags": ["open-skills", "delegation", "verification", "engineering"],
+  "difficulty": "advanced",
+  "estimated_time": "60 minutes",
+  "created": "2026-07-01",
+  "updated": "2026-07-01"
+}

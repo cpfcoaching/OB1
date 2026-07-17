@@ -1,0 +1,20 @@
+#!/usr/bin/env python3
+# Mock coder (Codex lane stand-in). Returns a task.py that runs the real
+# brief_inputs collector under the sandbox policy (`python task.py`).
+import json, sys
+sys.stdin.read()
+
+BASE = "/sessions/beautiful-dreamy-feynman/mnt/OpenBrain/OB1/recipes/master-agent-orchestrator"
+COLLECTORS = BASE + "/workers/collectors"
+MEMORY = "/sessions/beautiful-dreamy-feynman/mnt/OpenBrain/chief-of-staff/memory.md"
+OUT = BASE + "/runs/orchestrated-collection/brief_inputs.json"
+
+content = f'''import sys
+sys.path.insert(0, {COLLECTORS!r})
+import brief_inputs
+sys.argv = ["brief_inputs.py", "--memory-file", {MEMORY!r}, "--out", {OUT!r},
+            "--news-feed", "https://feeds.feedburner.com/TheHackersNews"]
+raise SystemExit(brief_inputs.main())
+'''
+
+print(json.dumps({"file_name": "task.py", "content": content, "command": ["python", "task.py"]}))

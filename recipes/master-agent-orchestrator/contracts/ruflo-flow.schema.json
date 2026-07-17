@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Ruflo-style flow envelope",
+  "type": "object",
+  "required": ["approach", "router", "swarm", "hooks", "memory"],
+  "properties": {
+    "approach": { "const": "ruflo" },
+    "router": {
+      "type": "object",
+      "required": ["name", "responsibility"],
+      "properties": {
+        "name": { "type": "string" },
+        "responsibility": { "type": "string" }
+      }
+    },
+    "swarm": {
+      "type": "object",
+      "required": ["topology", "agents"],
+      "properties": {
+        "topology": { "type": "string" },
+        "agents": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "model_role", "responsibility"],
+            "properties": {
+              "id": { "type": "string" },
+              "model_role": { "type": "string" },
+              "responsibility": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "hooks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "memory": {
+      "type": "object",
+      "required": ["namespace", "backend"],
+      "properties": {
+        "namespace": { "type": "string" },
+        "backend": { "type": "string" }
+      }
+    },
+    "goal_excerpt": { "type": "string" },
+    "created_at": { "type": "integer" }
+  }
+}

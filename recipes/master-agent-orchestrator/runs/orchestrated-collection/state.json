@@ -1,0 +1,253 @@
+{
+  "capabilities": {
+    "roles": {
+      "claude": {
+        "responsibility": "Reasoning, planning, review, and debugging feedback",
+        "tools": [
+          {
+            "execution_owner": "planner",
+            "input_shape": {
+              "goal": "string",
+              "recalled_memory": "array",
+              "workspace": "object"
+            },
+            "name": "create_task_list",
+            "required_permission": "always_allow",
+            "responsibility": "Turn a global goal into ordered subtasks",
+            "side_effect_profile": "read_only"
+          },
+          {
+            "execution_owner": "orchestrator",
+            "input_shape": {
+              "state": "object",
+              "task": "object"
+            },
+            "name": "delegate_to_codex",
+            "required_permission": "always_allow",
+            "responsibility": "Select one bounded coding task and provide relevant context",
+            "side_effect_profile": "delegation_only"
+          },
+          {
+            "execution_owner": "orchestrator",
+            "input_shape": {
+              "run_result": "object",
+              "task_id": "string"
+            },
+            "name": "approve_and_proceed",
+            "required_permission": "policy_checked",
+            "responsibility": "Approve successful task state and advance the workflow",
+            "side_effect_profile": "state_write"
+          },
+          {
+            "execution_owner": "debugger",
+            "input_shape": {
+              "artifact": "object",
+              "goal": "string",
+              "result": "object",
+              "task": "object"
+            },
+            "name": "debug_error",
+            "required_permission": "always_allow",
+            "responsibility": "Diagnose failed generated code using exact stderr and task context",
+            "side_effect_profile": "read_only"
+          }
+        ]
+      },
+      "codex": {
+        "responsibility": "Code generation and execution artifact creation",
+        "tools": [
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "content": "string",
+              "file_name": "string"
+            },
+            "name": "write_file",
+            "required_permission": "policy_checked",
+            "responsibility": "Produce a new generated file inside the task sandbox",
+            "side_effect_profile": "sandbox_file_write"
+          },
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "content": "string",
+              "feedback": "array",
+              "file_name": "string"
+            },
+            "name": "patch_code",
+            "required_permission": "policy_checked",
+            "responsibility": "Produce a revised generated artifact after debugger feedback",
+            "side_effect_profile": "sandbox_file_write"
+          },
+          {
+            "execution_owner": "sandbox",
+            "input_shape": {
+              "command": "array"
+            },
+            "name": "run_terminal_command",
+            "required_permission": "policy_checked",
+            "responsibility": "Request execution of an approved command inside the sandbox",
+            "side_effect_profile": "sandbox_execution"
+          }
+        ]
+      }
+    },
+    "schema_version": "openbrain.master_agent.capability_registry.v1"
+  },
+  "console_logs": [
+    {
+      "attempt": 1,
+      "command": [
+        "python",
+        "task.py"
+      ],
+      "duration_ms": 454,
+      "exit_code": 0,
+      "stderr": "",
+      "stdout": "{\"ok\": true, \"out\": \"/sessions/beautiful-dreamy-feynman/mnt/OpenBrain/OB1/recipes/master-agent-orchestrator/runs/orchestrated-collection/brief_inputs.json\", \"weekday\": \"Saturday\", \"active_commitments\": 14, \"urgent_today\": 2, \"slipping\": 9, \"news_status\": \"unavailable\"}\n",
+      "task_id": "collect-brief-inputs"
+    }
+  ],
+  "goal": "Collect today's Chief of Staff brief inputs via the Codex lane",
+  "history": [
+    {
+      "event": "ruflo_flow_initialized",
+      "time": 1782563724
+    },
+    {
+      "event": "capability_registry_loaded",
+      "time": 1782563724
+    },
+    {
+      "event": "workspace_snapshot_captured",
+      "time": 1782563724
+    },
+    {
+      "event": "memory_recalled:0",
+      "time": 1782563724
+    },
+    {
+      "event": "ruflo_tasks_routed",
+      "time": 1782563724
+    },
+    {
+      "event": "plan_created",
+      "time": 1782563724
+    },
+    {
+      "event": "task_completed:collect-brief-inputs",
+      "time": 1782563725
+    },
+    {
+      "event": "run_completed",
+      "time": 1782563725
+    }
+  ],
+  "learning_candidates": [
+    {
+      "evidence": "1 tasks completed for goal: Collect today's Chief of Staff brief inputs via the Codex lane",
+      "lesson": "A run is only complete after every task status and console log is persisted.",
+      "reusable": true,
+      "title": "Completed orchestration run",
+      "trigger": "All planned tasks reached completed status"
+    }
+  ],
+  "recalled_memory": [],
+  "ruflo_flow": {
+    "approach": "ruflo",
+    "created_at": 1782563724,
+    "goal_excerpt": "Collect today's Chief of Staff brief inputs via the Codex lane",
+    "hooks": [
+      "preflight_doctor",
+      "load_capabilities",
+      "snapshot_workspace",
+      "recall_memory",
+      "route_tasks",
+      "sandbox_execute",
+      "learn_from_outcome"
+    ],
+    "memory": {
+      "backend": "local-jsonl-or-openbrain-agent-memory-api",
+      "namespace": "master-agent-orchestrator"
+    },
+    "router": {
+      "name": "master-agent-router",
+      "responsibility": "Route each request into a bounded agent swarm with shared state."
+    },
+    "swarm": {
+      "agents": [
+        {
+          "id": "architect",
+          "model_role": "claude",
+          "responsibility": "Reasoning, planning, system design, and task decomposition."
+        },
+        {
+          "id": "coder",
+          "model_role": "codex-gpt",
+          "responsibility": "Code artifact generation inside approved task boundaries."
+        },
+        {
+          "id": "tester",
+          "model_role": "codex-gpt",
+          "responsibility": "Sandbox execution and acceptance checks."
+        },
+        {
+          "id": "reviewer",
+          "model_role": "claude",
+          "responsibility": "Failure diagnosis, review, and proceed or retry decisions."
+        },
+        {
+          "id": "learner",
+          "model_role": "ace-aiception",
+          "responsibility": "Extract reusable learning and write memory after the run."
+        }
+      ],
+      "topology": "hierarchical"
+    }
+  },
+  "status": "completed",
+  "task_routes": {
+    "collect-brief-inputs": {
+      "agent": "coder",
+      "handoff": "shared_state",
+      "status": "routed"
+    }
+  },
+  "tasks": [
+    {
+      "attempts": 1,
+      "description": "Run the Codex-lane brief input collector against chief-of-staff/memory.md",
+      "feedback": [],
+      "id": "collect-brief-inputs",
+      "status": "completed"
+    }
+  ],
+  "workspace": {
+    "captured_at": 1782563724,
+    "file_tree": [
+      "AGENTS.md",
+      "OPERATING_AGREEMENT.md",
+      "README.md",
+      "access-validation-runbook.html",
+      "claude-codex-coordination.html",
+      "master_agent.py",
+      "metadata.json",
+      "contracts/capability-registry.json",
+      "contracts/coder-response.schema.json",
+      "contracts/debugger-response.schema.json",
+      "contracts/planner-response.schema.json",
+      "contracts/ruflo-flow.schema.json",
+      "tests/test_master_agent.py",
+      "workers/README.md",
+      "workers/_shim.py",
+      "workers/claude-debug",
+      "workers/claude-plan",
+      "workers/codex-code",
+      "workers/_mock_providers/code",
+      "workers/_mock_providers/debug",
+      "workers/_mock_providers/plan",
+      "workers/collectors/brief_inputs.py"
+    ],
+    "root": "/sessions/beautiful-dreamy-feynman/mnt/OpenBrain/OB1/recipes/master-agent-orchestrator"
+  }
+}

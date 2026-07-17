@@ -17,6 +17,7 @@ from master_agent import (
     MockCodexCoder,
     OpenBrainAgentMemoryProvider,
     PermissionPolicy,
+    RufloRouter,
     SAFE_PYTHON_COMMAND,
     SandboxRunner,
     Task,
@@ -98,6 +99,7 @@ class MasterAgentTests(unittest.TestCase):
             learner=AiceptionLearner(),
             workspace_context=WorkspaceContext(run_root / "workspace"),
             capability_registry=CapabilityRegistry(Path(__file__).resolve().parents[1] / "contracts" / "capability-registry.json"),
+            ruflo_router=RufloRouter(),
         )
 
     def test_mock_run_completes_and_persists_state(self):
@@ -116,6 +118,10 @@ class MasterAgentTests(unittest.TestCase):
             self.assertIn("app.py", state["workspace"]["file_tree"])
             self.assertIn("capabilities", state)
             self.assertIn("create_task_list", {tool["name"] for tool in state["capabilities"]["roles"]["claude"]["tools"]})
+            self.assertEqual(state["ruflo_flow"]["approach"], "ruflo")
+            self.assertEqual(state["task_routes"]["plan-architecture"]["agent"], "architect")
+            self.assertEqual(state["task_routes"]["build-minimum-slice"]["agent"], "coder")
+            self.assertEqual(state["task_routes"]["run-acceptance-check"]["agent"], "tester")
 
     def test_failed_code_gets_debug_feedback_and_retries(self):
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -201,6 +207,11 @@ class MasterAgentTests(unittest.TestCase):
 
         self.assertEqual(args.sandbox, "docker")
 
+    def test_cli_defaults_to_ruflo_orchestration(self):
+        args = parse_args(["Build a feature"])
+
+        self.assertEqual(args.orchestration, "ruflo")
+
     def test_docker_command_disables_network_and_mounts_task_dir(self):
         with tempfile.TemporaryDirectory() as tmpdir:
             runner = SandboxRunner(
@@ -256,6 +267,23 @@ class MasterAgentTests(unittest.TestCase):
 
         self.assertTrue({"create_task_list", "delegate_to_codex", "approve_and_proceed"}.issubset(claude_tools))
         self.assertTrue({"write_file", "patch_code", "run_terminal_command"}.issubset(codex_tools))
+
+    def test_ruflo_router_routes_tasks_by_role(self):
+        router = RufloRouter(topology="mesh", memory_namespace="test-memory")
+        flow = router.initialize("Build a feature", {})
+        routes = router.route_tasks(
+            [
+                Task(id="plan-system", description="Plan architecture"),
+                Task(id="write-code", description="Build code"),
+                Task(id="verify-output", description="Run acceptance checks"),
+            ]
+        )
+
+        self.assertEqual(flow["swarm"]["topology"], "mesh")
+        self.assertEqual(flow["memory"]["namespace"], "test-memory")
+        self.assertEqual(routes["plan-system"]["agent"], "architect")
+        self.assertEqual(routes["write-code"]["agent"], "coder")
+        self.assertEqual(routes["verify-output"]["agent"], "tester")
 
 
 if __name__ == "__main__":

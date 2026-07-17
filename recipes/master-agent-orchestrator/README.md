@@ -6,11 +6,13 @@
 
 This recipe adds a small orchestration framework for the Claude plus Codex/GPT collaboration pattern. The orchestrator owns workspace context, state, memory, permissions, retries, learning, and execution. The model workers only produce structured plans, code artifacts, or debug feedback.
 
-The default path uses mock workers so you can verify the harness without API keys or external calls. Runtime execution defaults to Docker so generated code does not run directly on the host. Live Claude and Codex/GPT providers can be attached later through JSON command bridges.
+New requests default to a Ruflo-style approach: route the goal into a bounded swarm, assign tasks to role-specific agents, use hooks for state and memory, then execute approved work in Docker. The default workers remain mock workers so you can verify the harness without API keys or external calls. Runtime execution defaults to Docker so generated code does not run directly on the host. Live Claude and Codex/GPT providers can be attached later through JSON command bridges.
 
 ```mermaid
 flowchart TD
   Goal["User goal"] --> Orchestrator["MasterAgent"]
+  Orchestrator --> Ruflo["Ruflo-style router"]
+  Ruflo --> Swarm["Swarm: architect, coder, tester, reviewer, learner"]
   Workspace["Workspace file tree"] --> Orchestrator
   Memory["Memory recall"] --> Orchestrator
   Orchestrator --> Planner["Planner worker"]
@@ -33,6 +35,7 @@ The harness shape is a lean workflow orchestrator for code tasks.
 | Boundary | Responsibility |
 | -------- | -------------- |
 | `MasterAgent` | Controls lifecycle, retries, checkpoints, and terminal status |
+| `RufloRouter` | Creates the Ruflo-style swarm envelope, hooks, memory namespace, and task routes |
 | `Planner` | Turns the global goal into structured tasks |
 | `Coder` | Generates one executable artifact for one task |
 | `Debugger` | Converts execution failure into focused feedback |
@@ -54,6 +57,8 @@ The orchestrator stores one source of truth in `state.json`:
 | `goal` | The global objective |
 | `workspace.file_tree` | Current workspace file tree snapshot, capped by `--max-files` |
 | `capabilities` | Named Claude and Codex tool-call surface from the capability registry |
+| `ruflo_flow` | Ruflo-style router, swarm topology, hooks, and memory namespace |
+| `task_routes` | Agent assignment for each task |
 | `recalled_memory` | Local or OpenBrain memory records recalled before planning |
 | `tasks` | Claude-style structured roadmap |
 | `console_logs` | Sandbox stdout, stderr, exit code, command, and duration |
@@ -83,7 +88,7 @@ Use the OB1 Agent Memory API instead of local JSONL when you want shared memory 
 ```bash
 python3 master_agent.py "Build and verify a feature" \
   --openbrain-memory-endpoint "https://YOUR_PROJECT_REF.supabase.co/functions/v1/agent-memory-api" \
-  --openbrain-memory-key "$MCP_ACCESS_KEY" \
+  --openbrain-memory-key "$OPEN_BRAIN_MCP_ACCESS_KEY" \
   --openbrain-workspace-id "your-workspace" \
   --openbrain-project-id "master-agent-orchestrator"
 ```
@@ -108,6 +113,7 @@ Provider wrappers must return JSON that matches the schema files in [contracts](
 | Coder response | [coder-response.schema.json](./contracts/coder-response.schema.json) |
 | Debugger response | [debugger-response.schema.json](./contracts/debugger-response.schema.json) |
 | Capability registry | [capability-registry.json](./contracts/capability-registry.json) |
+| Ruflo flow | [ruflo-flow.schema.json](./contracts/ruflo-flow.schema.json) |
 
 The Python bridge validates required top-level fields before using a provider response. Keep the wrappers small: provider API keys belong in wrapper environment variables, not command arguments or state files.
 
@@ -242,6 +248,29 @@ python3 master_agent.py "Implement the requested change" \
 
 Keep provider API keys in the wrapper environment. Do not write keys to command arguments, generated code, state files, or logs.
 
+## Ruflo-Style Routing
+
+The default orchestration mode is `--orchestration ruflo`. It writes this into state:
+
+- `ruflo_flow.router`
+- `ruflo_flow.swarm`
+- `ruflo_flow.hooks`
+- `ruflo_flow.memory`
+- `task_routes`
+
+Use `--orchestration legacy` only when you need the older sequential plan without the Ruflo-style routing envelope.
+
+Useful options:
+
+```bash
+python3 master_agent.py "Handle the next request" \
+  --orchestration ruflo \
+  --ruflo-topology hierarchical \
+  --ruflo-memory-namespace openbrain-master-agent
+```
+
+`--ruflo-command` is available for readiness checks and future handoff to a local Ruflo CLI. It is optional; this recipe does not require installing Ruflo to preserve the existing zero-dependency Python path.
+
 ## Permission Model
 
 The default policy allows only:
@@ -262,6 +291,8 @@ This is deliberately narrow. Add commands only after you define:
 A successful run produces:
 
 - `state.json` with the goal, task list, status, history, feedback, and console logs
+- `ruflo_flow` with router, swarm, hooks, and memory namespace
+- `task_routes` mapping each task to an agent role
 - `workspace.file_tree` inside state so both model roles see the same workspace snapshot
 - `capabilities` inside state with Claude tools `create_task_list`, `delegate_to_codex`, `approve_and_proceed`, `debug_error` and Codex tools `write_file`, `patch_code`, `run_terminal_command`
 - `memory.jsonl` with compact ACE/Aiception learning records
@@ -287,6 +318,7 @@ The tests verify:
 - local memory recalls matching records and writes learning candidates
 - workspace file tree is captured in shared state
 - named Claude and Codex tool-call capabilities are loaded into shared state
+- Ruflo-style routing is the default and assigns tasks to architect, coder, and tester roles
 - provider contract validation fails loudly on malformed JSON
 - the OpenBrain Agent Memory adapter maps recall and write-back payloads correctly
 - Docker readiness is visible through `--doctor`

@@ -1,0 +1,5 @@
+interface:
+  display_name: "NLE Assistant"
+  short_description: "Transcript-driven DaVinci Resolve edits"
+  default_prompt: "Use $nle-assistant to duplicate a Resolve timeline and build a transcript-driven rough cut safely."
+  brand_color: "#0E7A4F"

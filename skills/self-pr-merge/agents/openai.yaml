@@ -1,0 +1,5 @@
+interface:
+  display_name: "Self PR Merge"
+  short_description: "Review and merge self-authored PRs"
+  default_prompt: "Use $self-pr-merge to review and merge my self-authored pull request with the required checks."
+  brand_color: "#0E7A4F"

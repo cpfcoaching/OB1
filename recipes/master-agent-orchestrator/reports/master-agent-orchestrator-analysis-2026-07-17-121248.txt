@@ -1,0 +1,110 @@
+==============================================================================
+PRAXEN — AGENT BEHAVIOR VERIFIER
+Agent:    Master Agent Orchestrator
+Analysis: July 17, 2026, 12:12 UTC
+Praxen v1.1.0
+==============================================================================
+
+BEHAVIOR SUMMARY
+------------------------------------------------------------------------------
+The dominant pattern is a narrow inner execution sandbox surrounded by a
+documentation-only outer governance layer. Inside the task sandbox, the
+orchestrator does real work: it constrains generated task execution to the
+python task.py command family, disables network access in Docker mode, and
+persists structured run state with task history and console logs. But the
+controls that decide whether a build should start, which live wrapper commands
+may run on the host, which workspace may be scanned, and which external memory
+endpoint may receive run-derived content are mostly expressed in
+OPERATING_AGREEMENT.md and AGENTS.md, not enforced by the Python entrypoint.
+The most important consequence is that high-trust host-side surfaces sit
+outside the very permission model the recipe advertises: main() runs any
+supplied goal directly, CommandJsonWorker launches arbitrary provider wrapper
+commands via subprocess.run(), and console/state persistence writes raw
+stdout, stderr, and generated file content without a redaction barrier. In
+practice, the sandbox around generated task.py is real, but the approval,
+wrapper provenance, and data-handling boundaries that surround that sandbox
+remain partially aspirational.
+
+RAISE MATURITY POSTURE
+------------------------------------------------------------------------------
+  Weighted overall:  2.00 / 5.0   (Partial)
+  Limit Your Domain              2/5   (confidence: High, weight: 15%)
+  Balance Your Knowledge Base    2/5   (confidence: Medium, weight: 15%)
+  Implement Zero Trust           2/5   (confidence: High, weight: 25%)
+  Manage Your Supply Chain       2/5   (confidence: Medium, weight: 15%)
+  Build an AI Red Team           2/5   (confidence: High, weight: 15%)
+  Monitor Continuously           2/5   (confidence: High, weight: 15%)
+
+FINDINGS
+------------------------------------------------------------------------------
+  Critical: 2   High: 1   Medium: 4   Low: 0   Informational: 0
+  Total: 7
+
+REMIT COVERAGE
+------------------------------------------------------------------------------
+  Verified: 9   Gap: 5   Partial: 3   Vague: 0   Enforcement-not-possible: 0   (of 17 rules)
+
+OWASP LLM TOP 10 COVERAGE
+------------------------------------------------------------------------------
+  LLM01  Prompt Injection                                   —
+  LLM02  Sensitive Information Disclosure                   1
+  LLM03  Supply Chain                                       —
+  LLM04  Data and Model Poisoning                           1
+  LLM05  Improper Output Handling                           —
+  LLM06  Excessive Agency                                   3
+  LLM07  System Prompt Leakage                              —
+  LLM08  Vector and Embedding Weaknesses                    —
+  LLM09  Misinformation                                     —
+  LLM10  Unbounded Consumption                              —
+
+OWASP AGENTIC TOP 10 COVERAGE
+------------------------------------------------------------------------------
+  ASI01  Agent Goal Hijack                                  —
+  ASI02  Tool Misuse and Exploitation                       1
+  ASI03  Identity and Privilege Abuse                       —
+  ASI04  Agentic Supply Chain Vulnerabilities               —
+  ASI05  Unexpected Code Execution (RCE)                    1
+  ASI06  Memory and Context Poisoning                       2
+  ASI07  Insecure Inter-Agent Communication                 —
+  ASI08  Cascading Failures                                 1
+  ASI09  Human-Agent Trust Exploitation                     1
+  ASI10  Rogue Agents                                       —
+
+CRITICAL FINDINGS
+------------------------------------------------------------------------------
+  PRAX-2026-07-17-001  The CLI entrypoint runs any supplied goal directly,
+            with no enforced human-approval checkpoint before execution
+            begins.
+      Action 1: Add an explicit preflight approval gate in main() or
+                build_agent() that refuses execution unless a concrete
+                approval signal for that run is present and recorded.
+      Action 2: Persist the approval receipt into state.json so a completed
+                run proves who approved it and when.
+
+  PRAX-2026-07-17-002  Planner, coder, and debugger wrapper commands execute
+            as arbitrary host subprocesses outside the advertised
+            PermissionPolicy.
+      Action 1: Treat wrapper commands as first-class controlled capabilities:
+                validate them against an explicit allowlist or signed manifest
+                before any subprocess launch.
+      Action 2: Move live-provider execution behind the same approval and
+                provenance checks as the generated task command, or refuse
+                live wrappers entirely outside a reviewed profile.
+
+HIGH FINDINGS
+------------------------------------------------------------------------------
+  PRAX-2026-07-17-003  Secret-handling rules are declarative only; generated
+            file content and raw stdout/stderr are written to disk without any
+            redaction barrier.
+      Action 1: Add a redaction layer before generated artifacts, console
+                logs, and debug feedback are persisted, with hard failure on
+                likely secret patterns rather than best-effort masking.
+      Action 2: Enforce the environment-only key rule in code by rejecting
+                wrapper outputs or task artifacts that contain credential-like
+                strings before they reach disk.
+
+==============================================================================
+Built on OWASP Top 10 for LLM Applications 2025  |  OWASP Top 10 for Agentic Applications 2026  |  RAISE Framework
+Generated by Praxen  |  project sponsor: Exabeam (https://www.exabeam.com/)
+github.com/open-agent-ai-security/praxen  |  Apache-2.0
+==============================================================================

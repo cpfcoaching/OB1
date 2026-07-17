@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""Coder shim (Codex/GPT lane): orchestrator payload -> coder-response JSON.
+
+Input  (stdin):  {"role":"coder","goal":...,"task":{...},"memory":{...}}
+Output (stdout): {"file_name": "...", "content": "...", "command": ["...", "..."]}
+
+Provider command env var: MAO_CODEX_CMD
+"""
+import json
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _shim import emit, extract_json, fail, read_payload, require, run_provider
+
+PROMPT = """You are the CODER in a Claude+Codex orchestration loop. You operate under
+OPERATING_AGREEMENT.md: stay within the approved task and the PermissionPolicy (the
+default sandbox allows only `python task.py`). Do not attempt network calls, package
+installs, other binaries, money movement, or any side-effecting action outside the
+sandbox. If the task cannot be done safely within those limits, return a file that
+prints a clear message explaining what human-reviewed permission is needed, rather
+than trying to exceed the policy.
+
+Produce ONE self-contained file that accomplishes the task, plus the command to run it.
+
+Goal:
+{goal}
+
+Task:
+{task}
+
+Relevant memory:
+{memory}
+
+Return ONLY a JSON object, no prose, exactly this shape:
+{{"file_name": "task.py", "content": "<full file contents>", "command": ["python", "task.py"]}}
+The default sandbox permits only `python task.py`, so prefer a single Python file
+using the standard library unless the task requires otherwise."""
+
+
+def main() -> None:
+    payload = read_payload()
+    goal = str(payload.get("goal", "")).strip()
+    task = payload.get("task", {})
+    memory = payload.get("memory", {})
+    raw = run_provider(
+        "MAO_CODEX_CMD",
+        PROMPT.format(
+            goal=goal,
+            task=json.dumps(task, indent=2),
+            memory=json.dumps(memory, indent=2),
+        ),
+    )
+    data = extract_json(raw)
+    require(data, ["file_name", "content", "command"], "coder")
+
+    command = data["command"]
+    if isinstance(command, str):
+        command = command.split()
+    if not isinstance(command, list) or not command:
+        fail("coder 'command' must be a non-empty array")
+
+    emit(
+        {
+            "file_name": str(data["file_name"]),
+            "content": str(data["content"]),
+            "command": [str(part) for part in command],
+        }
+    )
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,838 @@
+{
+  "schema": "cpf.brief_inputs.v1",
+  "generated_at": "2026-06-27T12:34:13",
+  "weekday": "Saturday",
+  "today": "2026-06-27",
+  "lane": "codex",
+  "sources": {
+    "memory": {
+      "Active Commitments": [
+        {
+          "text": "2026-06-26 (HAPPENING TODAY 12:15 PM, DEBRIEF NEXT RUN): Serve Robotics VP of Security interview, Fri 2026-06-26 12:15-1:00 PM EDT (Google Meet ota-adod-noi), Hiring Manager Screen with Anthony Armenta (Chief Software and Data Officer). Remote role, ~$240K-$300K, owns security roadmap for the autonomous-delivery platform; JD phrase \"security as a force multiplier.\" Signals: ~400% YoY rev growth, \"Maggie\" demo at NVIDIA GTC, White Castle partnership. Prep delivered in 06-26 brief: 90-day roadmap narrative, vCISO-breadth-as-force-multiplier framing, 2 questions for Armenta (security-vs-velocity on the fleet; data/AI governance for the autonomy stack). NEXT RUN: ask how it went, capture outcome/next-round. Relates to [[project_linkedin_ciso_positioning]].",
+          "dates": [
+            "2026-06-26",
+            "2026-06-26"
+          ],
+          "emails": [],
+          "urgent": true,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-26 (NEW, AWS Summit DC next week): Chris registered for AWS Summit DC Tue 2026-06-30. heathaws@amazon.com (STARRED 06-25) offered a post-summit networking reception. Low-stakes; reply only if he wants the intro.",
+          "dates": [
+            "2026-06-26",
+            "2026-06-30"
+          ],
+          "emails": [
+            "heathaws@amazon.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-25 (NEW, CAUTION): \"Maxwell Leadership\" email from lorna.WS@maxwellleadership.com (STARRED) \"project proposal\" with PDF behind a link, to-line is the sender itself. Has phishing-lure shape. Do NOT click. Flagged in brief; verify out of band before any action.",
+          "dates": [
+            "2026-06-25"
+          ],
+          "emails": [
+            "lorna.WS@maxwellleadership.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-23 (RESOLVED): Chris Hedger (chedger79@gmail.com) reschedule. Chris's warm reply SENT 06-22 14:50 (thread 19eed8a116ecf6a7). Ball now in Hedger's court to self-book via CalendarBridge. Dropped from watch list.",
+          "dates": [
+            "2026-06-23"
+          ],
+          "emails": [
+            "chedger79@gmail.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-25 (STILL OWED SLOTS, 3rd SLIP, HOTTEST DEAL): Iron Orchid / Michael Orozco (michael.orozco@ironorchid.ai). Chris re-sent the Father's Day intro AGAIN 06-25 17:43 (thread 19effe102a345d83), and Orozco REPLIED 06-25 17:50: \"I agree completely. Please suggest some times... I have availability later today, tomorrow and parts of next week.\" So 2-3 concrete slots are STILL OWED after a third intro re-send with no dates. Opportunity = virtual deployment partner (1099 or corp-to-corp) plus CISO referral fees. Pure blocker = two lines of text + booking link. Made FIRST MOVE in 06-26 brief. (Old \"Great to meet you\" draft still to be deleted manually.)",
+          "dates": [
+            "2026-06-25"
+          ],
+          "emails": [
+            "michael.orozco@ironorchid.ai"
+          ],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-25 (NEW, OWED, convert to paid sponsored): Caroline Williams / Walker Sands (caroline.williams@walkersands.com), STARRED. Pitched Tim MalcomVetter (GM, Coalition Security) as a guest 06-23, added a 2nd MDR-skeptic/cyber-insurance angle 06-25. Her note still references the discontinued \"Breaking into Cybersecurity\" podcast. Convert to $500+ sponsored slot; clarify format changed.",
+          "dates": [
+            "2026-06-25"
+          ],
+          "emails": [
+            "caroline.williams@walkersands.com"
+          ],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-24 (NEW, OWED, convert to paid sponsored OR solo post): Nathan Kolodney / Lightyear Strategies (nkolodney@lightyearstrategies.com), STARRED. Pitched an \"AI veteran on policy change\" guest re who is accountable when AI makes consequential business decisions. Strong SMB AI-governance solo-post angle even if Chris passes on the guest.",
+          "dates": [
+            "2026-06-24"
+          ],
+          "emails": [
+            "nkolodney@lightyearstrategies.com"
+          ],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-24 (OWED REPLY): Irene Onate / Fame Connect (irene@fame.so) NUDGED AGAIN 06-23 20:00 (\"Got a minute?\", STARRED) re Bruno Lecoq guest. NOT resolved; Chris owes a reply. Convert the free-guest pitch to a paid sponsored slot ($500+) per the reusable Sponsored Content Offer below. Serine Melikyan sponsored proposal status still unconfirmed; verify next run.",
+          "dates": [
+            "2026-06-24"
+          ],
+          "emails": [
+            "irene@fame.so"
+          ],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-22 (RESOLVED): BTG Interim CISO Fintech inbound. Chris PASSED it to Mike Geehan (mike@mikegeehan.com), who is job-searching and a better fit right now. Closed.",
+          "dates": [
+            "2026-06-22"
+          ],
+          "emails": [
+            "mike@mikegeehan.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-14 (DRAFTS CREATED 06-18, still awaiting Chris review + send as of 06-22): Five referral-partner Gmail drafts in the CPF account (chris@cpf-coaching.com). Recipients: Chris Cathers chris.cathers@octellient.com; Pihme Ihme (Soteria) pihme@soteria.io; Ryan Smith ryan@smithsec.net; Cheryl Carmel cheryl@carmelconsultingllc.com; Orest Sison (CMIT Solutions of The Meadowlands, Rutherford NJ) osison@cmitsolutions.com. Warm mutual-referral notes; CMIT framed as MSP + vCISO-overlay partnership. Delete the duplicate generic \"Hello\" CMIT draft. NOT yet sent; slipped again. SEPARATE: Michael Piacente/Hitch Partners is a RECRUITER for a full-time role, handle separately. (Relates to [[project_linkedin_ciso_positioning]]; avoid invalid 'VP of Security and Trust' OTW title.)",
+          "dates": [
+            "2026-06-14"
+          ],
+          "emails": [
+            "chris@cpf-coaching.com",
+            "chris.cathers@octellient.com",
+            "pihme@soteria.io",
+            "ryan@smithsec.net",
+            "cheryl@carmelconsultingllc.com",
+            "osison@cmitsolutions.com"
+          ],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-24 (RESOLVED): Joomla JCE CVE-2026-48907 post (CVSS 10.0, Vendor Risk). Substack long-form \"Your Website Is Infrastructure\" PUBLISHED 06-23 20:08 (confirmed via cpfcoaching@substack.com send). LinkedIn version was queued 06-22. Pack saved at OpenBrain/chief-of-staff/2026-06-22-joomla-cve-post.md. Closed.",
+          "dates": [
+            "2026-06-24",
+            "2026-06-22"
+          ],
+          "emails": [
+            "cpfcoaching@substack.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-24 (NEW, TIMELY, SHIP TODAY): FortiBleed campaign - 80,000+ Fortinet FortiGate / SSL VPN devices compromised with valid credentials (reported ~06-23). Force Multiplier \"Your VPN is the ransomware front door, again\" post; pairs with the earlier Check Point VPN piece so it is a fast write. This is the curated post to ship to break the content bottleneck this run.",
+          "dates": [
+            "2026-06-24"
+          ],
+          "emails": [],
+          "urgent": true,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-15 (still open): vCISO Briefing Substack at low subscriber base. Growth load on subscribe-CTA posts; pair with 3-5 direct warm asks.",
+          "dates": [
+            "2026-06-15"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-20 (open): Weekend LinkedIn auto-poster decision. GitHub Actions cron runs Mon-Fri only, so weekend posts do not fire and the Notion date filter must match. Decide whether to flip cron to all-week (* * *) or keep weekends manual.",
+          "dates": [
+            "2026-06-20"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Sponsored Content Offer (reusable)": [
+        {
+          "text": "CPF Coaching offers SPONSORED newsletter posts + podcast/recording episodes on substack.cpf-coaching.com. The BIC-style free-guest model is wound down.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Pricing: starts at $500. Reflects recording/editing time plus research and drafting around how the sponsor's product addresses the problem space.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Use this when vendors/agencies (Fame Connect, PR reps) pitch \"free guest\" spots: convert to a paid sponsored slot.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Watched Threads": [
+        {
+          "text": "Michael Orozco / Iron Orchid (threads 19eefcfc5e36678a + 19ef93d70546150c + 19effe102a345d83): Chris STILL owes 2-3 concrete slots; he replied AGAIN 06-25 17:50 with his availability. Watching for confirmation once real slots go out.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Caroline Williams / Walker Sands (19f002948176e01b): owes paid-sponsored conversion reply on the Coalition guest. Watching.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Nathan Kolodney / Lightyear (19efb01e40944eb8): owes reply (convert or solo post). Watching.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Irene Onate / Fame Connect (irene@fame.so): nudged again 06-23, owes paid-sponsored conversion reply. Watching.",
+          "dates": [],
+          "emails": [
+            "irene@fame.so"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Victor / Sentaro (victor@sentaro.com, thread 19ef3a057c6d53f3): cold MSP recurring-revenue pitch 06-23. Low priority; surface once then drop if no Chris interest.",
+          "dates": [],
+          "emails": [
+            "victor@sentaro.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Descript Support ticket 327110 (thread 19eeacabf2e64874): voice-model tone issue, support replied 06-21. Chris to confirm fix worked.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Stale sent (no reply since ~Apr 25): Lucas Dowd, Darren Joslin, chansen@psmpartners.com. Surfaced by Gmail follow-up reminder 06-23. Decide nudge vs. let go.",
+          "dates": [],
+          "emails": [
+            "chansen@psmpartners.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Jessica Pileri (Action1): RESOLVED 06-22, Chris completed it. Drop.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "Author Services (bank details): RESOLVED 06-22, Chris logged in and followed up by email. Drop.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "People-T / C. Josquin (cjosquin@people-t.com): 06-22 Chris declined to pursue (generic outreach). No action. Do not resurface.",
+          "dates": [],
+          "emails": [
+            "cjosquin@people-t.com"
+          ],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "#cpfcoaching-project (Slack): all bot automation (YouTube Batch Optimizer runs, quota warnings) through 06-22. One Chris self-note 06-20 about weekend cron. No human DMs/mentions surfaced.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "VIPs Owed Response": [
+        {
+          "text": "Chris Hedger: CLEARED 06-23 (reply sent 06-22, his court now).",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "Michael Orozco / Iron Orchid: STILL OWED scheduling reply (2-3 concrete slots); replied AGAIN 06-25 with availability after a 3rd intro re-send. Hottest live thread. Keep warm: deployment-partner opportunity.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Caroline Williams / Walker Sands: OWED reply; convert to paid sponsored slot (Coalition guest).",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Nathan Kolodney / Lightyear: OWED reply; convert or use as solo AI-accountability post.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Irene Onate / Fame: OWED reply. Nudged again 06-23 (not resolved). Convert to paid sponsored slot. Serine Melikyan: status still uncertain, verify next run.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": true,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "At-Risk or Accelerating Deals": [
+        {
+          "text": "HubSpot 0 deals confirmed again 06-22 (subscriber store; expected). Notion Lead Pipeline: New Prospect Batch (May 2026, 15 contacts) static at Stage 1 Cold Outreach. Apollo Future Wave active. No VIP contact touched in 30+ days. Five referral-partner notes unsent, execution still pending. Two warm inbound on 06-22 (Hedger intro, People-T partner).",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Story Angles I Said I'd Turn Into Content": [
+        {
+          "text": "2026-06-26 (NEW, timely): White House post-quantum EOs 14412/14413 (signed 06-22). Fed PQC deadlines 2030 (key establishment) / 2031 (signatures), contractor FIPS by end-2030, CBOM guidance. Board Reporting / Substack: \"Your vendors just got a 2030 crypto deadline; the one question to ask them this quarter\" (frame CBOM as SMB asset inventory). Chris had a WITI briefing on it 06-26.",
+          "dates": [
+            "2026-06-26"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-26 (NEW): Stanford 2026 AI Index - security/risk now the #1 barrier to scaling agentic AI (62%, beat tech limits + regulatory by 24 pts); Microsoft Build 2026 \"governed agent stack.\" vCISO Positioning: \"AI can run the agent; you still need someone accountable for what it decides.\" Air cover for the whole vCISO thesis.",
+          "dates": [
+            "2026-06-26"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-26 (NEW): Lantronix EDS5000 device servers CVE-2025-67038 (CVSS 9.8) actively exploited, CISA KEV. OT/edge \"box nobody remembers owning\" angle; pairs with FortiBleed.",
+          "dates": [
+            "2026-06-26"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-24 (still freshest queued, SHIP): FortiBleed - 80,000+ Fortinet FortiGate/SSL VPN devices compromised with valid creds. Force Multiplier \"Your VPN is the ransomware front door, again.\" Pairs with prior Check Point VPN piece.",
+          "dates": [
+            "2026-06-24"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-24 (NEW): OpenAI GPT-5.5-Cyber (Daybreak) to defenders 06-23 leads to vCISO Positioning \"AI can find the bugs; you still need someone to decide what gets fixed first.\"",
+          "dates": [
+            "2026-06-24"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-23 (STALE after 06-23): Chrome V8 zero-day CVE-2026-11645 (CVSS 8.8) KEV deadline June 23 push-the-update post. Expired; do not present as fresh.",
+          "dates": [
+            "2026-06-23"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-23 (NEW): June four-way AI launch wave (Claude Mythos 1, Gemini 3.5 Pro, Grok 5) leads to \"your AI-use policy is already out of date, make it model-agnostic\" Shadow AI / governance post.",
+          "dates": [
+            "2026-06-23"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-23 (NEW): Microsoft June Patch Tuesday largest ever (206 CVEs; BitLocker bypass CVE-2026-50507; HTTP/2 DoS CVE-2026-49160) leads to \"206 patches is a prioritization problem, not a to-do list\" triage post for SMBs.",
+          "dates": [
+            "2026-06-23"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-22 (NEW, freshest): SolarWinds Serv-U flaw added to CISA KEV (actively exploited) leads to a Vendor Risk / Force Multiplier \"3 checks if you run a managed file transfer box\" post. Pairs with prior VPN front-door piece.",
+          "dates": [
+            "2026-06-22"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-22 (NEW): MSP control-plane / software supply chain. ConnectWise 2026 MSP Threat Report (attackers abusing trusted identities, legit tools, remote access, supply chains) + Notepad++ update-infrastructure compromise (Chrysalis backdoor) leads to \"Your MSP is your largest unmanaged attack surface: 3 questions this quarter.\"",
+          "dates": [
+            "2026-06-22"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-22 (NEW): EU AI Act fully applicable Aug 2, 2026 (transparency rules live, SME simplified docs) leads to Board Reporting \"5-control AI baseline a board can verify before August.\" Keep Colorado AI Act OUT (effective Jan 1, 2027, not June 2026).",
+          "dates": [
+            "2026-06-22"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-22 (SHIPPED): Joomla Content Editor CVE-2026-48907 (CVSS 10.0, CISA KEV 06-16, patched JCE 2.9.99.5 on 06-03, automated web shells via index.php?option=com_jce&task=profiles.import). LinkedIn post queued for 06-22 + Substack long-form saved. NOTE: SolarWinds Serv-U KEV item (CVE-2026-28318, CVSS 7.5 DoS) is dated June 6 and is STALE, do not present it as fresh.",
+          "dates": [
+            "2026-06-22"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-19 (live): Check Point VPN zero-day CVE-2026-50751 leads to \"Your VPN is the ransomware front door\" Force Multiplier post.",
+          "dates": [
+            "2026-06-19"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-18 (live): n8n max-severity takeover flaw leads to \"Your AI automation tool is a privileged target\" Shadow AI post.",
+          "dates": [
+            "2026-06-18"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "2026-06-19: AI governance gap stats (88% use AI, 8% have comprehensive governance; 35% pasted proprietary data into public AI; 74% plan agentic AI, 21% mature governance) leads to Board Reporting AI-baseline post.",
+          "dates": [
+            "2026-06-19"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "PUBLISHED on Substack + LinkedIn (manual 06-19): Cisco SD-WAN CVE-2026-20245. Second Cisco CVE-2026-20262 (CVSS 6.5, patched 06-16, exploited) is a distinct extension hook; keep the two CVEs separate.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Patterns": [
+        {
+          "text": "Content execution of the curated queue is THE bottleneck, not ideas and not the revenue automation. Timely CVE posts repeatedly flagged without shipping. No current CVE post shipped since the manual Cisco SD-WAN post 06-19. Structural fix holds: ship ONE current CVE post same-day and retire expired drafts. Quiet calendars (06-18, 06-22) are the windows to break this; point freed hours at shipping.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Inbound-opportunity flow continues: 06-19 brought Fame/Bruno Lecoq + BTG Fintech; 06-22 brought Hedger reschedule + People-T partner. On otherwise quiet mornings these are the high-value items; make the apply/reply call same-day rather than letting them drift.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Connector-identity traps: HubSpot portal (BIC vs CPF) and Gmail account both RESOLVED; still confirm connected account each run.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": true,
+          "mentions_today": false
+        },
+        {
+          "text": "Fact-freshness: stale claims keep trying to propagate. Web search itself repeated the bogus Colorado AI Act \"June 30 2026\" date on 06-22 (actual: Jan 1, 2027). Verify regulatory dates and CVE patch status each run.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Host/dispatch: 06-15 through 06-22 runs all executed off intended m1host-3 (hostname \"claude\"). OpenBrain drive mounted and all connectors (Calendar, Gmail, Slack, HubSpot, Notion, web) reachable each time, so the brief was produced per the off-host feedback rule. If a future run is off-host AND connectors are unreachable, email Chris and stop per dispatch note.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Automation note": [
+        {
+          "text": "2026-06-23: Queued LinkedIn Shadow AI post in #cpfcoaching-project is header-labeled \"Monday June 23, 2026\" but June 23 is a TUESDAY. Day-name in the auto-generated header is off by one. Flag/fix if it publishes with that label.",
+          "dates": [
+            "2026-06-23"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Household Operations (standing; do not prune)": [
+        {
+          "text": "Set the Home Assistant bridge HA_BASE_URL secret to https://etdzbjs3wtinswxzvh3j34zcothoghis.ui.nabu.casa (Supabase Edge Function secrets). The HA bridge is non-functional until this is fixed (was saved as a placeholder).",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Re-add the Meross garage door opener to the Deco Wi-Fi (dropped after the Deco swap).",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Pine tree cuttings rooting experiment: water daily in summer heat (temporary; drop when rooted or abandoned).",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Smoke & CO detector test / batteries: next due ~2026-07-06 (SAFETY, high priority).",
+          "dates": [
+            "2026-07-06"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "HVAC filter: monthly (per Nest alert). Mow lawn: every 2 weeks. Vacuum stairs & all carpets: every 2 weeks.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Trash & recycling to curb: Monday and Thursday. Laundry: weekends.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        },
+        {
+          "text": "Seasonal set also tracked: gutters, water heater flush, dryer vent, fridge coils, range hood, garage door lube, GFCI test, sump pump, chimney, caulk/weatherstrip, irrigation check.",
+          "dates": [],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ],
+      "Automation note (carried)": [
+        {
+          "text": "2026-06-25: Queued Vendor Risk LinkedIn post in #cpfcoaching-project is header-labeled \"Thursday June 26, 2026\" but June 26 is a FRIDAY and today is Thursday June 25. Off-by-one day/date header AGAIN (same bug as the 06-23 Shadow AI post). Fix before it publishes with the wrong stamp.",
+          "dates": [
+            "2026-06-25"
+          ],
+          "emails": [],
+          "urgent": false,
+          "slipping": false,
+          "resolved": false,
+          "mentions_today": false
+        }
+      ]
+    },
+    "summary": {
+      "active_commitments": 14,
+      "watched_threads": 11,
+      "vips_owed": 5,
+      "urgent_today": [
+        "2026-06-26 (HAPPENING TODAY 12:15 PM, DEBRIEF NEXT RUN): Serve Robotics VP of Security interview, Fri 2026-06-26 12:15-1:00 PM EDT (Google Meet ota-adod-noi), Hiring Manager Screen with Anthony Armenta (Chief Software and Data Officer). Remote role, ~$240K-$300K, owns security roadmap for the autonomous-delivery platform; JD phrase \"security as a force multiplier.\" Signals: ~400% YoY rev growth, \"Maggie\" demo at NVIDIA GTC, White Castle partnership. Prep delivered in 06-26 brief: 90-day roadmap narrative, vCISO-breadth-as-force-multiplier framing, 2 questions for Armenta (security-vs-velocity on the fleet; data/AI governance for the autonomy stack). NEXT RUN: ask how it went, capture outcome/next-round. Relates to [[project_linkedin_ciso_positioning]].",
+        "2026-06-24 (NEW, TIMELY, SHIP TODAY): FortiBleed campaign - 80,000+ Fortinet FortiGate / SSL VPN devices compromised with valid credentials (reported ~06-23). Force Multiplier \"Your VPN is the ransomware front door, again\" post; pairs with the earlier Check Point VPN piece so it is a fast write. This is the curated post to ship to break the content bottleneck this run."
+      ],
+      "slipping": [
+        "2026-06-25 (STILL OWED SLOTS, 3rd SLIP, HOTTEST DEAL): Iron Orchid / Michael Orozco (michael.orozco@ironorchid.ai). Chris re-sent the Father's Day intro AGAIN 06-25 17:43 (thread 19effe102a345d83), and Orozco REPLIED 06-25 17:50: \"I agree completely. Please suggest some times... I have availability later today, tomorrow and parts of next week.\" So 2-3 concrete slots are STILL OWED after a third intro re-send with no dates. Opportunity = virtual deployment partner (1099 or corp-to-corp) plus CISO referral fees. Pure blocker = two lines of text + booking link. Made FIRST MOVE in 06-26 brief. (Old \"Great to meet you\" draft still to be deleted manually.)",
+        "2026-06-25 (NEW, OWED, convert to paid sponsored): Caroline Williams / Walker Sands (caroline.williams@walkersands.com), STARRED. Pitched Tim MalcomVetter (GM, Coalition Security) as a guest 06-23, added a 2nd MDR-skeptic/cyber-insurance angle 06-25. Her note still references the discontinued \"Breaking into Cybersecurity\" podcast. Convert to $500+ sponsored slot; clarify format changed.",
+        "2026-06-24 (NEW, OWED, convert to paid sponsored OR solo post): Nathan Kolodney / Lightyear Strategies (nkolodney@lightyearstrategies.com), STARRED. Pitched an \"AI veteran on policy change\" guest re who is accountable when AI makes consequential business decisions. Strong SMB AI-governance solo-post angle even if Chris passes on the guest.",
+        "2026-06-24 (OWED REPLY): Irene Onate / Fame Connect (irene@fame.so) NUDGED AGAIN 06-23 20:00 (\"Got a minute?\", STARRED) re Bruno Lecoq guest. NOT resolved; Chris owes a reply. Convert the free-guest pitch to a paid sponsored slot ($500+) per the reusable Sponsored Content Offer below. Serine Melikyan sponsored proposal status still unconfirmed; verify next run.",
+        "2026-06-14 (DRAFTS CREATED 06-18, still awaiting Chris review + send as of 06-22): Five referral-partner Gmail drafts in the CPF account (chris@cpf-coaching.com). Recipients: Chris Cathers chris.cathers@octellient.com; Pihme Ihme (Soteria) pihme@soteria.io; Ryan Smith ryan@smithsec.net; Cheryl Carmel cheryl@carmelconsultingllc.com; Orest Sison (CMIT Solutions of The Meadowlands, Rutherford NJ) osison@cmitsolutions.com. Warm mutual-referral notes; CMIT framed as MSP + vCISO-overlay partnership. Delete the duplicate generic \"Hello\" CMIT draft. NOT yet sent; slipped again. SEPARATE: Michael Piacente/Hitch Partners is a RECRUITER for a full-time role, handle separately. (Relates to [[project_linkedin_ciso_positioning]]; avoid invalid 'VP of Security and Trust' OTW title.)",
+        "Michael Orozco / Iron Orchid: STILL OWED scheduling reply (2-3 concrete slots); replied AGAIN 06-25 with availability after a 3rd intro re-send. Hottest live thread. Keep warm: deployment-partner opportunity.",
+        "Caroline Williams / Walker Sands: OWED reply; convert to paid sponsored slot (Coalition guest).",
+        "Nathan Kolodney / Lightyear: OWED reply; convert or use as solo AI-accountability post.",
+        "Irene Onate / Fame: OWED reply. Nudged again 06-23 (not resolved). Convert to paid sponsored slot. Serine Melikyan: status still uncertain, verify next run."
+      ],
+      "open_emails_owed": [
+        "caroline.williams@walkersands.com",
+        "chansen@psmpartners.com",
+        "cheryl@carmelconsultingllc.com",
+        "chris.cathers@octellient.com",
+        "chris@cpf-coaching.com",
+        "cjosquin@people-t.com",
+        "heathaws@amazon.com",
+        "irene@fame.so",
+        "lorna.WS@maxwellleadership.com",
+        "michael.orozco@ironorchid.ai",
+        "nkolodney@lightyearstrategies.com",
+        "osison@cmitsolutions.com",
+        "pihme@soteria.io",
+        "ryan@smithsec.net",
+        "victor@sentaro.com"
+      ]
+    },
+    "recent_files": [
+      {
+        "name": "memory.md",
+        "bytes": 18598,
+        "modified": "2026-06-26T10:51:11"
+      },
+      {
+        "name": "2026-06-26-serve-robotics-interview-prep.html",
+        "bytes": 10442,
+        "modified": "2026-06-25T17:39:09"
+      },
+      {
+        "name": "system-prompt.md",
+        "bytes": 9796,
+        "modified": "2026-06-24T01:24:04"
+      },
+      {
+        "name": "2026-06-22-joomla-cve-post.md",
+        "bytes": 6031,
+        "modified": "2026-06-22T12:56:15"
+      },
+      {
+        "name": "memory-dream-2026-06-21.md",
+        "bytes": 12134,
+        "modified": "2026-06-21T13:10:59"
+      },
+      {
+        "name": "memory-backup-2026-06-15.md",
+        "bytes": 8460,
+        "modified": "2026-06-15T12:46:39"
+      },
+      {
+        "name": "memory-dream-2026-06-14.md",
+        "bytes": 7413,
+        "modified": "2026-06-14T11:07:57"
+      },
+      {
+        "name": "dream-prompt.md",
+        "bytes": 4242,
+        "modified": "2026-06-10T18:46:35"
+      },
+      {
+        "name": "README-dreams.md",
+        "bytes": 1894,
+        "modified": "2026-06-10T18:46:30"
+      },
+      {
+        "name": "chief-of-staff-setup.html",
+        "bytes": 16130,
+        "modified": "2026-06-07T22:02:19"
+      }
+    ],
+    "news": {
+      "status": "unavailable",
+      "reason": "URLError: <urlopen error Tunnel connection failed: 403 Forbidden>",
+      "items": []
+    }
+  },
+  "needs_claude_lane_pull": [
+    {
+      "source": "Google Calendar",
+      "pull": "today's events + tomorrow's first",
+      "lane": "claude-mcp"
+    },
+    {
+      "source": "Gmail",
+      "pull": "unread/flagged last 24h",
+      "lane": "claude-mcp"
+    },
+    {
+      "source": "Slack",
+      "pull": "DMs, @mentions, #cpfcoaching-project last 24h",
+      "lane": "claude-mcp"
+    },
+    {
+      "source": "CRM/Apollo",
+      "pull": "deal stage changes, VIP activity, dormant contacts",
+      "lane": "claude-mcp"
+    },
+    {
+      "source": "Notion",
+      "pull": "Lead Pipeline, LinkedIn Post Queue, project pages",
+      "lane": "claude-mcp"
+    },
+    {
+      "source": "AI/cyber/risk news",
+      "pull": "last-24h items (web search)",
+      "lane": "claude-mcp-or-codex-feed"
+    },
+    {
+      "source": "Later analytics",
+      "pull": "weekly snapshot via Chrome MCP",
+      "lane": "codex-credentialed"
+    }
+  ]
+}

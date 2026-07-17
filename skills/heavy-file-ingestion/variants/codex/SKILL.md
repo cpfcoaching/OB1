@@ -1,32 +1,25 @@
 ---
 name: heavy-file-ingestion-codex
-description: Use in Codex when a user asks to read, analyze, summarize, or extract from a heavyweight file such as PDF, DOCX, PPTX, XLSX, CSV, or TSV. Convert the file into markdown or CSV first with the bundled script, generate a lightweight index, and only spend model tokens on the compressed artifact.
-author: Nate B. Jones
-version: 1.0.0
+description: Use in Codex when a user provides or asks to analyze a heavyweight or binary file such as PDF, PPTX, DOCX, XLSX, CSV, TSV, long text, or a document dump. Convert first into Markdown or CSV under the OpenBrain Intake _ingested folder, generate an index, then analyze only the converted artifacts.
 ---
 
 # Heavy File Ingestion For Codex
 
-## Problem
+## Policy
 
-Codex can run local commands and inspect files, so direct ingestion of bulky documents is usually the wrong move. Convert first, index second, reason last.
+Do not inspect raw PDFs, decks, workbooks, or long document dumps directly when a deterministic conversion path exists. Convert first, read `index.md`, then analyze only the generated Markdown, CSV, or chunk artifacts.
 
-## Trigger Conditions
+Default artifact root:
 
-- The user asks to read or summarize a heavyweight document or spreadsheet
-- The file is large, structured, or expensive enough that raw ingestion is wasteful
-- The task would be better served by markdown, CSV, or a quick file map
+`/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/Intake/_ingested/`
 
-## Process
-
-1. Do not open the raw heavyweight file as your first move if a deterministic conversion path exists.
-1. Run the bundled converter from this skill directory:
+## Command
 
 ```bash
-python scripts/convert_heavy_file.py /absolute/path/to/file.ext
+python /Users/MacAttack/.agents/skills/heavy-file-ingestion/scripts/convert_heavy_file.py /absolute/path/to/file.ext
 ```
 
-1. If the environment is clean and needs packages, prefer:
+If dependencies are missing, run:
 
 ```bash
 uv run \
@@ -34,23 +27,14 @@ uv run \
   --with python-docx \
   --with python-pptx \
   --with openpyxl \
-  python scripts/convert_heavy_file.py /absolute/path/to/file.ext
+  python /Users/MacAttack/.agents/skills/heavy-file-ingestion/scripts/convert_heavy_file.py /absolute/path/to/file.ext
 ```
 
-1. Read `index.md` first, not the original file.
-2. Follow the index recommendation:
-   - `read_extracted_artifact`: inspect the generated markdown or CSV
-   - `cheap_model_or_stronger_converter`: retry with a better deterministic tool or use a cheaper model on the extracted artifact only
-   - `manual_review`: tell the user the deterministic route failed and propose the next cheapest fallback
-3. Use expensive model context only after the file has already been compressed into a smaller artifact.
+## Read Order
 
-## Client Rules
-
-- Keep the main model out of raw PDFs, decks, and spreadsheets whenever possible.
-- Use the generated `.ob1/` folder as the working directory for follow-up analysis.
-- For spreadsheets, reason from the CSV per sheet plus the workbook manifest.
-- For presentations, reason from the slide outline before asking for a deeper pass.
-
-## Bundled References
-
-- `references/open-source-stack.md` explains the tool choices and fallback tiers.
+1. Read the generated `index.md`.
+2. Read only artifacts named in the index.
+3. For XLSX, prefer per-sheet CSVs and `workbook.md`.
+4. For PPTX, prefer `presentation.md`.
+5. For PDF or DOCX, prefer `document.md`, then chunks if present.
+6. Surface any quality flags before making claims from weak extraction.

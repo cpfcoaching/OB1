@@ -1,0 +1,5 @@
+interface:
+  display_name: "Branded Image Prompting"
+  short_description: "CPF image prompts and reusable templates"
+  default_prompt: "Use $branded-image-prompting to create an on-brand CPF image prompt and route generation through image-gateway."
+  brand_color: "#0E7A4F"

@@ -1,0 +1,5 @@
+#!/usr/bin/env python3
+# Mock debugger (Claude lane stand-in). Only invoked on failure.
+import json, sys
+sys.stdin.read()
+print(json.dumps({"feedback": "Collection failed; re-run with standard-library-only code and valid paths."}))

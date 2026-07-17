@@ -1,19 +1,19 @@
 ---
-name: heavy-file-ingestion-claude-desktop
-description: Use in Claude Desktop when a user asks to read, analyze, summarize, or extract from a heavyweight file such as PDF, DOCX, PPTX, XLSX, CSV, or TSV. Avoid raw ingestion of bulky files. Ask for a converted markdown or CSV artifact first, or give the user exact conversion commands to run outside Claude Desktop.
+name: heavy-file-ingestion-Codex-desktop
+description: Use in Codex Desktop when a user asks to read, analyze, summarize, or extract from a heavyweight file such as PDF, DOCX, PPTX, XLSX, CSV, or TSV. Avoid raw ingestion of bulky files. Ask for a converted markdown or CSV artifact first, or give the user exact conversion commands to run outside Codex Desktop.
 author: Nate B. Jones
 version: 1.0.0
 ---
 
-# Heavy File Ingestion For Claude Desktop
+# Heavy File Ingestion For Codex Desktop
 
 ## Problem
 
-Claude Desktop does not have the same local shell workflow as coding agents, so it should avoid pretending it can efficiently process bulky files raw.
+Codex Desktop does not have the same local shell workflow as coding agents, so it should avoid pretending it can efficiently process bulky files raw.
 
 ## Trigger Conditions
 
-- The user asks Claude Desktop to read a PDF, PPTX, DOCX, XLSX, or another bulky attachment
+- The user asks Codex Desktop to read a PDF, PPTX, DOCX, XLSX, or another bulky attachment
 - The file would cost too much context for too little value
 - The user would be better served by a converted markdown or CSV artifact
 
@@ -24,7 +24,7 @@ Claude Desktop does not have the same local shell workflow as coding agents, so 
    - PDF or DOCX: markdown
    - PPTX: markdown slide outline
    - XLSX: CSV per sheet or a small sample plus sheet names
-1. If the user has not converted it yet, offer exact commands they can run outside Claude Desktop.
+1. If the user has not converted it yet, offer exact commands they can run outside Codex Desktop.
 
 ### Suggested Conversion Commands
 
@@ -51,5 +51,5 @@ If the script is not available, say so and ask the user for:
 ## Client Rules
 
 - Be explicit about the tradeoff: converting first is cheaper and usually better.
-- If the user insists on staying inside Claude Desktop, ask for a smaller excerpt rather than taking the whole file raw.
+- If the user insists on staying inside Codex Desktop, ask for a smaller excerpt rather than taking the whole file raw.
 - Use raw ingestion only for genuinely small files where conversion would cost more effort than it saves.

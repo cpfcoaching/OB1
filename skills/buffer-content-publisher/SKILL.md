@@ -31,7 +31,7 @@ Before doing anything, confirm these tools are available:
 - Optionally: a Buffer MCP tool for checking queue status
 
 If Buffer tools are missing, stop and say:
-> "The Buffer MCP isn't connected. Run: `claude mcp add --transport http buffer https://mcp.buffer.com/mcp` — then reload and try again."
+> "The Buffer MCP isn't connected. Run: `Codex mcp add --transport http buffer https://mcp.buffer.com/mcp` — then reload and try again."
 
 Do not proceed without Buffer tools present.
 
@@ -163,7 +163,7 @@ Before queueing, verify internally:
 ## Error Handling
 
 **Buffer returns an auth error:**
-> "Buffer needs to re-authorize. Run `claude mcp add --transport http buffer https://mcp.buffer.com/mcp` again and complete the OAuth flow."
+> "Buffer needs to re-authorize. Run `Codex mcp add --transport http buffer https://mcp.buffer.com/mcp` again and complete the OAuth flow."
 
 **No channels available:**
 > "Buffer connected but no channels are listed. Log into buffer.com and confirm at least one social channel is connected under your account."

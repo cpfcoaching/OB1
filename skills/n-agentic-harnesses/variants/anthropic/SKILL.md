@@ -43,7 +43,7 @@ If the user is asking for a **design**, confirm you understand:
 
 If the user is asking for an **evaluation**, you need access to the harness itself:
 
-- read their codebase, CLAUDE.md, settings, skills, hooks, or architecture docs
+- read their codebase, AGENTS.md, settings, skills, hooks, or architecture docs
 - if none of that is available, ask what they have and where it lives
 - do not evaluate from vibes alone — gather evidence first
 

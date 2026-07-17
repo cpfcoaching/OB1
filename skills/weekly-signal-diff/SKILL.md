@@ -148,7 +148,7 @@ When this skill works correctly, the user gets:
 
 ## Notes for Other Clients
 
-- This skill is portable across Claude Code, Codex, Cursor, and similar clients
+- This skill is portable across Codex, Codex, Cursor, and similar clients
   because the core behavior is procedural.
 - Adapt Open Brain tool names to the local environment.
 - For scheduled runs, pair the skill with the user's automation system and keep

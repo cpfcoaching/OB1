@@ -1,0 +1,9 @@
+#!/usr/bin/env python3
+# Mock planner (Claude lane stand-in). Emits one bounded collection task.
+import json, sys
+sys.stdin.read()
+print(json.dumps({"tasks": [{
+    "id": "collect-brief-inputs",
+    "description": "Run the Codex-lane brief input collector against chief-of-staff/memory.md",
+    "status": "planned", "attempts": 0, "feedback": []
+}]}))

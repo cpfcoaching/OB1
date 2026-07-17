@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import importlib
 import json
 import mimetypes
@@ -16,8 +17,11 @@ from pathlib import Path
 
 
 MARKITDOWN_SPEC = "markitdown[pdf,docx,pptx,xlsx]"
+DEFAULT_OUTPUT_ROOT = Path("/Volumes/Crucial X9 Pro For Mac/Library/OpenBrain/Intake/_ingested")
 PREVIEW_LINE_LIMIT = 12
 PREVIEW_CHAR_LIMIT = 160
+TEXT_CHUNK_CHAR_LIMIT = 40000
+CSV_CHUNK_ROW_LIMIT = 5000
 
 
 @dataclass
@@ -46,7 +50,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        help="Directory for extracted outputs. Defaults to <source>.ob1/",
+        help="Directory for extracted outputs. Defaults to the OpenBrain Intake _ingested folder.",
+    )
+    parser.add_argument(
+        "--output-root",
+        type=Path,
+        default=DEFAULT_OUTPUT_ROOT,
+        help="Root folder for default extracted outputs.",
     )
     parser.add_argument(
         "--prefer",
@@ -62,6 +72,11 @@ def slugify(value: str) -> str:
     return cleaned or "sheet"
 
 
+def default_output_dir(source: Path, output_root: Path) -> Path:
+    digest = hashlib.sha1(str(source).encode("utf-8")).hexdigest()[:8]
+    return output_root.expanduser().resolve() / f"{slugify(source.stem)}-{digest}"
+
+
 def require_module(module_name: str, package_name: str):
     try:
         return importlib.import_module(module_name)
@@ -75,6 +90,88 @@ def require_module(module_name: str, package_name: str):
 def write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def chunk_text_artifact(path: Path, result: ConversionResult, max_chars: int = TEXT_CHUNK_CHAR_LIMIT) -> None:
+    if not path.exists() or path.suffix.lower() not in {".md", ".txt"}:
+        return
+
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if len(text) <= max_chars:
+        return
+
+    chunk_dir = result.output_dir / "chunks" / path.stem
+    chunk_dir.mkdir(parents=True, exist_ok=True)
+    chunk_index = 1
+    start = 0
+    while start < len(text):
+        end = min(start + max_chars, len(text))
+        if end < len(text):
+            newline = text.rfind("\n", start, end)
+            if newline > start + max_chars // 2:
+                end = newline + 1
+        chunk_path = chunk_dir / f"{chunk_index:03d}.md"
+        write_text(
+            chunk_path,
+            f"# Chunk {chunk_index}: {path.name}\n\n"
+            f"_Source artifact: `{relpath(path, result.output_dir)}`; character range {start}-{end}._\n\n"
+            f"{text[start:end]}",
+        )
+        result.artifacts.append(
+            Artifact(
+                path=str(chunk_path),
+                kind="markdown-chunk",
+                description=f"Readable chunk {chunk_index} from {path.name}",
+            )
+        )
+        chunk_index += 1
+        start = end
+
+    result.stats[f"{path.stem}_chunk_count"] = chunk_index - 1
+
+
+def chunk_csv_artifact(path: Path, result: ConversionResult, max_rows: int = CSV_CHUNK_ROW_LIMIT) -> None:
+    if not path.exists() or path.suffix.lower() != ".csv":
+        return
+
+    with path.open("r", encoding="utf-8", errors="replace", newline="") as handle:
+        rows = list(csv.reader(handle))
+    if len(rows) <= max_rows + 1:
+        return
+
+    header = rows[0] if rows else []
+    data_rows = rows[1:]
+    chunk_dir = result.output_dir / "chunks" / path.stem
+    chunk_dir.mkdir(parents=True, exist_ok=True)
+    chunk_count = 0
+    for start in range(0, len(data_rows), max_rows):
+        chunk_count += 1
+        chunk_rows = data_rows[start : start + max_rows]
+        chunk_path = chunk_dir / f"{chunk_count:03d}.csv"
+        with chunk_path.open("w", encoding="utf-8", newline="") as handle:
+            writer = csv.writer(handle)
+            if header:
+                writer.writerow(header)
+            writer.writerows(chunk_rows)
+        result.artifacts.append(
+            Artifact(
+                path=str(chunk_path),
+                kind="csv-chunk",
+                description=f"Readable rows {start + 1}-{start + len(chunk_rows)} from {path.name}",
+            )
+        )
+
+    result.stats[f"{path.stem}_chunk_count"] = chunk_count
+
+
+def add_large_artifact_chunks(result: ConversionResult) -> None:
+    originals = list(result.artifacts)
+    for artifact in originals:
+        artifact_path = Path(artifact.path)
+        if artifact.kind in {"markdown", "text"}:
+            chunk_text_artifact(artifact_path, result)
+        elif artifact.kind == "csv":
+            chunk_csv_artifact(artifact_path, result)
 
 
 def relpath(path: Path, base: Path) -> str:
@@ -155,7 +252,11 @@ def build_index_markdown(result: ConversionResult) -> str:
 
     lines.extend(["", "## Artifacts", ""])
     for artifact in result.artifacts:
-        lines.append(f"- `{artifact.kind}`: `{relpath(Path(artifact.path), result.output_dir)}` — {artifact.description}")
+        lines.append(f"- `{artifact.kind}`: `{relpath(Path(artifact.path), result.output_dir)}` - {artifact.description}")
+
+    lines.extend(["", "## Artifact Summary", ""])
+    for artifact in result.artifacts:
+        lines.append(f"- `{relpath(Path(artifact.path), result.output_dir)}`: {artifact.description}")
 
     if result.stats:
         lines.extend(["", "## Stats", ""])
@@ -574,7 +675,7 @@ def main() -> int:
     output_dir = (
         args.output_dir.expanduser().resolve()
         if args.output_dir
-        else source.parent / f"{source.name}.ob1"
+        else default_output_dir(source, args.output_root)
     )
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -591,6 +692,7 @@ def main() -> int:
 
     result.stats.setdefault("source_extension", source.suffix.lower() or "none")
     result.stats.setdefault("source_size_bytes", source.stat().st_size)
+    add_large_artifact_chunks(result)
     write_index_files(result)
 
     print(json.dumps(

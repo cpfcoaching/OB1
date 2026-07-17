@@ -1,0 +1,5 @@
+interface:
+  display_name: "Stakeholder Update Email"
+  short_description: "Draft truthful stakeholder update emails"
+  default_prompt: "Use $stakeholder-update-email to draft a short stakeholder update for the shipped work."
+  brand_color: "#0E7A4F"

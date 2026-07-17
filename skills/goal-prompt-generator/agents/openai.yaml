@@ -1,0 +1,5 @@
+interface:
+  display_name: "Goal Prompt Generator"
+  short_description: "Package work as verifiable agent goals"
+  default_prompt: "Use $goal-prompt-generator to turn this implementation plan into a self-contained autonomous goal prompt."
+  brand_color: "#0E7A4F"

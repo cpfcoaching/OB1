@@ -1,0 +1,24 @@
+{
+  "name": "Skill Library Flywheel",
+  "description": "Turn substantial session discoveries into skill drafts, testing runbooks, memory, or operating-map updates.",
+  "category": "recipes",
+  "author": {
+    "name": "OpenBrain",
+    "github": ""
+  },
+  "version": "1.0.0",
+  "requires": {
+    "open_brain": false,
+    "services": [],
+    "tools": []
+  },
+  "requires_skills": [
+    "session-to-skill-extractor",
+    "session-operating-map"
+  ],
+  "tags": ["open-skills", "skills", "memory", "runbook"],
+  "difficulty": "intermediate",
+  "estimated_time": "30 minutes",
+  "created": "2026-07-01",
+  "updated": "2026-07-01"
+}

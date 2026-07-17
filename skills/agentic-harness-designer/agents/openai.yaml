@@ -1,0 +1,5 @@
+interface:
+  display_name: "Agentic Harness Designer"
+  short_description: "Design agent systems beyond model choice"
+  default_prompt: "Use $agentic-harness-designer to review this agent system and produce a phased design doc."
+  brand_color: "#0E7A4F"

@@ -17,7 +17,7 @@ Transform raw brain dumps into evaluated, actionable idea inventories. Three pha
 
 - Voice transcripts (multi-speaker, timestamped)
 - Stream-of-consciousness notes
-- Brain dump markdown exports from ChatGPT/Gemini/Claude
+- Brain dump markdown exports from ChatGPT/Gemini/Codex
 - Any document where the user says "process this" or "what's in here"
 - Multi-topic conversations that need thread extraction
 

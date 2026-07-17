@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+"""Planner shim (Claude lane): orchestrator payload -> planner-response JSON.
+
+Input  (stdin):  {"role": "planner", "goal": "<goal>"}
+Output (stdout): {"tasks": [{"id","description","status","attempts","feedback"}]}
+
+Provider command env var: MAO_CLAUDE_CMD
+"""
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _shim import emit, extract_json, read_payload, require, run_provider
+
+PROMPT = """You are the PLANNER in a Claude+Codex orchestration loop. Turn the goal
+into an ordered list of small, independently buildable coding tasks.
+
+Goal:
+{goal}
+
+Return ONLY a JSON object, no prose, exactly this shape:
+{{"tasks": [{{"id": "kebab-case-id", "description": "what to build", "status": "planned", "attempts": 0, "feedback": []}}]}}
+Keep ids unique and kebab-case. 3 to 6 tasks is typical."""
+
+
+def main() -> None:
+    payload = read_payload()
+    goal = str(payload.get("goal", "")).strip()
+    if not goal:
+        from _shim import fail
+
+        fail("planner payload missing 'goal'")
+    raw = run_provider("MAO_CLAUDE_CMD", PROMPT.format(goal=goal))
+    data = extract_json(raw)
+    require(data, ["tasks"], "planner")
+
+    normalized = []
+    for item in data["tasks"]:
+        if "id" not in item or "description" not in item:
+            from _shim import fail
+
+            fail("planner task missing 'id' or 'description'")
+        normalized.append(
+            {
+                "id": str(item["id"]),
+                "description": str(item["description"]),
+                "status": str(item.get("status", "planned")),
+                "attempts": int(item.get("attempts", 0)),
+                "feedback": list(item.get("feedback", [])),
+            }
+        )
+    emit({"tasks": normalized})
+
+
+if __name__ == "__main__":
+    main()
