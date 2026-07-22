@@ -27,8 +27,10 @@ import datetime as dt
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.request
+from zoneinfo import ZoneInfo
 
 # Tokens that mark an item as time-sensitive or slipping. Pure pattern matching,
 # no interpretation; the Claude lane decides what to do about them.
@@ -132,10 +134,31 @@ def fetch_news(feed_url: str, since_hours: int = 24, limit: int = 8) -> dict:
     return {"status": "ok", "count": len(items), "items": items}
 
 
+def collect_calendar(reader: str, now: dt.datetime) -> dict:
+    """Best-effort dual-identity pull for today plus tomorrow."""
+    if not reader or not os.path.isfile(reader):
+        return {"status": "unavailable", "reason": f"calendar reader not found: {reader}"}
+    start = now.astimezone(ZoneInfo("America/New_York")).replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    end = start + dt.timedelta(days=2)
+    try:
+        proc = subprocess.run(
+            [sys.executable, reader, "--time-min", start.isoformat(), "--time-max", end.isoformat()],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=30,
+        )
+        data = json.loads(proc.stdout)
+        return {"status": "ok", **data}
+    except Exception as exc:  # noqa: BLE001 - preserve the rest of the brief bundle
+        return {"status": "unavailable", "reason": f"{type(exc).__name__}: {exc}"}
+
+
 # Reads that require the Claude (MCP) lane or a credentialed script. The collector
 # names them explicitly so the split is auditable and nothing is silently dropped.
 CONNECTOR_CHECKLIST = [
-    {"source": "Google Calendar", "pull": "today's events + tomorrow's first", "lane": "claude-mcp"},
     {"source": "Gmail", "pull": "unread/flagged last 24h", "lane": "claude-mcp"},
     {"source": "Slack", "pull": "DMs, @mentions, #cpfcoaching-project last 24h", "lane": "claude-mcp"},
     {"source": "CRM/Apollo", "pull": "deal stage changes, VIP activity, dormant contacts", "lane": "claude-mcp"},
@@ -152,6 +175,10 @@ def main() -> int:
     ap.add_argument("--news-feed", default=os.environ.get("CPF_NEWS_FEED", ""))
     ap.add_argument("--since-hours", type=int, default=24)
     ap.add_argument("--now", default="")
+    default_calendar_reader = os.path.abspath(os.path.join(
+        os.path.dirname(__file__), "../../../../../calendar-sync/read_merged_calendar.py"
+    ))
+    ap.add_argument("--calendar-reader", default=default_calendar_reader)
     args = ap.parse_args()
 
     now = dt.datetime.fromisoformat(args.now) if args.now else dt.datetime.now()
@@ -159,6 +186,15 @@ def main() -> int:
     memory_dir = os.path.dirname(os.path.abspath(args.memory_file))
 
     memory = collect_memory(args.memory_file, today)
+    calendar = collect_calendar(args.calendar_reader, now)
+    connector_checklist = list(CONNECTOR_CHECKLIST)
+    if calendar["status"] != "ok":
+        connector_checklist.insert(0, {
+            "source": "Google Calendar",
+            "pull": "today's events + tomorrow's first",
+            "lane": "claude-mcp-fallback",
+            "reason": calendar.get("reason", "dual-account reader unavailable"),
+        })
     bundle = {
         "schema": "cpf.brief_inputs.v1",
         "generated_at": now.isoformat(timespec="seconds"),
@@ -168,10 +204,11 @@ def main() -> int:
         "sources": {
             "memory": memory,
             "summary": summarize(memory) if "error" not in memory else memory,
+            "calendar": calendar,
             "recent_files": list_recent_files(memory_dir),
             "news": fetch_news(args.news_feed, args.since_hours),
         },
-        "needs_claude_lane_pull": CONNECTOR_CHECKLIST,
+        "needs_claude_lane_pull": connector_checklist,
     }
 
     text = json.dumps(bundle, indent=2)
