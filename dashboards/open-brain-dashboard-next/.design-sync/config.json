@@ -1,0 +1,7 @@
+{
+  "projectId": "fa602d50-0136-40df-9f95-32309a40de78",
+  "shape": "package",
+  "pkg": "open-brain-dashboard",
+  "globalName": "OpenBrainDashboard",
+  "cssEntry": "app/globals.css"
+}
