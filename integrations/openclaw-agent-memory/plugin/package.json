@@ -40,7 +40,7 @@
     "typebox": "^1.1.37"
   },
   "devDependencies": {
-    "esbuild": "^0.25.12"
+    "esbuild": "^0.28.1"
   },
   "peerDependencies": {
     "openclaw": ">=2026.3.24-beta.2"
